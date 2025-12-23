@@ -13,7 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="flex justify-center items-center h-dvh">
+          <div className="w-full max-w-xl border-2 border-amber-300 ">
+            <div className="w-full p-1">{children}</div>
+          </div>
+        </div>
+      </body>
     </html>
   );
 }
