@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import {
   Sidebar,
@@ -6,12 +5,10 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
-  useSidebar,
 } from './ui/sidebar';
 
 import { LayoutDashboard } from 'lucide-react';
@@ -24,24 +21,16 @@ const items = [
   },
 ];
 
-export default function AppSidebar() {
-  const { isMobile, open } = useSidebar();
-
+export default function AppSidebarMain() {
   return (
-    <Sidebar collapsible={isMobile ? 'offcanvas' : 'icon'} className="z-50">
-      <SidebarHeader>
-        <SidebarMenu>
-          <div className="flex justify-between">
-            <SidebarMenuItem className="text-center">
-              <SidebarTrigger className="h-8 w-8 min-w-8 max-w-8" />
-            </SidebarMenuItem>
-            <SidebarMenuItem>{open && <SidebarGroupLabel>Jenian</SidebarGroupLabel>}</SidebarMenuItem>
-          </div>
-        </SidebarMenu>
-      </SidebarHeader>
+    <Sidebar collapsible="icon" className="">
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent className="">
+        <SidebarGroup className="p-0">
+          {/* <div className="mx-auto flex w-full items-center justify-between p-1 sm:p-2 lg:p-3">
+            <SidebarTrigger />
+            <SidebarGroupLabel className="flex-1 text-base">Jenian</SidebarGroupLabel>
+          </div> */}
+          <SidebarGroupContent className="py-3">
             <SidebarMenu>
               {items.map(i => (
                 <SidebarMenuItem key={i.title}>

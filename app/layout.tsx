@@ -18,35 +18,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        {/**ADD SIDE BAR */}
+      <body className="min-h-dvh bg-background">
+        <header className="sticky top-0 z-20 border-b backdrop-blur w-full">
+          <div className="mx-auto flex items-center justify-center p-1 sm:p-2 lg:p-3">
+            <span className="font-semibold italic tracking-wide underline decoration-amber-500">Jenian</span>
+          </div>
+        </header>
         <SidebarProvider defaultOpen={false}>
-          <div className="absolute">
-            <SidebarBackdrop />
+          <aside className="">
+            {/* <SidebarBackdrop /> */}
             <AppSidebar />
-          </div>
+          </aside>
 
-          {/* Header */}
-          <div className="w-full min-h-dvh">
-            <div className="sticky top-0 z-0 border-b backdrop-blur">
-              <div className="mx-auto flex w-full items-center justify-center p-1 sm:p-2 lg:p-3">
-                <span className="flex-1">
-                  <SidebarTrigger />
-                </span>
-
-                <div className="font-semibold italic tracking-wide underline decoration-amber-500 flex-1">Jenian</div>
-              </div>
-            </div>
-            {/* ---------*/}
-
-            {/* Main Content */}
-            <main className="w-full">
-              {/* <div className="w-full max-w-xl border-2 border-amber-300 "> */}
-              {children}
-              {/* </div> */}
-            </main>
-            {/* Main Content */}
-          </div>
+          {/* <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8"> */}
+          <main className="">
+            {/* <div className="w-full max-w-xl border-2 border-amber-300 "> */}
+            {children}
+            {/* </div> */}
+          </main>
         </SidebarProvider>
       </body>
     </html>
