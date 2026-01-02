@@ -28,7 +28,7 @@ export default function AppSidebar() {
   const { isMobile, open } = useSidebar();
 
   return (
-    <Sidebar collapsible={isMobile ? 'offcanvas' : 'icon'} className="z-50">
+    <Sidebar variant="floating" collapsible={isMobile ? 'offcanvas' : 'icon'} className="z-50 block">
       <SidebarHeader>
         <SidebarMenu>
           <div className="flex justify-between">
