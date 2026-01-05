@@ -1,7 +1,6 @@
 'use client';
 
 import { useSidebar } from '@/components/ui/sidebar';
-import { useEffect } from 'react';
 
 export function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();

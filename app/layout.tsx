@@ -1,7 +1,7 @@
 import AppSidebar from '@/components/app-sidebar';
-import { SidebarBackdrop } from '@/components/sidebar-backdrop';
+// import { SidebarBackdrop } from '@/components/sidebar-backdrop';
 import Header from '@/components/ui/header';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
 import './globals.css';
 

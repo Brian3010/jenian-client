@@ -4,11 +4,9 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from './ui/sidebar';
 
 import { LayoutDashboard } from 'lucide-react';

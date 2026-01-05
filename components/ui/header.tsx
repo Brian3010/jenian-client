@@ -1,7 +1,4 @@
-import { PanelLeftIcon } from 'lucide-react';
-import React from 'react';
-import { Button } from './button';
-import { SidebarTrigger, useSidebar } from './sidebar';
+import { SidebarTrigger } from './sidebar';
 
 export default function Header() {
   return (
