@@ -43,8 +43,8 @@ export default function SignIn() {
   //TODO: create a form
 
   return (
-    <div>
-      <Card>
+    <div className="flex justify-center">
+      <Card className="w-sm">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>Enter your username/email to login to your account</CardDescription>
