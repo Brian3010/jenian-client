@@ -2,13 +2,16 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
+import { login } from '@/features/auth/services/auth.service';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
+import { Loader, UndoIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const signInSchema = z.object({
-  username: z.email('Please enter a valid email'),
+  email: z.email('Please enter a valid email'),
   // password: z.regex(/^(?=.{8,128}$)(?!.\s)(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[^\w\s]).$/),
   // password: z
   //   .string()
@@ -25,6 +28,11 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
+  const router = useRouter();
+
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>();
+
   const {
     register,
     handleSubmit,
@@ -32,47 +40,57 @@ export default function SignIn() {
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
     mode: 'onSubmit',
   });
 
-  const onSubmit = (signInData: SignInValues) => console.log(signInData);
+  const onSubmit = async (signInData: SignInValues) => {
+    console.log(signInData);
 
-  //TODO: create a form
+    try {
+      setIsLoading(true);
+      await login(signInData.email, signInData.password, 'local host');
+
+      // After login succeeds, cookies are set.
+      setError('');
+      router.replace('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex justify-center">
       <Card className="w-sm">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Enter your username/email to login to your account</CardDescription>
+          <CardDescription>Enter your email/email to login to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <div>
             <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 flex-col">
-              {/* <input {...register('username')} />
-              <p>{errors.username?.message}</p> */}
+              {/* <input {...register('email')} />
+              <p>{errors.email?.message}</p> */}
               <div>
                 <InputGroup>
-                  <InputGroupInput placeholder="Enter your username" {...register('username')} />
+                  <InputGroupInput placeholder="Enter your email" {...register('email')} />
                 </InputGroup>
-                <p>{errors.username?.message}</p>
+                <p>{errors.email?.message}</p>
               </div>
-
               <div>
                 <InputGroup>
                   <InputGroupInput type="password" {...register('password')} />
                 </InputGroup>
                 <p>{errors.password?.message}</p>
               </div>
-
+              {error != '' && <p>{error}</p>}
               {/* <input {...register('password')} />
               <p>{errors.password?.message}</p> */}
-              <div>
-                <Button type="submit">Submit</Button>
-              </div>
+              <div>{isLoading ? <Loader /> : <Button type="submit">Submit</Button>}</div>
             </form>
           </div>
         </CardContent>

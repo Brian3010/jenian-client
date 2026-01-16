@@ -19,6 +19,7 @@ import { InputGroup, InputGroupButton, InputGroupInput } from './ui/input-group'
 export default function TelegramTokenGenerateButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   //TODO: Call API to get token
+  //TODO: have a look at proxy for private route impelmentation
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
