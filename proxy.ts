@@ -32,8 +32,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 // Keep cookie names consistent with src/lib/auth/session.ts
-const ACCESS_COOKIE = 'access_token';
-const REFRESH_COOKIE = 'refresh_token';
+const ACCESS_COOKIE = 'accessToken';
+const REFRESH_COOKIE = 'refreshToken';
 
 /**
  * Decide which paths are ALWAYS public.
@@ -80,6 +80,7 @@ function isAnyApi(pathname: string) {
 }
 
 export function proxy(req: NextRequest) {
+  console.log('Proxy runned');
   const { pathname } = req.nextUrl;
 
   // 1) Always allow Next internals + static files

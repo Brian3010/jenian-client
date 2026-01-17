@@ -18,8 +18,8 @@ import { cookies } from 'next/headers';
 import 'server-only';
 
 export const AUTH_COOKIES = {
-  access: 'access_token',
-  refresh: 'refresh_token',
+  access: 'AccessToken',
+  refresh: 'RefreshToken',
 } as const;
 
 type CookieOptions = {
@@ -55,6 +55,7 @@ export async function setAuthCookies(params: {
     ...opt,
     maxAge: params.accessMaxAgeSec ?? 60 * 5, // default 5 minutes
   });
+  console.log('🚀 ~ setAuthCookies ~ jar:', jar.get(AUTH_COOKIES.access));
 
   // // Refresh token: longer-lived
   // jar.set(AUTH_COOKIES.refresh, params.refreshToken, {

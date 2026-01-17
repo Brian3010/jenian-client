@@ -47,16 +47,18 @@ export default function SignIn() {
   });
 
   const onSubmit = async (signInData: SignInValues) => {
-    console.log(signInData);
-
     try {
       setIsLoading(true);
-      await login(signInData.email, signInData.password, 'local host');
+      const res = await login(signInData.email, signInData.password, 'local host');
+      console.log('🚀 ~ onSubmit ~ res:', res);
 
       // After login succeeds, cookies are set.
-      setError('');
-      router.replace('/dashboard');
+      if (res.ok) {
+        setError('');
+        router.push('/dashboard');
+      }
     } catch (err) {
+      console.log('🚀 ~ onSubmit ~ err:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
