@@ -18,6 +18,10 @@ export async function login(email: string, password: string, deviceName: string)
   if (!res.ok || res.status == 401) {
     throw new Error('Invalid username or password');
   }
+
+  if (res.status == 500) {
+    throw new Error('Internal server error');
+  }
   // if (!res.ok || !data?.ok) {
   //   throw new Error(data?.message || 'Login failed');
   // }

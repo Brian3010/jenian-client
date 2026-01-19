@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { login } from '@/features/auth/services/auth.service';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader, UndoIcon } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -89,10 +89,15 @@ export default function SignIn() {
                 </InputGroup>
                 <p>{errors.password?.message}</p>
               </div>
-              {error != '' && <p>{error}</p>}
+              {error != '' && <p className="text-red-600 italic">{error}</p>}
               {/* <input {...register('password')} />
               <p>{errors.password?.message}</p> */}
-              <div>{isLoading ? <Loader /> : <Button type="submit">Submit</Button>}</div>
+              <div>
+                {/* {!isLoading ? <LoaderCircle className="animate-spin" /> : <Button type="submit">Submit</Button>} */}
+                <Button type="submit" className="w-25">
+                  {isLoading ? <LoaderCircle className="animate-spin" /> : 'Sign in'}
+                </Button>
+              </div>
             </form>
           </div>
         </CardContent>
