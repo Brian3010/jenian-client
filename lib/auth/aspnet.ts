@@ -19,6 +19,7 @@
  * proxy.ts is just a "gatekeeper" to redirect users to /sign-in if there is no session.
  */
 
+import { cookies } from 'next/headers';
 import 'server-only';
 import { clearAuthCookies, getAccessToken, getRefreshToken, setAccessCookie } from './session';
 
@@ -39,24 +40,37 @@ type RefreshResponse = {
 };
 
 async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetails } | { ok: false }> {
-  // Refresh token comes from httpOnly cookie (server-only)
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return { ok: false };
+  /**The Next.js server does not automatically have the browser cookies
+    It only has them if the browser sends them in the request.
 
+    So on the server you can access cookies like:
+
+    import { cookies } from "next/headers";
+    cookies().get("refreshToken")
+  **/
+
+  const cookieStore = cookies();
+  const cookieHeader = (await cookieStore).toString();
+  console.log('🚀 ~ refreshAccessToken ~ cookieHeader:', cookieHeader);
+
+  const localStorageData = { userId: '2714785d-40c7-4e09-9c4b-780a821a0d50', deviceName: 'local host' };
+  const bodyData = JSON.stringify({ ...localStorageData });
+  console.log('object: ', bodyData);
   // Call ASP.NET refresh endpoint
   const r = await fetch(`${BACKEND_URL}/api/Auth/refresh-token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
 
-    // Adjust this body if your backend expects a different payload
-    body: JSON.stringify({ refreshToken }),
+    body: bodyData,
 
     // Avoid caching auth calls
     cache: 'no-store',
   });
+  console.log('🚀 ~ refreshAccessToken ~ r:', r);
 
   // Refresh failed => treat session as expired
   if (!r.ok) {
+    console.log('Clearing cookies');
     clearAuthCookies(); // force user to login next time
     return { ok: false };
   }
@@ -117,7 +131,8 @@ export async function aspnetFetch(
    * Performs the actual fetch to ASP.NET with bearer token injected.
    */
   const doRequest = async (): Promise<Response> => {
-    const accessToken = getAccessToken();
+    const accessToken = await getAccessToken();
+    console.log('🚀 ~ doRequest ~ accessToken:', accessToken);
 
     // Merge caller headers safely (supports both object and Headers inputs)
     const headers = new Headers(init.headers);

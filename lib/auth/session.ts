@@ -18,8 +18,8 @@ import { cookies } from 'next/headers';
 import 'server-only';
 
 export const AUTH_COOKIES = {
-  access: 'AccessToken',
-  refresh: 'RefreshToken',
+  access: 'accessToken',
+  refresh: 'refreshToken',
 } as const;
 
 type CookieOptions = {
