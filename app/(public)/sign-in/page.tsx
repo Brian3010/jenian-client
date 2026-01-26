@@ -49,7 +49,7 @@ export default function SignIn() {
   const onSubmit = async (signInData: SignInValues) => {
     try {
       setIsLoading(true);
-      const res = await login(signInData.email, signInData.password, 'local host');
+      const res = await login(signInData.email, signInData.password);
       console.log('🚀 ~ onSubmit ~ res:', res);
 
       // After login succeeds, cookies are set.

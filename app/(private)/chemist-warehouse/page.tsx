@@ -5,7 +5,7 @@ import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButto
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
 import { getTelegramToken } from '@/features/telegram/services/telegram.service';
 import { BotMessageSquare, Clipboard } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const items = [
   {
@@ -35,12 +35,14 @@ const items = [
 ];
 
 export default function ChemistWarehouse() {
-  //TODO: Call API to get token
   //INFO: might make separate components for 'Connect to Telegram ...' and 'generate report'
+
+  const tokenRef = useRef('');
 
   useEffect(() => {
     const getToken = async () => {
-      const res = await getTelegramToken();
+      const { linkToken } = await getTelegramToken();
+      tokenRef.current = linkToken;
     };
 
     getToken();

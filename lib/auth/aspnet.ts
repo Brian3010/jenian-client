@@ -21,6 +21,7 @@
 
 import { cookies } from 'next/headers';
 import 'server-only';
+import { getLocalStorageJSON } from './localStorage';
 import { clearAuthCookies, getAccessToken, getRefreshToken, setAccessCookie } from './session';
 
 const BACKEND_URL = process.env.BACKEND_URL!;
@@ -33,7 +34,11 @@ if (!BACKEND_URL) {
  *   POST /api/Auth/refresh-token
  *   -> { accessToken, userDetails }
  */
-export type UserDetails = Record<string, unknown>; // Replace with your real type
+export type UserDetails = {
+  id: string;
+  userName: string;
+  email: string;
+}; // Replace with your real type
 type RefreshResponse = {
   accessToken: string;
   userDetails: UserDetails;
@@ -53,15 +58,19 @@ async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetail
   const cookieHeader = (await cookieStore).toString();
   console.log('🚀 ~ refreshAccessToken ~ cookieHeader:', cookieHeader);
 
-  const localStorageData = { userId: '2714785d-40c7-4e09-9c4b-780a821a0d50', deviceName: 'local host' };
-  const bodyData = JSON.stringify({ ...localStorageData });
-  console.log('object: ', bodyData);
+  // const localStorageData = { userId: '2714785d-40c7-4e09-9c4b-780a821a0d50', deviceName: 'local host' };
+
+  // const localStorageDataTest = getLocalStorageJSON('user', { idol: 'momo sakura' });
+  // console.log('🚀 ~ refreshAccessToken ~ localStorageDataTest:', localStorageDataTest);
+
+  // const bodyData = JSON.stringify({ ...localStorageData });
+  // console.log('object: ', bodyData);
   // Call ASP.NET refresh endpoint
   const r = await fetch(`${BACKEND_URL}/api/Auth/refresh-token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
 
-    body: bodyData,
+    // body: bodyData,
 
     // Avoid caching auth calls
     cache: 'no-store',

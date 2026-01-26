@@ -1,7 +1,6 @@
 import AppSidebar from '@/components/app-sidebar';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import React from 'react';
 
 export default function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

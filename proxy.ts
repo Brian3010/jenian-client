@@ -28,12 +28,15 @@
  * NOT only access_token.
  */
 
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { aspnetFetch } from './lib/auth/aspnet';
+import { getLocalStorageJSON, setLocalStorageJson } from './lib/auth/localStorage';
 
 // Keep cookie names consistent with src/lib/auth/session.ts
 const ACCESS_COOKIE = 'accessToken';
 const REFRESH_COOKIE = 'refreshToken';
+const USER_DETAILS = 'userInfo';
+const BACKEND_URL = process.env.BACKEND_URL;
 
 /**
  * Decide which paths are ALWAYS public.
@@ -79,7 +82,7 @@ function isAnyApi(pathname: string) {
   return pathname.startsWith('/api/');
 }
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   console.log('Proxy runned');
   const { pathname } = req.nextUrl;
 
@@ -91,6 +94,7 @@ export function proxy(req: NextRequest) {
   // 2) Read cookies. Refresh cookie is the best "session exists" indicator.
   const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
   const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
+  const userDetails = req.cookies.get(USER_DETAILS)?.value;
 
   // Treat user as authenticated if they have refresh OR access
   // (refresh is the important one for your setup)
@@ -127,6 +131,29 @@ export function proxy(req: NextRequest) {
     url.pathname = '/sign-in';
     url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
+  }
+
+  // // 7) Make sure there will be user detail available in cookie:
+  if (hasSession && userDetails == null) {
+    console.log('asdsdfgasgasdf');
+    const aspRes = await aspnetFetch(`/api/Auth/get-me`);
+    if (!aspRes.res.ok) {
+      const url = req.nextUrl.clone();
+      url.pathname = 'sign-in';
+      url.searchParams.set('next', pathname);
+      return NextResponse.redirect(url);
+    }
+    const res = NextResponse.next();
+    const cookieValue = await aspRes.res.text();
+    res.cookies.set('user', cookieValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      // maxAge: 60 * 5, // seconds
+    });
+
+    return res;
   }
 
   // 7) Otherwise allow request to continue
