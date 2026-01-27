@@ -1,8 +1,5 @@
 // const BACKEND_URL = process.env.BACKEND_URL;
 
-import { aspnetFetch } from '@/lib/auth/aspnet';
-import { setLocalStorageJson } from '@/lib/auth/localStorage';
-
 type dataT = { ok: boolean; message: string } & {
   ok: boolean;
   message: string;

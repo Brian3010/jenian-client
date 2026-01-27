@@ -21,8 +21,7 @@
 
 import { cookies } from 'next/headers';
 import 'server-only';
-import { getLocalStorageJSON } from './localStorage';
-import { clearAuthCookies, getAccessToken, getRefreshToken, setAccessCookie } from './session';
+import { clearAuthCookies, getAccessToken, setAccessCookie } from './session';
 
 const BACKEND_URL = process.env.BACKEND_URL!;
 if (!BACKEND_URL) {
@@ -130,7 +129,7 @@ export async function aspnetFetch(
      * Optional: override base URL if needed (rare).
      */
     baseUrlOverride?: string;
-  }
+  },
 ): Promise<{ res: Response; refreshedUser?: UserDetails }> {
   const retryOn401 = opts?.retryOn401 ?? true;
   const baseUrl = opts?.baseUrlOverride ?? BACKEND_URL;
@@ -194,7 +193,7 @@ export async function aspnetFetch(
 export async function aspnetJson<T>(
   path: string,
   init: RequestInit = {},
-  opts?: { retryOn401?: boolean }
+  opts?: { retryOn401?: boolean },
 ): Promise<{ ok: true; data: T; refreshedUser?: UserDetails } | { ok: false; status: number; errorText: string }> {
   const { res, refreshedUser } = await aspnetFetch(path, init, opts);
 
