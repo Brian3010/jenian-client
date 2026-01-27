@@ -34,7 +34,7 @@ export async function login(email: string, password: string) {
   // }
   data.ok = res.ok;
 
-  setLocalStorageJson('User', data.user);
+  // setLocalStorageJson('User', data.user);
 
   return data;
 }

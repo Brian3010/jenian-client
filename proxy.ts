@@ -30,13 +30,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { aspnetFetch } from './lib/auth/aspnet';
-import { getLocalStorageJSON, setLocalStorageJson } from './lib/auth/localStorage';
 
 // Keep cookie names consistent with src/lib/auth/session.ts
 const ACCESS_COOKIE = 'accessToken';
 const REFRESH_COOKIE = 'refreshToken';
 const USER_DETAILS = 'userInfo';
-const BACKEND_URL = process.env.BACKEND_URL;
 
 /**
  * Decide which paths are ALWAYS public.
@@ -86,12 +84,12 @@ export async function proxy(req: NextRequest) {
   console.log('Proxy runned');
   const { pathname } = req.nextUrl;
 
-  // 1) Always allow Next internals + static files
+  // Always allow Next internals + static files
   if (isNextOrStaticAsset(pathname)) {
     return NextResponse.next();
   }
 
-  // 2) Read cookies. Refresh cookie is the best "session exists" indicator.
+  // Read cookies. Refresh cookie is the best "session exists" indicator.
   const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
   const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
   const userDetails = req.cookies.get(USER_DETAILS)?.value;
@@ -99,8 +97,9 @@ export async function proxy(req: NextRequest) {
   // Treat user as authenticated if they have refresh OR access
   // (refresh is the important one for your setup)
   const hasSession = Boolean(refreshToken || accessToken);
+  console.log('🚀 ~ proxy ~ hasSession:', hasSession);
 
-  // 3) If user is already authenticated, keep them out of /sign-in
+  // If user is already authenticated, keep them out of /sign-in
   // (optional but nice UX)
   if (pathname === '/sign-in' && hasSession) {
     const url = req.nextUrl.clone();
@@ -108,21 +107,21 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 4) Allow public paths through
+  // Allow public paths through
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
-  // 5) Optional: protect private API endpoints early
+  // Optional: protect private API endpoints early
   // If there's no refresh token, the user cannot refresh an expired access token,
   // so private API calls should be rejected quickly.
   //
   // NOTE: We check refreshToken here (not accessToken) because access can expire.
-  if (isPrivateApi(pathname) && !refreshToken) {
+  if (isPrivateApi(pathname) && !hasSession) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  // 6) Protect private pages:
+  // Protect private pages:
   // Anything that is not public and not an API route is treated as private UI.
   //
   // If no session => redirect to /sign-in and preserve "next" so you can return after login.
@@ -133,7 +132,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // // 7) Make sure there will be user detail available in cookie:
+  // // Make sure there will be user detail available in cookie:
   if (hasSession && userDetails == null) {
     console.log('asdsdfgasgasdf');
     const aspRes = await aspnetFetch(`/api/Auth/get-me`);
@@ -156,7 +155,7 @@ export async function proxy(req: NextRequest) {
     return res;
   }
 
-  // 7) Otherwise allow request to continue
+  // Otherwise allow request to continue
   return NextResponse.next();
 }
 
