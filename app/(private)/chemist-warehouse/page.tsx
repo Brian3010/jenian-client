@@ -1,11 +1,7 @@
-'use client';
-
 import CreateReportButton from '@/components/create-report-button';
 import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
-import { getTelegramToken } from '@/features/telegram/services/telegram.service';
 import { BotMessageSquare, Clipboard } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 
 const items = [
   {
@@ -36,17 +32,6 @@ const items = [
 
 export default function ChemistWarehouse() {
   //INFO: might make separate components for 'Connect to Telegram ...' and 'generate report'
-
-  const tokenRef = useRef('');
-
-  useEffect(() => {
-    const getToken = async () => {
-      const { linkToken } = await getTelegramToken();
-      tokenRef.current = linkToken;
-    };
-
-    getToken();
-  }, []);
 
   return (
     <div className="w-full p-2">

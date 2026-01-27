@@ -2,7 +2,6 @@
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -11,15 +10,26 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { getTelegramToken } from '@/features/telegram/services/telegram.service';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Check, Copy } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { InputGroup, InputGroupButton, InputGroupInput } from './ui/input-group';
 
 export default function TelegramTokenGenerateButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
-  //TODO: Call API to get token
-  //TODO: have a look at proxy for private route impelmentation
+
+  const [token, setToken] = useState<string>('');
+
+  useEffect(() => {
+    const getToken = async () => {
+      const { linkToken } = await getTelegramToken();
+      setToken(linkToken);
+    };
+
+    getToken();
+  }, []);
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -30,7 +40,7 @@ export default function TelegramTokenGenerateButton() {
           <AlertDialogTitle>
             <InputGroup className="border-gray-950">
               <InputGroupInput
-                placeholder="/start Token here"
+                placeholder={`/start ${token}`}
                 disabled
                 className="placeholder:text-md h-8 px-2 placeholder:text-black"
               />
@@ -39,7 +49,7 @@ export default function TelegramTokenGenerateButton() {
                 title="Copy"
                 size="icon-xs"
                 onClick={() => {
-                  copyToClipboard('/start token here');
+                  copyToClipboard(`/start ${token}`);
                 }}
               >
                 {isCopied ? <Check /> : <Copy />}

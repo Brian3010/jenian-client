@@ -7,7 +7,6 @@ export async function getTelegramToken() {
   if (!res.ok) throw new Error('Internal server error');
 
   const data: { linkToken: string } = await res.json();
-  console.log('🚀 ~ getTelegramToken ~ data:', data);
   return data;
 }
 
