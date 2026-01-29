@@ -101,7 +101,7 @@ export async function proxy(req: NextRequest) {
 
   // If user is already authenticated, keep them out of /sign-in
   // (optional but nice UX)
-  if (pathname === '/sign-in' && hasSession) {
+  if (pathname === '/sign-in' || (pathname === '/' && hasSession)) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
@@ -134,7 +134,6 @@ export async function proxy(req: NextRequest) {
 
   // // Make sure there will be user detail available in cookie:
   if (hasSession && userDetails == null) {
-    console.log('asdsdfgasgasdf');
     const aspRes = await aspnetFetch(`/api/Auth/get-me`);
     if (!aspRes.res.ok) {
       const url = req.nextUrl.clone();
