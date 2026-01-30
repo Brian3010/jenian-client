@@ -29,12 +29,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { aspnetFetch } from './lib/auth/aspnet';
 
 // Keep cookie names consistent with src/lib/auth/session.ts
 const ACCESS_COOKIE = 'accessToken';
 const REFRESH_COOKIE = 'refreshToken';
-const USER_DETAILS = 'userInfo';
 
 /**
  * Decide which paths are ALWAYS public.
@@ -92,7 +90,6 @@ export async function proxy(req: NextRequest) {
   // Read cookies. Refresh cookie is the best "session exists" indicator.
   const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
   const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
-  const userDetails = req.cookies.get(USER_DETAILS)?.value;
 
   // Treat user as authenticated if they have refresh OR access
   // (refresh is the important one for your setup)
