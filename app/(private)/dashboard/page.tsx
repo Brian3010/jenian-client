@@ -2,12 +2,13 @@
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import React from 'react';
+import HelloMe from './components/hellome';
 
 export default function Dashboard() {
   return (
     <div className="w-full p-2">
       <div className="flex flex-col gap-3">
-        <h1>Hello Brian,</h1>
+        <HelloMe />
 
         <div className="flex">
           <Link href="/chemist-warehouse" className="w-full max-w-xs">

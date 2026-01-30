@@ -101,7 +101,7 @@ export async function proxy(req: NextRequest) {
 
   // If user is already authenticated, keep them out of /sign-in
   // (optional but nice UX)
-  if (pathname === '/sign-in' || (pathname === '/' && hasSession)) {
+  if (pathname === '/sign-in' && hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
@@ -126,33 +126,33 @@ export async function proxy(req: NextRequest) {
   //
   // If no session => redirect to /sign-in and preserve "next" so you can return after login.
   if (!isAnyApi(pathname) && !hasSession) {
+    console.log('asdasdasd');
     const url = req.nextUrl.clone();
     url.pathname = '/sign-in';
     url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
+  // // // Make sure there will be user detail available in cookie:
+  // if (hasSession && userDetails == null) {
+  //   const aspRes = await aspnetFetch(`/api/Auth/get-me`);
+  //   if (!aspRes.res.ok) {
+  //     const url = req.nextUrl.clone();
+  //     url.pathname = 'sign-in';
+  //     url.searchParams.set('next', pathname);
+  //     return NextResponse.redirect(url);
+  //   }
+  //   const res = NextResponse.next();
+  //   const cookieValue = await aspRes.res.text();
+  //   res.cookies.set('user', cookieValue, {
+  //     httpOnly: true,
+  //     secure: process.env.NODE_ENV === 'production',
+  //     sameSite: 'lax',
+  //     path: '/',
+  //     // maxAge: 60 * 5, // seconds
+  //   });
 
-  // // Make sure there will be user detail available in cookie:
-  if (hasSession && userDetails == null) {
-    const aspRes = await aspnetFetch(`/api/Auth/get-me`);
-    if (!aspRes.res.ok) {
-      const url = req.nextUrl.clone();
-      url.pathname = 'sign-in';
-      url.searchParams.set('next', pathname);
-      return NextResponse.redirect(url);
-    }
-    const res = NextResponse.next();
-    const cookieValue = await aspRes.res.text();
-    res.cookies.set('user', cookieValue, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      // maxAge: 60 * 5, // seconds
-    });
-
-    return res;
-  }
+  //   return res;
+  // }
 
   // Otherwise allow request to continue
   return NextResponse.next();
