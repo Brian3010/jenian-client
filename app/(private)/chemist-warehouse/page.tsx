@@ -4,6 +4,7 @@ import { Card, CardAction, CardHeader } from '@/components/ui/card';
 import { isTelegramLinked } from '@/features/telegram/services/telegram.service';
 import { BotMessageSquare, Clipboard } from 'lucide-react';
 import BotConnectCard from './components/bot-connect-card';
+import ReportCard from './components/report-card';
 
 // const items = [
 //   {
@@ -48,6 +49,7 @@ export default async function ChemistWarehouse() {
         {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 "> */}
         <div className="flex flex-col gap-2">
           <BotConnectCard />
+          <ReportCard />
         </div>
       </div>
     </div>
