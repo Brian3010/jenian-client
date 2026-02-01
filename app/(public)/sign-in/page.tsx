@@ -13,17 +13,17 @@ import { z } from 'zod';
 const signInSchema = z.object({
   email: z.email('Please enter a valid email'),
   // password: z.regex(/^(?=.{8,128}$)(?!.\s)(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[^\w\s]).$/),
-  // password: z
-  //   .string()
-  //   .trim() // blocks leading/trailing spaces; if you want to allow them, remove this
-  //   .min(8, 'Password must be at least 12 characters')
-  //   .max(128, 'Password must be at most 128 characters')
-  //   .refine(v => !/\s/.test(v), 'Password must not contain spaces')
-  //   .refine(v => /[a-z]/.test(v), 'Password must include a lowercase letter')
-  //   .refine(v => /[A-Z]/.test(v), 'Password must include an uppercase letter')
-  //   .refine(v => /\d/.test(v), 'Password must include a number')
-  //   .refine(v => /[^\w\s]/.test(v), 'Password must include a symbol'),
-  password: z.string(),
+  password: z
+    .string()
+    .trim() // blocks leading/trailing spaces; if you want to allow them, remove this
+    .min(8, 'Password must be at least 12 characters')
+    .max(128, 'Password must be at most 128 characters')
+    .refine(v => !/\s/.test(v), 'Password must not contain spaces')
+    .refine(v => /[a-z]/.test(v), 'Password must include a lowercase letter')
+    .refine(v => /[A-Z]/.test(v), 'Password must include an uppercase letter')
+    .refine(v => /\d/.test(v), 'Password must include a number')
+    .refine(v => /[^\w\s]/.test(v), 'Password must include a symbol'),
+  // password: z.string(),
 });
 type SignInValues = z.infer<typeof signInSchema>;
 
