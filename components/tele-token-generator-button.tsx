@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { getTelegramToken } from '@/features/telegram/services/telegram.service';
+import { getTelegramToken, isTelegramLinked } from '@/features/telegram/services/telegram.service';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Check, Copy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -24,6 +24,8 @@ export default function TelegramTokenGenerateButton() {
   useEffect(() => {
     const getToken = async () => {
       const { linkToken } = await getTelegramToken();
+      const isLinked = await isTelegramLinked();
+      console.log('🚀 ~ ChemistWarehouse ~ isLinked:', isLinked);
       setToken(linkToken);
     };
 
