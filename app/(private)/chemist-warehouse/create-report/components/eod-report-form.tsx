@@ -25,30 +25,60 @@ const PhotoFile = z
 const reportSchema = z.object({
   deliverySceenShots: z.array(PhotoFile).min(1, 'Select at least 1 photo').max(10, 'Max 10 photos').optional(),
   stockUpdate: z.object({
-    trolleyOfStock: z
-      .string()
-      .max(1000)
-      .regex(/^\s*(\d+)\s*-\s*(.+?)\s*$/, 'Must match "number - text" (e.g. "12 - hello")'),
-    trolleyOfCostmetic: z.string().max(1000),
-    trolleyOffragrance: z.string().max(1000),
+    trolleyOfStock: z.coerce.number().max(100, { message: 'too many trolleys' }),
+    stockNote: z.string().max(1000),
+
+    trolleyOfCostmetic: z.coerce.number().max(100, { message: 'too many trolleys' }),
+    cosmeticNote: z.string().max(1000),
+
+    trolleyOffragrance: z.coerce.number().max(100, { message: 'too many trolleys' }),
+    fragranceNote: z.string().max(1000),
+
     additonalStock: z.string().max(1000),
-    addtionalNote: z.string().max(1000),
+    // addtionalNote: z.string().max(1000),
   }),
 });
-
-type ReportValues = z.infer<typeof reportSchema>;
+/**
+ * ✅ Why you got this TypeScript error
+ *
+ * React Hook Form has TWO “types” involved when you use a resolver:
+ *
+ * 1) Form INPUT values (what comes from the DOM while typing)
+ *    - for <input type="number"> this is still typically a STRING (or "")
+ *
+ * 2) Resolver OUTPUT values (after Zod parses/coerces/transforms)
+ *    - with z.coerce.number(), the OUTPUT becomes a real number
+ *
+ * When you used z.coerce.number(), Zod’s *input type* for that field is `unknown`
+ * (because it can accept many input types), but your useForm generic was:
+ *   useForm<ReportValues>(...)
+ * where ReportValues = z.infer<typeof schema> (OUTPUT type)
+ *
+ * So TS sees:
+ * - resolver works with input type `unknown` for those number fields
+ * - but your form is typed as if those fields are `number` already
+ *
+ * ✅ Fix: type RHF with both:
+ * - INPUT type: z.input<typeof schema>
+ * - OUTPUT type: z.output<typeof schema>
+ */
+type ReportValuesInput = z.input<typeof reportSchema>;
+type ReportValuesOutput = z.output<typeof reportSchema>;
 
 type StockUpdateField = {
   itemName: string;
-  registerName: FieldPath<ReportValues>;
+  registerName: FieldPath<ReportValuesInput>;
+  inputType: 'number' | 'text';
 };
 
 const stockUpdate = [
-  { itemName: 'Trolley of stock', registerName: 'stockUpdate.trolleyOfStock' },
-  { itemName: 'Trolley of cosmetic', registerName: 'stockUpdate.trolleyOfCostmetic' },
-  { itemName: 'Trolley of fragrance', registerName: 'stockUpdate.trolleyOffragrance' },
-  { itemName: 'Additional Stock', registerName: 'stockUpdate.additonalStock' },
-  { itemName: 'Additional Note', registerName: 'stockUpdate.addtionalNote' },
+  { itemName: 'Trolley of stock', registerName: 'stockUpdate.trolleyOfStock', inputType: 'number' },
+  { itemName: 'Stock note', registerName: 'stockUpdate.stockNote', inputType: 'text' },
+  { itemName: 'Trolley of cosmetic', registerName: 'stockUpdate.trolleyOfCostmetic', inputType: 'number' },
+  { itemName: 'Cosmetic note', registerName: 'stockUpdate.cosmeticNote', inputType: 'text' },
+  { itemName: 'Trolley of fragrance', registerName: 'stockUpdate.trolleyOffragrance', inputType: 'number' },
+  { itemName: 'Fragrance note', registerName: 'stockUpdate.fragranceNote', inputType: 'text' },
+  { itemName: 'Additional Stock', registerName: 'stockUpdate.additonalStock', inputType: 'text' },
 ] satisfies StockUpdateField[];
 
 export default function EodReportForm() {
@@ -56,7 +86,7 @@ export default function EodReportForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ReportValues>({
+  } = useForm<ReportValuesInput, unknown, ReportValuesOutput>({
     resolver: zodResolver(reportSchema),
     // defaultValues: {
     //   stockUpdate: {
@@ -66,7 +96,7 @@ export default function EodReportForm() {
     mode: 'onSubmit',
   });
 
-  const onSubmit = (signInData: ReportValues) => {
+  const onSubmit = (signInData: ReportValuesOutput) => {
     console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
   };
@@ -77,18 +107,20 @@ export default function EodReportForm() {
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-6 text-sm">
           {/* Stock Updates */}
-          <p>{errors.stockUpdate?.trolleyOfStock?.message}</p>
+          <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p>
           <section>
             <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Stock Updates</h2>
             <div className="space-y-3">
-              {stockUpdate.map((item, k) => (
-                <Field key={k} className="max-w-sm">
-                  <FieldLabel>{item.itemName}</FieldLabel>
-                  <InputGroup>
-                    <InputGroupInput {...register(item.registerName)} placeholder="number - note if you have" />
-                  </InputGroup>
-                </Field>
-              ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {stockUpdate.map(item => (
+                  <Field key={item.registerName} className="max-w-sm">
+                    <FieldLabel>{item.itemName}</FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput {...register(item.registerName)} type={item.inputType} />
+                    </InputGroup>
+                  </Field>
+                ))}
+              </div>
               {/* <Field className="max-w-sm">
                 <FieldLabel>Trolley of stock</FieldLabel>
                 <InputGroup>
