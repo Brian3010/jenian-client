@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState } from 'react';
 import { FieldPath, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -25,13 +24,13 @@ const PhotoFile = z
 const reportSchema = z.object({
   deliverySceenShots: z.array(PhotoFile).min(1, 'Select at least 1 photo').max(10, 'Max 10 photos').optional(),
   stockUpdate: z.object({
-    trolleyOfStock: z.coerce.number().max(100, { message: 'too many trolleys' }),
+    trolleyOfStock: z.coerce.number().max(100, { message: 'Too many trolleys' }),
     stockNote: z.string().max(1000),
 
-    trolleyOfCostmetic: z.coerce.number().max(100, { message: 'too many trolleys' }),
+    trolleyOfCostmetic: z.coerce.number().max(100, { message: 'Too many trolleys' }),
     cosmeticNote: z.string().max(1000),
 
-    trolleyOffragrance: z.coerce.number().max(100, { message: 'too many trolleys' }),
+    trolleyOffragrance: z.coerce.number().max(100, { message: 'Too many trolleys' }),
     fragranceNote: z.string().max(1000),
 
     additonalStock: z.string().max(1000),
@@ -81,6 +80,12 @@ const stockUpdate = [
   { itemName: 'Additional Stock', registerName: 'stockUpdate.additonalStock', inputType: 'text' },
 ] satisfies StockUpdateField[];
 
+// ✅ helper to read nested error using the same string path you use for register()
+function getByPath<T>(obj: T, path: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return path.split('.').reduce<any>((acc, key) => (acc ? acc[key] : undefined), obj);
+}
+
 export default function EodReportForm() {
   const {
     register,
@@ -88,11 +93,6 @@ export default function EodReportForm() {
     formState: { errors },
   } = useForm<ReportValuesInput, unknown, ReportValuesOutput>({
     resolver: zodResolver(reportSchema),
-    // defaultValues: {
-    //   stockUpdate: {
-    //     trolleyOfStock: "hello"
-    //   },
-    // },
     mode: 'onSubmit',
   });
 
@@ -100,39 +100,33 @@ export default function EodReportForm() {
     console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
   };
-
+  // console.log({ ...errors.stockUpdate });
   return (
     <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
       <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto bg-white border border-gray-200 shadow-sm">
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-6 text-sm">
           {/* Stock Updates */}
-          <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p>
+          {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
           <section>
             <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Stock Updates</h2>
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {stockUpdate.map(item => (
-                  <Field key={item.registerName} className="max-w-sm">
-                    <FieldLabel>{item.itemName}</FieldLabel>
-                    <InputGroup>
-                      <InputGroupInput {...register(item.registerName)} type={item.inputType} />
-                    </InputGroup>
-                  </Field>
-                ))}
+                {stockUpdate.map(item => {
+                  const fieldError = getByPath(errors, item.registerName)?.message as string | undefined;
+
+                  return (
+                    <Field key={item.registerName} className="max-w-sm">
+                      <FieldLabel className="flex gap-5">{item.itemName}</FieldLabel>
+                      <InputGroup>
+                        <InputGroupInput {...register(item.registerName)} type={item.inputType} />
+                      </InputGroup>
+                      {fieldError && <p className="text-sm text-destructive mt-1">{fieldError}</p>}
+                    </Field>
+                  );
+                })}
               </div>
-              {/* <Field className="max-w-sm">
-                <FieldLabel>Trolley of stock</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput {...register('stockUpdate.trolleyOfStock')} />
-                </InputGroup>
-              </Field>
-              <Field className="max-w-sm">
-                <FieldLabel>Trolley of cosmetic</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput {...register('stockUpdate.trolleyOfCostmetic')} />
-                </InputGroup>
-              </Field> */}
+              {/* {errors.stockUpdate && <p className="text-sm text-destructive">{errors.root?.message}</p>} */}
             </div>
           </section>
           <div>
