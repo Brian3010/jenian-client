@@ -3,82 +3,9 @@
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
+import { reportSchema, ReportValuesInput, ReportValuesOutput, stockUpdate } from '@/zodSchema/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FieldPath, useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
-
-const ALLOWED_EXT = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']);
-
-const ext = (name: string) => name.split('.').pop()?.toLowerCase() ?? '';
-
-const PhotoFile = z
-  .instanceof(File)
-  .refine(f => f.size > 0, { message: 'Empty file' })
-  .refine(f => ALLOWED_MIME.has(f.type) || ALLOWED_EXT.has(ext(f.name)), {
-    message: 'Invalid file type',
-  })
-  .refine(f => f.size <= 10 * 1024 * 1024, { message: 'Max 10MB per file' });
-
-const reportSchema = z.object({
-  deliverySceenShots: z.array(PhotoFile).min(1, 'Select at least 1 photo').max(10, 'Max 10 photos').optional(),
-  stockUpdate: z.object({
-    trolleyOfStock: z.coerce.number().max(100, { message: 'Too many trolleys' }),
-    stockNote: z.string().max(1000),
-
-    trolleyOfCostmetic: z.coerce.number().max(100, { message: 'Too many trolleys' }),
-    cosmeticNote: z.string().max(1000),
-
-    trolleyOffragrance: z.coerce.number().max(100, { message: 'Too many trolleys' }),
-    fragranceNote: z.string().max(1000),
-
-    additonalStock: z.string().max(1000),
-    // addtionalNote: z.string().max(1000),
-  }),
-});
-/**
- * ✅ Why you got this TypeScript error
- *
- * React Hook Form has TWO “types” involved when you use a resolver:
- *
- * 1) Form INPUT values (what comes from the DOM while typing)
- *    - for <input type="number"> this is still typically a STRING (or "")
- *
- * 2) Resolver OUTPUT values (after Zod parses/coerces/transforms)
- *    - with z.coerce.number(), the OUTPUT becomes a real number
- *
- * When you used z.coerce.number(), Zod’s *input type* for that field is `unknown`
- * (because it can accept many input types), but your useForm generic was:
- *   useForm<ReportValues>(...)
- * where ReportValues = z.infer<typeof schema> (OUTPUT type)
- *
- * So TS sees:
- * - resolver works with input type `unknown` for those number fields
- * - but your form is typed as if those fields are `number` already
- *
- * ✅ Fix: type RHF with both:
- * - INPUT type: z.input<typeof schema>
- * - OUTPUT type: z.output<typeof schema>
- */
-type ReportValuesInput = z.input<typeof reportSchema>;
-type ReportValuesOutput = z.output<typeof reportSchema>;
-
-type StockUpdateField = {
-  itemName: string;
-  registerName: FieldPath<ReportValuesInput>;
-  inputType: 'number' | 'text';
-};
-
-const stockUpdate = [
-  { itemName: 'Trolley of stock', registerName: 'stockUpdate.trolleyOfStock', inputType: 'number' },
-  { itemName: 'Stock note', registerName: 'stockUpdate.stockNote', inputType: 'text' },
-  { itemName: 'Trolley of cosmetic', registerName: 'stockUpdate.trolleyOfCostmetic', inputType: 'number' },
-  { itemName: 'Cosmetic note', registerName: 'stockUpdate.cosmeticNote', inputType: 'text' },
-  { itemName: 'Trolley of fragrance', registerName: 'stockUpdate.trolleyOffragrance', inputType: 'number' },
-  { itemName: 'Fragrance note', registerName: 'stockUpdate.fragranceNote', inputType: 'text' },
-  { itemName: 'Additional Stock', registerName: 'stockUpdate.additonalStock', inputType: 'text' },
-] satisfies StockUpdateField[];
+import { useForm } from 'react-hook-form';
 
 // ✅ helper to read nested error using the same string path you use for register()
 function getByPath<T>(obj: T, path: string) {
@@ -114,6 +41,7 @@ export default function EodReportForm() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {stockUpdate.map(item => {
                   const fieldError = getByPath(errors, item.registerName)?.message as string | undefined;
+                  console.log('🚀 ~ EodReportForm ~ fieldError:', fieldError);
 
                   return (
                     <Field key={item.registerName} className="max-w-sm">
@@ -126,8 +54,14 @@ export default function EodReportForm() {
                   );
                 })}
               </div>
-              {/* {errors.stockUpdate && <p className="text-sm text-destructive">{errors.root?.message}</p>} */}
             </div>
+          </section>
+
+          {/*Night Task*/}
+          <section>
+            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Night Tasks</h2>
+
+            {/* Off Locations */}
           </section>
           <div>
             <Button type="submit" className="w-25">
