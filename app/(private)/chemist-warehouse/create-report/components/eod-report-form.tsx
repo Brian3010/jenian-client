@@ -3,15 +3,21 @@
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
-import { reportSchema, ReportValuesInput, ReportValuesOutput, stockUpdate } from '@/zodSchema/schemas';
+import { Textarea } from '@/components/ui/textarea';
+import { getByPath } from '@/lib/utils';
+import {
+  ailesFacing,
+  cleaning,
+  generalCheck,
+  nightTasks,
+  reportSchema,
+  ReportValuesInput,
+  ReportValuesOutput,
+  stockUpdate,
+} from '@/zodSchema/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-
-// ✅ helper to read nested error using the same string path you use for register()
-function getByPath<T>(obj: T, path: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return path.split('.').reduce<any>((acc, key) => (acc ? acc[key] : undefined), obj);
-}
+import InputFieldAndError from './input-field-w-error';
 
 export default function EodReportForm() {
   const {
@@ -29,39 +35,68 @@ export default function EodReportForm() {
   };
   // console.log({ ...errors.stockUpdate });
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto bg-white border border-gray-200 shadow-sm">
+    <div className="min-h-screen bg-gray-50 sm:p-3 sm:p-6 border border-amber-400 flex justify-center">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto bg-white border border-gray-200 shadow-sm">
         {/* Content */}
-        <div className="p-4 sm:p-6 space-y-6 text-sm">
+        <div className="p-4 sm:p-6 space-y-6 text-sm flex flex-col gap-8">
           {/* Stock Updates */}
           {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
           <section>
             <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Stock Updates</h2>
             <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {stockUpdate.map(item => {
-                  const fieldError = getByPath(errors, item.registerName)?.message as string | undefined;
-                  console.log('🚀 ~ EodReportForm ~ fieldError:', fieldError);
-
-                  return (
-                    <Field key={item.registerName} className="max-w-sm">
-                      <FieldLabel className="flex gap-5">{item.itemName}</FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput {...register(item.registerName)} type={item.inputType} />
-                      </InputGroup>
-                      {fieldError && <p className="text-sm text-destructive mt-1">{fieldError}</p>}
-                    </Field>
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
+                <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
               </div>
             </div>
           </section>
-
           {/*Night Task*/}
           <section>
             <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Night Tasks</h2>
 
             {/* Off Locations */}
+            <div className="py-4">
+              <h3 className="text-gray-700 font-medium pb-4">Off Locations (Fill & Face) @ 8.00pm</h3>
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
+                </div>
+              </div>
+              <div>
+                <Field>
+                  <FieldLabel>Addtional Tasks: </FieldLabel>
+                  <Textarea {...register('additionalTasks')} />
+                </Field>
+              </div>
+            </div>
+
+            {/* Off Aisles (Fill & Face) */}
+            <div className="py-4">
+              <h3 className="text-gray-700 font-medium pb-4">Aisles (Fill & Face) @ 8.00pm</h3>
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/*Cleaning*/}
+          <section>
+            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Cleaning</h2>
+            <div className="py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
+              </div>
+            </div>
+          </section>
+          {/*General check*/}
+          <section>
+            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">General checks</h2>
+            <div className="py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
+              </div>
+            </div>
           </section>
           <div>
             <Button type="submit" className="w-25">
