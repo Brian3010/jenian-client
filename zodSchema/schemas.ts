@@ -7,16 +7,23 @@ const ALLOWED_EXT = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']);
 
 const ext = (name: string) => name.split('.').pop()?.toLowerCase() ?? '';
 
-const PhotoFile = z
-  .instanceof(File)
-  .refine(f => f.size > 0, { message: 'Empty file' })
-  .refine(f => ALLOWED_MIME.has(f.type) || ALLOWED_EXT.has(ext(f.name)), {
-    message: 'Invalid file type',
-  })
-  .refine(f => f.size <= 10 * 1024 * 1024, { message: 'Max 10MB per file' });
+const isAllowed = (file: File) => ALLOWED_MIME.has(file.type) || ALLOWED_EXT.has(ext(file.name));
+
+const MAX_SIZE = 10 * 1024 * 1024;
+
+const deliveryScreenshotsSchema = z.preprocess(
+  val => (val instanceof FileList ? Array.from(val) : val),
+  z
+    .array(z.instanceof(File))
+    .min(1, 'Select at least 1 photo')
+    .max(10, 'Max 10 photos')
+    .refine(files => files.every(f => f.size > 0), 'Empty file')
+    .refine(files => files.every(f => isAllowed(f)), 'Invalid file type')
+    .refine(files => files.every(f => f.size <= MAX_SIZE), 'Max 10MB per file'),
+);
 
 export const reportSchema = z.object({
-  deliverySceenShots: z.array(PhotoFile).min(1, 'Select at least 1 photo').max(10, 'Max 10 photos').optional(),
+  deliverySceenShots: deliveryScreenshotsSchema,
   stockUpdate: z
     .object({
       trolleyOfStock: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
@@ -67,7 +74,7 @@ export const reportSchema = z.object({
 
   cleaning: z
     .object({
-      binRun: z.string().max(1000),
+      binRun: z.string().max(1000).optional(),
       sweeping: z.string().max(1000).optional(),
       teaRoom: z.string().max(1000).optional(),
       consultingRoom: z.string().max(1000).optional(),
