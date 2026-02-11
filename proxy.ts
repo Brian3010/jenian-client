@@ -81,6 +81,7 @@ function isAnyApi(pathname: string) {
 export async function proxy(req: NextRequest) {
   console.log('Proxy runned');
   const { pathname } = req.nextUrl;
+  console.log('🚀 ~ proxy ~ pathname:', pathname);
 
   // Always allow Next internals + static files
   if (isNextOrStaticAsset(pathname)) {
@@ -109,11 +110,12 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Optional: protect private API endpoints early
+  // Protect private API endpoints early
   // If there's no refresh token, the user cannot refresh an expired access token,
   // so private API calls should be rejected quickly.
   //
   // NOTE: We check refreshToken here (not accessToken) because access can expire.
+  console.log('🚀 ~ proxy ~ isPrivateApi(pathname) && !hasSession:', isPrivateApi(pathname) && !hasSession);
   if (isPrivateApi(pathname) && !hasSession) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
@@ -123,33 +125,11 @@ export async function proxy(req: NextRequest) {
   //
   // If no session => redirect to /sign-in and preserve "next" so you can return after login.
   if (!isAnyApi(pathname) && !hasSession) {
-    console.log('asdasdasd');
     const url = req.nextUrl.clone();
     url.pathname = '/sign-in';
     url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
-  // // // Make sure there will be user detail available in cookie:
-  // if (hasSession && userDetails == null) {
-  //   const aspRes = await aspnetFetch(`/api/Auth/get-me`);
-  //   if (!aspRes.res.ok) {
-  //     const url = req.nextUrl.clone();
-  //     url.pathname = 'sign-in';
-  //     url.searchParams.set('next', pathname);
-  //     return NextResponse.redirect(url);
-  //   }
-  //   const res = NextResponse.next();
-  //   const cookieValue = await aspRes.res.text();
-  //   res.cookies.set('user', cookieValue, {
-  //     httpOnly: true,
-  //     secure: process.env.NODE_ENV === 'production',
-  //     sameSite: 'lax',
-  //     path: '/',
-  //     // maxAge: 60 * 5, // seconds
-  //   });
-
-  //   return res;
-  // }
 
   // Otherwise allow request to continue
   return NextResponse.next();

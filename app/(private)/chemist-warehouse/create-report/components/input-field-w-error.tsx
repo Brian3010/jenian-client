@@ -18,7 +18,7 @@ export default function InputFieldAndError({
     const fieldError = getByPath(errors, item.registerName)?.message as string | undefined;
 
     return (
-      <Field key={item.registerName} className="flex-row items-center gap-2">
+      <Field key={item.registerName} className="flex-col items-center gap-2">
         <FieldLabel className="text-gray-700 w-44 sm:w-52">{item.itemName}</FieldLabel>
         <InputGroup>
           <InputGroupInput {...register(item.registerName)} type={item.inputType} />

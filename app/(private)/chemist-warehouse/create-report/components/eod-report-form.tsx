@@ -1,10 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Field, FieldLabel } from '@/components/ui/field';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { getByPath } from '@/lib/utils';
+import { handleReport } from '@/features/cwh/services/cwh.service';
 import {
   ailesFacing,
   cleaning,
@@ -16,6 +16,7 @@ import {
   stockUpdate,
 } from '@/zodSchema/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import InputFieldAndError from './input-field-w-error';
 
@@ -29,18 +30,43 @@ export default function EodReportForm() {
     mode: 'onSubmit',
   });
 
-  const onSubmit = (signInData: ReportValuesOutput) => {
+  const router = useRouter();
+
+  const onSubmit = async (signInData: ReportValuesOutput) => {
     console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
+    try {
+      const data: { message: string; status: number } = await handleReport(signInData);
+
+      // proxy will return message = Unauthorized when refreshtoken not detected
+      if (data.message === 'Unauthorized' || data.status === 401) return router.push('/sign-in');
+    } catch (error) {
+      console.error(error);
+    }
   };
-  // console.log({ ...errors.stockUpdate });
+
   return (
-    <div className="min-h-screen bg-gray-50 sm:p-3 sm:p-6 border border-amber-400 flex justify-center">
+    <div className="min-h-screen bg-gray-50 sm:p-3 flex justify-center">
       <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto bg-white border border-gray-200 shadow-sm">
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-6 text-sm flex flex-col gap-8">
+          <section>
+            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Deliveries</h2>
+            <div className="pt-4">
+              <Field>
+                {errors.DeliveryScreenShots && (
+                  <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+                )}
+
+                <FieldLabel></FieldLabel>
+                <Input type="file" {...register('DeliveryScreenShots')} multiple />
+                <FieldDescription>Upload your delivery screenshot, I&apos;ll take care of the rest 🤓</FieldDescription>
+              </Field>
+            </div>
+          </section>
           {/* Stock Updates */}
           {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
+
           <section>
             <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Stock Updates</h2>
             <div className="space-y-3">
@@ -64,7 +90,7 @@ export default function EodReportForm() {
               <div>
                 <Field>
                   <FieldLabel>Addtional Tasks: </FieldLabel>
-                  <Textarea {...register('additionalTasks')} />
+                  <Textarea {...register('AdditionalTasks')} />
                 </Field>
               </div>
             </div>

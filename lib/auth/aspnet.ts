@@ -92,7 +92,7 @@ async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetail
   }
 
   // Refresh succeeded => update only access cookie (refresh token unchanged)
-  setAccessCookie({
+  await setAccessCookie({
     accessToken: data.accessToken,
     // Optionally set accessMaxAgeSec to match backend access TTL
   });
@@ -144,14 +144,17 @@ export async function aspnetFetch(
 
     // Merge caller headers safely (supports both object and Headers inputs)
     const headers = new Headers(init.headers);
+    console.log('🚀 ~ doRequest ~ init.headers:', init.headers);
 
-    // Add content-type if sending a body and caller didn't specify it
-    if (init.body && !headers.has('Content-Type')) {
-      headers.set('Content-Type', 'application/json');
-    }
+    // // Add content-type if sending a body and caller didn't specify it
+    // console.log('🚀 ~ doRequest ~ init.body :', init.body);
+    // console.log("🚀 ~ doRequest ~ !headers.has('Content-Type'):", !headers.has('Content-Type'));
+    // if (init.body && !headers.has('Content-Type')) {
+    //   headers.set('Content-Type', 'application/json');
+    // }
 
-    // Add bearer token if present
     if (accessToken) {
+      // Add bearer token if present
       headers.set('Authorization', `Bearer ${accessToken}`);
     }
 
