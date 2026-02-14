@@ -11,10 +11,20 @@ export async function POST(request: Request, ctx: RouteContext<'/api/private/cwh
   const formData = await request.formData();
   // console.log('🚀 ~ POST ~ formData:', formData);
 
-  const { res } = await aspnetFetch(urlPath, {
-    method: 'POST',
-    body: formData,
-  });
+  try {
+    const { res } = await aspnetFetch(urlPath, {
+      method: 'POST',
+      body: formData,
+    });
+    return res;
+  } catch (error) {
+    throw error;
+  }
+
+  // const { res } = await aspnetFetch(urlPath, {
+  //   method: 'POST',
+  //   body: formData,
+  // });
   // console.log('🚀 ~ POST ~ res:', res);
   // const body = await res.json();
   // const errors = body.errors;
@@ -28,6 +38,4 @@ export async function POST(request: Request, ctx: RouteContext<'/api/private/cwh
   // console.log('🚀 ~ POST ~ res:', res);
 
   // const nextRes = new NextResponse('', { status: 200, statusText: 'hello' });
-
-  return res;
 }

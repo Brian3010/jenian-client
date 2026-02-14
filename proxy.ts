@@ -81,7 +81,7 @@ function isAnyApi(pathname: string) {
 export async function proxy(req: NextRequest) {
   console.log('Proxy runned');
   const { pathname } = req.nextUrl;
-  console.log('🚀 ~ proxy ~ pathname:', pathname);
+  // console.log('🚀 ~ proxy ~ pathname:', pathname);
 
   // Always allow Next internals + static files
   if (isNextOrStaticAsset(pathname)) {
