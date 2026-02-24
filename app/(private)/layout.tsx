@@ -1,4 +1,5 @@
 import AppSidebar from '@/components/app-sidebar';
+import { NotificationsToaster } from '@/components/notifications/notifications-toaster';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 
@@ -11,6 +12,7 @@ export default function PrivateLayout({ children }: Readonly<{ children: React.R
           <Header />
 
           {/* <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8"> */}
+          <NotificationsToaster />
           <main className="py-1">
             <div className="w-full border rounded-md">{children}</div>
           </main>

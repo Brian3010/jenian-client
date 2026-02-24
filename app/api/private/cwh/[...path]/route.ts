@@ -16,26 +16,12 @@ export async function POST(request: Request, ctx: RouteContext<'/api/private/cwh
       method: 'POST',
       body: formData,
     });
-    return res;
+    const nextRes = new NextResponse(res.body, {
+      status: res.status,
+      headers: res.headers,
+    });
+    return nextRes;
   } catch (error) {
     throw error;
   }
-
-  // const { res } = await aspnetFetch(urlPath, {
-  //   method: 'POST',
-  //   body: formData,
-  // });
-  // console.log('🚀 ~ POST ~ res:', res);
-  // const body = await res.json();
-  // const errors = body.errors;
-  // // const generalCheck = errors.generalCheck;
-  // console.log('🚀 ~ POST ~ body:', errors['GeneralCheck.FreeCages']);
-  // console.log('🚀 ~ POST ~ body:', errors['GeneralCheck.NumOfMyPals']);
-  // console.log('🚀 ~ POST ~ body:', errors['GeneralCheck.FreeTrolleys']);
-
-  // if (res.status === 401) throw new Error('Unauthorized, Please redirect to sign-in page');
-
-  // console.log('🚀 ~ POST ~ res:', res);
-
-  // const nextRes = new NextResponse('', { status: 200, statusText: 'hello' });
 }

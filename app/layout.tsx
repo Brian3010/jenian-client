@@ -1,5 +1,6 @@
 import AppSidebar from '@/components/app-sidebar';
 // import { SidebarBackdrop } from '@/components/sidebar-backdrop';
+import { NotificationProvider } from '@/components/notifications/notification-context';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
@@ -19,7 +20,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <main>
-          <div>{children}</div>
+          <NotificationProvider>
+            <div>{children}</div>
+          </NotificationProvider>
         </main>
       </body>
     </html>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useNotifications } from '@/components/notifications/notification-context';
 import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ import { useForm } from 'react-hook-form';
 import InputFieldAndError from './input-field-w-error';
 
 export default function EodReportForm() {
+  const { notifySuccess, notifyError } = useNotifications();
   const {
     register,
     handleSubmit,
@@ -37,11 +39,17 @@ export default function EodReportForm() {
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       const data: { message: string; status: number } = await handleReport(signInData);
-
+      console.log('🚀 ~ onSubmit ~ data:', data);
+      if (data.status === 200) {
+        notifySuccess('Report submitted successfully!');
+        return router.push('/chemist-warehouse');
+      }
       // proxy will return message = Unauthorized when refreshtoken not detected
       if (data.message === 'Unauthorized' || data.status === 401) return router.push('/sign-in');
     } catch (error) {
       console.error(error);
+      notifyError('Failed to submit report. Please try again.');
+      return router.push('/chemist-warehouse');
     }
   };
 
