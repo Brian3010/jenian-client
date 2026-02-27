@@ -99,7 +99,7 @@ export async function proxy(req: NextRequest) {
 
   // If user is already authenticated, keep them out of /sign-in
   // (optional but nice UX)
-  if (pathname === '/sign-in' && hasSession) {
+  if ((pathname === '/sign-in' || pathname === '/') && hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
