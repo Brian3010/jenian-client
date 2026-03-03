@@ -124,3 +124,10 @@ export function hasSession(): boolean {
   const access = getAccessToken();
   return Boolean(refresh || access);
 }
+
+export async function clearallCookies() {
+  const jar = await cookies();
+  for (const cookie of jar.getAll()) {
+    jar.set(cookie.name, '', { ...baseCookieOptions(), maxAge: 0 });
+  }
+}

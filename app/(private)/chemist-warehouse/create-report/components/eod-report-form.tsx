@@ -18,11 +18,14 @@ import {
 } from '@/zodSchema/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { set } from 'zod';
 import InputFieldAndError from './input-field-w-error';
 
 export default function EodReportForm() {
   const { notifySuccess, notifyError } = useNotifications();
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -38,8 +41,10 @@ export default function EodReportForm() {
     console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
+      setIsLoading(true);
       const data: { message: string; status: number } = await handleReport(signInData);
       console.log('🚀 ~ onSubmit ~ data:', data);
+      setIsLoading(false);
       if (data.status === 200) {
         notifySuccess('Report submitted successfully!');
         return router.push('/chemist-warehouse');
@@ -49,6 +54,7 @@ export default function EodReportForm() {
     } catch (error) {
       console.error(error);
       notifyError('Failed to submit report. Please try again.');
+      setIsLoading(false);
       return router.push('/chemist-warehouse');
     }
   };
@@ -133,7 +139,7 @@ export default function EodReportForm() {
             </div>
           </section>
           <div>
-            <Button type="submit" className="w-25">
+            <Button disabled={isLoading} type="submit" className="w-25">
               Save
             </Button>
           </div>

@@ -1,3 +1,4 @@
+import LogoutBtn from '@/app/(public)/sign-in/logout-btn';
 import { SidebarTrigger } from './sidebar';
 
 export default function Header() {
@@ -8,6 +9,7 @@ export default function Header() {
         <span className="flex-1 text-center font-semibold italic tracking-wide underline decoration-amber-500">
           Jenian
         </span>
+        <LogoutBtn />
       </div>
     </header>
   );

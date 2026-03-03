@@ -35,3 +35,21 @@ export async function login(email: string, password: string) {
 
   return data;
 }
+
+export async function logout() {
+  try {
+    const res = await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      console.error('Logout failed with status:', res.status);
+      throw new Error('Logout failed');
+    } else {
+      console.log('Logout successful');
+    }
+  } catch (error) {
+    console.error('An error occurred during logout:', error);
+    throw error;
+  }
+}

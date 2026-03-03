@@ -146,13 +146,6 @@ export async function aspnetFetch(
     const headers = new Headers(init.headers);
     console.log('🚀 ~ doRequest ~ init.headers:', init.headers);
 
-    // // Add content-type if sending a body and caller didn't specify it
-    // console.log('🚀 ~ doRequest ~ init.body :', init.body);
-    // console.log("🚀 ~ doRequest ~ !headers.has('Content-Type'):", !headers.has('Content-Type'));
-    // if (init.body && !headers.has('Content-Type')) {
-    //   headers.set('Content-Type', 'application/json');
-    // }
-
     if (accessToken) {
       // Add bearer token if present
       headers.set('Authorization', `Bearer ${accessToken}`);
