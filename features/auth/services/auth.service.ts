@@ -6,11 +6,11 @@ type dataT = { ok: boolean; message: string } & {
   user: { id: string; userName: string; email: string };
 };
 
-export async function login(email: string, password: string) {
+export async function login(userName: string, password: string) {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ userName, password }),
     credentials: 'include',
   });
   // console.log(res);

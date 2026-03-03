@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const signInSchema = z.object({
-  email: z.email('Please enter a valid email'),
+  userName: z.string('Please enter a valid userName'),
   // password: z.regex(/^(?=.{8,128}$)(?!.\s)(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[^\w\s]).$/),
   password: z
     .string()
@@ -40,16 +40,17 @@ export default function SignIn() {
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: '',
+      userName: '',
       password: '',
     },
     mode: 'onSubmit',
   });
 
   const onSubmit = async (signInData: SignInValues) => {
+    console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       setIsLoading(true);
-      const res = await login(signInData.email, signInData.password);
+      const res = await login(signInData.userName, signInData.password);
       console.log('🚀 ~ onSubmit ~ res:', res);
 
       // After login succeeds, cookies are set.
@@ -70,18 +71,18 @@ export default function SignIn() {
       <Card className="w-sm">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Enter your email/email to login to your account</CardDescription>
+          <CardDescription>Enter your username/email to login to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <div>
             <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 flex-col">
-              {/* <input {...register('email')} />
-              <p>{errors.email?.message}</p> */}
+              {/* <input {...register('userName')} />
+              <p>{errors.userName?.message}</p> */}
               <div>
                 <InputGroup>
-                  <InputGroupInput placeholder="Enter your email" {...register('email')} />
+                  <InputGroupInput placeholder="Enter your username" {...register('userName')} />
                 </InputGroup>
-                <p>{errors.email?.message}</p>
+                <p>{errors.userName?.message}</p>
               </div>
               <div>
                 <InputGroup>
