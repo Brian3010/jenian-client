@@ -3,6 +3,7 @@ import React from 'react';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -14,6 +15,7 @@ import {
   useSidebar,
 } from './ui/sidebar';
 
+import LogoutBtn from '@/app/(public)/sign-in/logout-btn';
 import { LayoutDashboard } from 'lucide-react';
 
 const items = [
@@ -57,6 +59,9 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t">
+        <LogoutBtn />
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -6,9 +6,10 @@ import { login } from '@/features/auth/services/auth.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import ContactMeAlertDialog from './components/contactme-alertdialog';
 
 const signInSchema = z.object({
   userName: z.string('Please enter a valid userName'),
@@ -102,7 +103,11 @@ export default function SignIn() {
             </form>
           </div>
         </CardContent>
-        <CardFooter className="italic">Register route is in process</CardFooter>
+        <CardFooter className="">
+          <p>
+            Please contact <ContactMeAlertDialog /> to create an account as this is intended user only.
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
