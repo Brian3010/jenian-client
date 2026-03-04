@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { getTelegramToken } from '@/features/telegram/services/telegram.service';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { Check, Copy } from 'lucide-react';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { InputGroup, InputGroupButton, InputGroupInput } from './ui/input-group';
 
@@ -57,7 +58,16 @@ export default function TelegramTokenGenerateButton() {
             </InputGroup>
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-800">
-            Copy the text above and send it to JenianBot in Telegram to link your Telegram account.
+            Copy the text above and send it to{' '}
+            <Link
+              href="https://t.me/JenianBot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline"
+            >
+              @JenianBot
+            </Link>{' '}
+            on Telegram to link your account.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

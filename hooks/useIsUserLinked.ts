@@ -11,8 +11,8 @@ export default function useIsUserLinked() {
         setIsLoading(true);
 
         const isLinked = await isTelegramLinked();
-        if (!isLinked) setIsUserLinked({ status: false, message: 'Not Connected' });
-        else setIsUserLinked({ status: true, message: 'Connected' });
+        if (!isLinked) setIsUserLinked({ status: false, message: 'Telegram not linked' });
+        else setIsUserLinked({ status: true, message: 'Telegram is linked' });
       } catch (error) {
         console.error('Error checking if user is linked:', error);
       } finally {

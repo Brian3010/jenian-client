@@ -2,12 +2,14 @@
 
 import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
-import useIsUserLinked from '@/hooks/useIsUserLinked';
 import { BotMessageSquare } from 'lucide-react';
 
-export default function BotConnectCard() {
-  const { isUserLinked, isLoading } = useIsUserLinked();
+type BotConnectCardProps = {
+  isUserLinked: { status: boolean; message: string } | null;
+  isLoading: boolean;
+};
 
+export default function BotConnectCard({ isUserLinked, isLoading }: BotConnectCardProps) {
   return (
     <Card className="p-2 gap-0">
       <CardHeader className="p-2">
