@@ -63,6 +63,9 @@ export default function EodReportForm() {
     <div className="min-h-screen bg-gray-50 sm:p-3 flex justify-center">
       <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto bg-white border border-gray-200 shadow-sm">
         {/* Content */}
+        <div className="flex justify-end py-1 px-3 underline" onClick={() => router.replace('/chemist-warehouse')}>
+          go back
+        </div>
         <div className="p-4 sm:p-6 space-y-6 text-sm flex flex-col gap-8">
           <section>
             <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Deliveries</h2>

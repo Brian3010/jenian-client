@@ -18,7 +18,7 @@ export default function LogoutBtn() {
   };
 
   return (
-    <Button variant={'secondary'} className="hover:cursor-pointer" onClick={handleLogout}>
+    <Button variant={'link'} className="hover:cursor-pointer" onClick={handleLogout}>
       Log out
     </Button>
   );
