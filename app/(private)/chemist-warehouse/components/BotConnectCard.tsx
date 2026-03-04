@@ -2,29 +2,12 @@
 
 import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
-import { isTelegramLinked } from '@/features/telegram/services/telegram.service';
+import useIsUserLinked from '@/hooks/useIsUserLinked';
 import { BotMessageSquare } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 export default function BotConnectCard() {
-  const [isLinked, setIsLinked] = useState<{ status: boolean; message: string } | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  useEffect(() => {
-    (async () => {
-      try {
-        setIsLoading(true);
-        const res = await isTelegramLinked();
-        console.log('🚀 ~ BotConnectCard ~ res:', res);
+  const { isUserLinked, isLoading } = useIsUserLinked();
 
-        if (!res) setIsLinked({ status: false, message: 'Not Connected' });
-        else setIsLinked({ status: true, message: 'Connected' });
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
   return (
     <Card className="p-2 gap-0">
       <CardHeader className="p-2">
@@ -36,16 +19,16 @@ export default function BotConnectCard() {
             <h1 className="self-center font-semibold text-lg">Connect to Telegram Chatbot</h1>
             {/* <p className="text-sm  rounded-sm inline-block px-2 bg-green-200 text-gray-700"> */}
             <p
-              className={`text-sm  rounded-sm inline-block px-2 ${isLinked && isLinked.status ? 'bg-green-200' : 'bg-gray-200'}  text-gray-900`}
+              className={`text-sm  rounded-sm inline-block px-2 ${isUserLinked && isUserLinked.status ? 'bg-green-200' : 'bg-gray-200'}  text-gray-900`}
             >
-              {!isLoading && isLinked && isLinked.message}
+              {!isLoading && isUserLinked && isUserLinked.message}
             </p>
           </div>
         </div>
       </CardHeader>
       {/* <CardDescription className="px-2">{item.description}</CardDescription> */}
 
-      {!isLoading && isLinked && !isLinked.status && (
+      {!isLoading && isUserLinked && !isUserLinked.status && (
         <CardAction>
           <TelegramTokenGenerateButton />
         </CardAction>
