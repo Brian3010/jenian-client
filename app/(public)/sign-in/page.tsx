@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import ContactMeAlertDialog from './components/contactme-alertdialog';
+import ContactMeAlertDialog from './components/ContactMeAlertDialog';
 
 const signInSchema = z.object({
   userName: z.string('Please enter a valid userName'),
