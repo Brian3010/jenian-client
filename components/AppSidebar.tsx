@@ -15,7 +15,7 @@ import {
   useSidebar,
 } from './ui/sidebar';
 
-import LogoutBtn from '@/app/(public)/sign-in/logout-btn';
+import LogoutBtn from '@/app/(public)/sign-in/components/LogoutBtn';
 import { LayoutDashboard } from 'lucide-react';
 
 const items = [
