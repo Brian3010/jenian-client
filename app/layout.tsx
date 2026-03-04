@@ -1,6 +1,6 @@
-import AppSidebar from '@/components/app-sidebar';
+import AppSidebar from '@/components/AppSidebar';
 // import { SidebarBackdrop } from '@/components/sidebar-backdrop';
-import { NotificationProvider } from '@/components/notifications/notification-context';
+import { NotificationProvider } from '@/components/notifications/NotificationContext';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';

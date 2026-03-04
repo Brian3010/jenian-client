@@ -1,10 +1,10 @@
-import CreateReportButton from '@/components/create-report-button';
-import TelegramTokenGenerateButton from '@/components/tele-token-generator-button';
+import CreateReportButton from '@/components/CreateReportButton';
+import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
 import { isTelegramLinked } from '@/features/telegram/services/telegram.service';
 import { BotMessageSquare, Clipboard } from 'lucide-react';
-import BotConnectCard from './components/bot-connect-card';
-import ReportCard from './components/report-card';
+import BotConnectCard from './components/BotConnectCard';
+import ReportCard from './components/ReportCard';
 
 export default async function ChemistWarehouse() {
   return (

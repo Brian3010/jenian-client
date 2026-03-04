@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { getTelegramToken, isTelegramLinked } from '@/features/telegram/services/telegram.service';
-import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { Check, Copy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { InputGroup, InputGroupButton, InputGroupInput } from './ui/input-group';

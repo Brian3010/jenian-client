@@ -1,7 +1,7 @@
 // components/notifications/notifications-host.tsx
 'use client';
 
-import { useNotifications } from './notification-context';
+import { useNotifications } from './NotificationContext';
 
 const typeToClass: Record<string, string> = {
   success: 'border-green-500',

@@ -1,6 +1,6 @@
 'use client';
 
-import TelegramTokenGenerateButton from '@/components/tele-token-generator-button';
+import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
 import { isTelegramLinked } from '@/features/telegram/services/telegram.service';
 import { BotMessageSquare } from 'lucide-react';

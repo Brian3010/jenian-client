@@ -1,6 +1,6 @@
 'use client';
 
-import { useNotifications } from '@/components/notifications/notification-context';
+import { useNotifications } from '@/components/notifications/NotificationContext';
 import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { set } from 'zod';
-import InputFieldAndError from './input-field-w-error';
+import InputFieldAndError from './InputFieldAndError';
 
 export default function EodReportForm() {
   const { notifySuccess, notifyError } = useNotifications();

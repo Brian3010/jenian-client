@@ -1,5 +1,5 @@
 'use client';
-import CreateReportButton from '@/components/create-report-button';
+import CreateReportButton from '@/components/CreateReportButton';
 import { Card, CardAction, CardHeader } from '@/components/ui/card';
 import { Clipboard } from 'lucide-react';
 
