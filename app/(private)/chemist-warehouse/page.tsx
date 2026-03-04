@@ -1,8 +1,3 @@
-import CreateReportButton from '@/components/CreateReportButton';
-import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
-import { Card, CardAction, CardHeader } from '@/components/ui/card';
-import { isTelegramLinked } from '@/features/telegram/services/telegram.service';
-import { BotMessageSquare, Clipboard } from 'lucide-react';
 import BotConnectCard from './components/BotConnectCard';
 import ReportCard from './components/ReportCard';
 
