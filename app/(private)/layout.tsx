@@ -8,7 +8,7 @@ export default function PrivateLayout({ children }: Readonly<{ children: React.R
     <div className="min-h-dvh bg-background ">
       <SidebarProvider defaultOpen={false} className="">
         <AppSidebar />
-        <div className="w-full py-2 pr-2">
+        <div className="w-full py-2 px-1">
           <Header />
 
           {/* <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8"> */}

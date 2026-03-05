@@ -59,15 +59,15 @@ export default function EodReportForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 sm:p-3 flex justify-center">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto bg-white border border-gray-200 shadow-sm">
+    <div className="min-h-screen pb-36 sm:p-3 flex justify-center">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto">
         {/* Content */}
         <div className="flex justify-end py-1 px-3 underline" onClick={() => router.replace('/chemist-warehouse')}>
           go back
         </div>
-        <div className="p-4 sm:p-6 space-y-6 text-sm flex flex-col gap-8">
+        <div className="p-2 sm:p-6 space-y-6 text-sm flex flex-col gap-2">
           <section>
-            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Deliveries</h2>
+            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Deliveries</h2>
             <div className="pt-4">
               <Field>
                 {errors.DeliveryScreenShots && (
@@ -84,7 +84,7 @@ export default function EodReportForm() {
           {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
 
           <section>
-            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Stock Updates</h2>
+            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Stock Updates</h2>
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
                 <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
@@ -93,11 +93,11 @@ export default function EodReportForm() {
           </section>
           {/*Night Task*/}
           <section>
-            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Night Tasks</h2>
+            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Night Tasks</h2>
 
             {/* Off Locations */}
             <div className="py-4">
-              <h3 className="text-gray-700 font-medium pb-4">Off Locations (Fill & Face) @ 8.00pm</h3>
+              <h3 className="text-gray-700 font-bold pb-4">Off Locations (Fill & Face) @ 8.00pm</h3>
               <div className="space-y-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
@@ -113,7 +113,7 @@ export default function EodReportForm() {
 
             {/* Off Aisles (Fill & Face) */}
             <div className="py-4">
-              <h3 className="text-gray-700 font-medium pb-4">Aisles (Fill & Face) @ 8.00pm</h3>
+              <h3 className="text-gray-700 font-bold pb-4">Aisles (Fill & Face) @ 8.00pm</h3>
               <div className="space-y-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
@@ -124,7 +124,7 @@ export default function EodReportForm() {
 
           {/*Cleaning*/}
           <section>
-            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">Cleaning</h2>
+            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Cleaning</h2>
             <div className="py-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
@@ -133,7 +133,7 @@ export default function EodReportForm() {
           </section>
           {/*General check*/}
           <section>
-            <h2 className="font-semibold text-gray-800 mb-3 pb-1 border-b border-gray-300">General checks</h2>
+            <h2 className="text-gray-700 font-medium text-lg border-b border-black">General checks</h2>
             <div className="py-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
@@ -142,8 +142,13 @@ export default function EodReportForm() {
           </section>
           <div>
             <Button disabled={isLoading} type="submit" className="w-25">
-              Save
+              Submit
             </Button>
+
+            <p className="text-sm italic pt-3">
+              You will receive the report summary via Telegram (@JenianBot), make sure you have linked your Telegram
+              account in the Chemist Warehouse dashboard to receive it. If you have any issues, please contact support.
+            </p>
           </div>
         </div>
       </form>
