@@ -57,17 +57,21 @@ export default function TelegramTokenGenerateButton() {
               </InputGroupButton>
             </InputGroup>
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-800">
-            Copy the text above and send it to{' '}
-            <Link
-              href="https://t.me/JenianBot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline"
-            >
-              @JenianBot
-            </Link>{' '}
-            on Telegram to link your account.
+          <AlertDialogDescription className="text-sm text-gray-800 flex flex-col justify-start items-start gap-2">
+            <span>1. Copy the text above</span>
+            <span>
+              2. Open Telegram and search for{' '}
+              <Link
+                href="https://t.me/JenianBot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold underline"
+              >
+                @JenianBot
+              </Link>{' '}
+            </span>
+            <span>3. Send the copied text to the bot</span>
+            <span>4. You&apos;re all set!</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
