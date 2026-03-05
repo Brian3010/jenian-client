@@ -68,7 +68,7 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center p-10">
       <Card className="w-sm">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
@@ -89,7 +89,7 @@ export default function SignIn() {
                 <InputGroup>
                   <InputGroupInput type="password" {...register('password')} />
                 </InputGroup>
-                <p>{errors.password?.message}</p>
+                <p className="p-2 text-red-600">{errors.password?.message}</p>
               </div>
               {error != '' && <p className="text-red-600 italic">{error}</p>}
               {/* <input {...register('password')} />
