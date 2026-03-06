@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production', // false on localhost (http)
       sameSite: 'lax',
       path: '/',
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
   }
 
