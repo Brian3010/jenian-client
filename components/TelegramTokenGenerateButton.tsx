@@ -42,7 +42,8 @@ export default function TelegramTokenGenerateButton() {
             <InputGroup className="border-gray-950">
               <InputGroupInput
                 placeholder={`/start ${token}`}
-                disabled
+                value={`/start ${token}`}
+                readOnly
                 className="placeholder:text-md h-8 px-2 placeholder:text-black"
               />
               <InputGroupButton
