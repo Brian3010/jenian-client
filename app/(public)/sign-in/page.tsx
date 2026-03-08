@@ -1,10 +1,10 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
+import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { login } from '@/features/auth/services/auth.service';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoaderCircle } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -33,6 +33,7 @@ export default function SignIn() {
 
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const {
     register,
@@ -69,7 +70,7 @@ export default function SignIn() {
 
   return (
     <div className="flex justify-center p-10">
-      <Card className="w-sm">
+      <Card className="w-sm=full md:w-[400px]">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>Enter your username/email to login to your account</CardDescription>
@@ -86,8 +87,16 @@ export default function SignIn() {
                 <p>{errors.userName?.message}</p>
               </div>
               <div>
-                <InputGroup>
-                  <InputGroupInput type="password" {...register('password')} />
+                <InputGroup className="pr-3">
+                  <InputGroupInput type={showPassword ? 'text' : 'password'} {...register('password')} />
+                  <InputGroupButton
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    size="icon-xs"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <Eye /> : <EyeOff />}
+                  </InputGroupButton>
                 </InputGroup>
                 <p className="p-2 text-red-600">{errors.password?.message}</p>
               </div>
