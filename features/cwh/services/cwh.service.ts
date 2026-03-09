@@ -62,15 +62,30 @@ export async function handleReport(formReport: FormReportT) {
   console.log('🚀 ~ handleReport ~ formData:', { ...formData });
 
   // send the formData to the BFF endpoint
-  try {
-    const res = await fetch('/api/private/cwh/CWH/eod-report', {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await res.json();
-    return { message: data, status: res.status };
-  } catch (error) {
-    console.error('Error submitting report:', error);
-    throw error;
+  const res = await fetch('/api/private/cwh/CWH/eod-report', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  const raw = await res.text();
+
+  console.log('status =', res.status);
+  console.log('content-type =', contentType);
+  console.log('raw response =', raw);
+
+  let message: unknown = raw;
+
+  if (contentType.includes('application/json')) {
+    try {
+      message = JSON.parse(raw);
+    } catch (e) {
+      console.error('JSON parse failed:', e);
+    }
   }
+
+  return {
+    message: typeof message === 'string' ? message : JSON.stringify(message),
+    status: res.status,
+  };
 }

@@ -5,23 +5,29 @@ import { NextResponse } from 'next/server';
 //if body is FormData, it’s safest to not forward content-type and let fetch set it
 
 export async function POST(request: Request, ctx: RouteContext<'/api/private/cwh/[...path]'>) {
+  console.log('route entered');
+
   const { path } = await ctx.params;
-  // console.log('🚀 ~ POST ~ path:', path.join('/'));
+  console.log('path =', path);
+
   const urlPath = `/api/${path.join('/')}`;
-  const formData = await request.formData();
-  // console.log('🚀 ~ POST ~ formData:', formData);
+  console.log('urlPath =', urlPath);
 
   try {
+    const formData = await request.formData();
+    console.log('formData keys =', Array.from(formData.keys()));
+
     const { res } = await aspnetFetch(urlPath, {
       method: 'POST',
       body: formData,
     });
-    const nextRes = new NextResponse(res.body, {
+
+    return new NextResponse(res.body, {
       status: res.status,
       headers: res.headers,
     });
-    return nextRes;
   } catch (error) {
-    throw error;
+    console.error('route POST failed:', error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
