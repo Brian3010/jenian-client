@@ -41,8 +41,8 @@ export async function handleReport(formReport: FormReportT) {
   const formData = new FormData();
 
   // handle file uploads, the key is DeliveryScreenShots, the value is File[]
-  const files = formReport.DeliveryScreenShots ?? formReport.DeliveryScreenShots ?? [];
-  (files as File[]).forEach(file => {
+  const files = Array.from(formReport.DeliveryScreenShots ?? []);
+  files.forEach(file => {
     formData.append('DeliveryScreenShots', file, file.name);
   });
 
