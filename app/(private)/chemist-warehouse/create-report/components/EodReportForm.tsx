@@ -40,11 +40,11 @@ export default function EodReportForm() {
   const onSubmit = async (signInData: ReportValuesOutput) => {
     console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
-    alert(`Report is being submitted, please wait... ${JSON.stringify(signInData)}`);
+    // alert(`Report is being submitted, please wait... ${JSON.stringify(signInData)}`);
     try {
       setIsLoading(true);
       const data: { message: string; status: number } = await handleReport(signInData);
-      alert(data.message);
+      // alert(data.message);
       console.log('🚀 ~ onSubmit ~ data:', data);
       setIsLoading(false);
       if (data.status === 200) {
