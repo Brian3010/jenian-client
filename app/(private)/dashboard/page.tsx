@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import HelloMe from './components/HelloMe';
+import HelloMe from './components/hellome';
 
 export default function Dashboard() {
   return (
