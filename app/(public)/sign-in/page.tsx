@@ -114,7 +114,7 @@ export default function SignIn() {
         </CardContent>
         <CardFooter className="">
           <p>
-            Please contact <ContactMeAlertDialog /> to create an account as this is intended user only.
+            Please contact <ContactMeAlertDialog /> to create an account. Access is for authorized users only.
           </p>
         </CardFooter>
       </Card>

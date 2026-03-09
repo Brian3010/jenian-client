@@ -14,7 +14,7 @@ export default function ContactMeAlertDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <span className="font-semibold underline cursor-pointer">me</span>
+        <span className="font-semibold underline cursor-pointer">Admin</span>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
