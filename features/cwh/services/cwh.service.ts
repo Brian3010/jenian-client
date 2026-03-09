@@ -43,7 +43,18 @@ export async function handleReport(formReport: FormReportT) {
   // handle file uploads, the key is DeliveryScreenShots, the value is File[]
   const files = Array.from(formReport.DeliveryScreenShots ?? []);
   for (const file of files) {
-    formData.append('DeliveryScreenShots', file);
+    const compressedFile = await compressImage(file, {
+      maxWidth: 1600,
+      maxHeight: 1600,
+      quality: 0.75,
+      outputType: 'image/jpeg',
+    });
+
+    console.log(
+      `compressed: ${file.name} ${Math.round(file.size / 1024)}KB -> ${Math.round(compressedFile.size / 1024)}KB`,
+    );
+
+    formData.append('DeliveryScreenShots', compressedFile);
   }
 
   // handle AdditionalTasks, if it exists, the key is AdditionalTasks, the value is string
@@ -88,4 +99,106 @@ export async function handleReport(formReport: FormReportT) {
     message: typeof message === 'string' ? message : JSON.stringify(message),
     status: res.status,
   };
+}
+
+async function compressImage(
+  file: File,
+  options?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+    outputType?: 'image/jpeg' | 'image/webp';
+  },
+): Promise<File> {
+  const { maxWidth = 1600, maxHeight = 1600, quality = 0.75, outputType = 'image/jpeg' } = options || {};
+
+  if (!file.type.startsWith('image/')) {
+    return file;
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+
+  try {
+    const img = await loadImage(imageUrl);
+
+    const { width, height } = getScaledDimensions(
+      img.naturalWidth || img.width,
+      img.naturalHeight || img.height,
+      maxWidth,
+      maxHeight,
+    );
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not create canvas context');
+    }
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const blob = await canvasToBlob(canvas, outputType, quality);
+    const ext = outputType === 'image/webp' ? 'webp' : 'jpg';
+    const outputName = replaceFileExtension(file.name, ext);
+
+    return new File([blob], outputName, {
+      type: outputType,
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = src;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      blob => {
+        if (!blob) {
+          reject(new Error('Failed to compress image'));
+          return;
+        }
+        resolve(blob);
+      },
+      type,
+      quality,
+    );
+  });
+}
+
+function getScaledDimensions(originalWidth: number, originalHeight: number, maxWidth: number, maxHeight: number) {
+  const width = originalWidth;
+  const height = originalHeight;
+
+  if (width <= maxWidth && height <= maxHeight) {
+    return { width, height };
+  }
+
+  const widthRatio = maxWidth / width;
+  const heightRatio = maxHeight / height;
+  const ratio = Math.min(widthRatio, heightRatio);
+
+  return {
+    width: Math.round(width * ratio),
+    height: Math.round(height * ratio),
+  };
+}
+
+function replaceFileExtension(filename: string, newExt: string): string {
+  const lastDot = filename.lastIndexOf('.');
+  if (lastDot === -1) {
+    return `${filename}.${newExt}`;
+  }
+  return `${filename.slice(0, lastDot)}.${newExt}`;
 }
