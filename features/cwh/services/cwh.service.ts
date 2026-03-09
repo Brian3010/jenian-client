@@ -42,9 +42,20 @@ export async function handleReport(formReport: FormReportT) {
 
   // handle file uploads, the key is DeliveryScreenShots, the value is File[]
   const files = Array.from(formReport.DeliveryScreenShots ?? []);
-  files.forEach(file => {
-    formData.append('DeliveryScreenShots', file, file.name);
-  });
+  for (const file of files) {
+    const compressedFile = await compressImage(file, {
+      maxWidth: 1600,
+      maxHeight: 1600,
+      quality: 0.75,
+      outputType: 'image/jpeg',
+    });
+
+    console.log(
+      `compressed: ${file.name} ${Math.round(file.size / 1024)}KB -> ${Math.round(compressedFile.size / 1024)}KB`,
+    );
+
+    formData.append('DeliveryScreenShots', compressedFile);
+  }
 
   // handle AdditionalTasks, if it exists, the key is AdditionalTasks, the value is string
   if (formReport.AdditionalTasks) {
@@ -62,15 +73,132 @@ export async function handleReport(formReport: FormReportT) {
   console.log('🚀 ~ handleReport ~ formData:', { ...formData });
 
   // send the formData to the BFF endpoint
-  try {
-    const res = await fetch('/api/private/cwh/CWH/eod-report', {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await res.json();
-    return { message: data, status: res.status };
-  } catch (error) {
-    console.error('Error submitting report:', error);
-    throw error;
+  const res = await fetch('/api/private/cwh/CWH/eod-report', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  const raw = await res.text();
+
+  console.log('status =', res.status);
+  console.log('content-type =', contentType);
+  console.log('raw response =', raw);
+
+  let message: unknown = raw;
+
+  if (contentType.includes('application/json')) {
+    try {
+      message = JSON.parse(raw);
+    } catch (e) {
+      console.error('JSON parse failed:', e);
+    }
   }
+
+  return {
+    message: typeof message === 'string' ? message : JSON.stringify(message),
+    status: res.status,
+  };
+}
+
+async function compressImage(
+  file: File,
+  options?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+    outputType?: 'image/jpeg' | 'image/webp';
+  },
+): Promise<File> {
+  const { maxWidth = 1600, maxHeight = 1600, quality = 0.75, outputType = 'image/jpeg' } = options || {};
+
+  if (!file.type.startsWith('image/')) {
+    return file;
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+
+  try {
+    const img = await loadImage(imageUrl);
+
+    const { width, height } = getScaledDimensions(
+      img.naturalWidth || img.width,
+      img.naturalHeight || img.height,
+      maxWidth,
+      maxHeight,
+    );
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not create canvas context');
+    }
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const blob = await canvasToBlob(canvas, outputType, quality);
+    const ext = outputType === 'image/webp' ? 'webp' : 'jpg';
+    const outputName = replaceFileExtension(file.name, ext);
+
+    return new File([blob], outputName, {
+      type: outputType,
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = src;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      blob => {
+        if (!blob) {
+          reject(new Error('Failed to compress image'));
+          return;
+        }
+        resolve(blob);
+      },
+      type,
+      quality,
+    );
+  });
+}
+
+function getScaledDimensions(originalWidth: number, originalHeight: number, maxWidth: number, maxHeight: number) {
+  const width = originalWidth;
+  const height = originalHeight;
+
+  if (width <= maxWidth && height <= maxHeight) {
+    return { width, height };
+  }
+
+  const widthRatio = maxWidth / width;
+  const heightRatio = maxHeight / height;
+  const ratio = Math.min(widthRatio, heightRatio);
+
+  return {
+    width: Math.round(width * ratio),
+    height: Math.round(height * ratio),
+  };
+}
+
+function replaceFileExtension(filename: string, newExt: string): string {
+  const lastDot = filename.lastIndexOf('.');
+  if (lastDot === -1) {
+    return `${filename}.${newExt}`;
+  }
+  return `${filename.slice(0, lastDot)}.${newExt}`;
 }
