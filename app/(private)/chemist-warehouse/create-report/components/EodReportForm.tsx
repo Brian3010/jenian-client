@@ -54,7 +54,7 @@ export default function EodReportForm() {
     } catch (error) {
       console.error(error);
       notifyError('Failed to submit report. Please try again.');
-      alert(error instanceof Error ? error.message : 'An unknown error occurred');
+      // alert(error instanceof Error ? error.message : 'An unknown error occurred');
       setIsLoading(false);
       return router.push('/chemist-warehouse');
     }
