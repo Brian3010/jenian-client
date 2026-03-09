@@ -4,6 +4,7 @@ import { useNotifications } from '@/components/notifications/NotificationContext
 import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { handleReport } from '@/features/cwh/services/cwh.service';
 import {
@@ -77,6 +78,9 @@ export default function EodReportForm() {
                 <FieldLabel></FieldLabel>
                 <Input type="file" {...register('DeliveryScreenShots')} multiple />
                 <FieldDescription>Upload your delivery screenshot, I&apos;ll take care of the rest 🤓</FieldDescription>
+                <FieldDescription className="italic">
+                  * Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+                </FieldDescription>
               </Field>
             </div>
           </section>
@@ -142,6 +146,7 @@ export default function EodReportForm() {
           </section>
           <div>
             <Button disabled={isLoading} type="submit" className="w-25">
+              {isLoading && <Spinner data-icon="inline-start" />}
               Submit
             </Button>
 
