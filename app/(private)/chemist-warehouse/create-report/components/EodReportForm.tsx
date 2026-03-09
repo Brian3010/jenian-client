@@ -78,6 +78,9 @@ export default function EodReportForm() {
                 <FieldLabel></FieldLabel>
                 <Input type="file" {...register('DeliveryScreenShots')} multiple />
                 <FieldDescription>Upload your delivery screenshot, I&apos;ll take care of the rest 🤓</FieldDescription>
+                <FieldDescription className="italic">
+                  * Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+                </FieldDescription>
               </Field>
             </div>
           </section>
