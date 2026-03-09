@@ -41,10 +41,10 @@ export async function handleReport(formReport: FormReportT) {
   const formData = new FormData();
 
   // handle file uploads, the key is DeliveryScreenShots, the value is File[]
-  const files = formReport.DeliveryScreenShots ?? formReport.DeliveryScreenShots ?? [];
-  (files as File[]).forEach(file => {
-    formData.append('DeliveryScreenShots', file, file.name);
-  });
+  const files = Array.from(formReport.DeliveryScreenShots ?? []);
+  for (const file of files) {
+    formData.append('DeliveryScreenShots', file);
+  }
 
   // handle AdditionalTasks, if it exists, the key is AdditionalTasks, the value is string
   if (formReport.AdditionalTasks) {
