@@ -15,7 +15,6 @@ const deliveryScreenshotsSchema = z.preprocess(
   val => (val instanceof FileList ? Array.from(val) : val),
   z
     .array(z.instanceof(File))
-    .min(1, 'Select at least 1 photo')
     .max(10, 'Max 10 photos')
     .refine(files => files.every(f => f.size > 0), 'Empty file')
     .refine(files => files.every(f => isAllowed(f)), 'Invalid file type')
@@ -103,6 +102,7 @@ export type StockUpdateField = {
   itemName: string;
   registerName: FieldPath<ReportValuesInput>;
   inputType: 'number' | 'text';
+  helpText?: string;
 };
 
 export const stockUpdate = [
@@ -112,8 +112,18 @@ export const stockUpdate = [
   { itemName: 'Cosmetic note', registerName: 'StockUpdate.CosmeticNote', inputType: 'text' },
   { itemName: 'Trolley of fragrance', registerName: 'StockUpdate.TrolleyofFragrances', inputType: 'number' },
   { itemName: 'Fragrance note', registerName: 'StockUpdate.FragranceNote', inputType: 'text' },
-  { itemName: 'Additional stock', registerName: 'StockUpdate.AdditionalStock', inputType: 'text' },
-  { itemName: 'Additional note', registerName: 'StockUpdate.AdditionalNote', inputType: 'text' },
+  {
+    itemName: 'Additional stock',
+    registerName: 'StockUpdate.AdditionalStock',
+    inputType: 'text',
+    helpText: 'Other stocks',
+  },
+  {
+    itemName: 'Additional note',
+    registerName: 'StockUpdate.AdditionalNote',
+    inputType: 'text',
+    helpText: 'e.g. Stock finished...',
+  },
 ] satisfies StockUpdateField[];
 
 export const nightTasks = [
@@ -153,13 +163,28 @@ export const cleaning = [
 ] satisfies StockUpdateField[];
 
 export const generalCheck = [
-  { itemName: 'Free trolleys', registerName: 'GeneralCheck.FreeTrolleys', inputType: 'text' },
-  { itemName: 'Free cages', registerName: 'GeneralCheck.FreeCages', inputType: 'text' },
+  {
+    itemName: 'Free trolleys',
+    registerName: 'GeneralCheck.FreeTrolleys',
+    inputType: 'text',
+    helpText: '/14',
+  },
+  { itemName: 'Free cages', registerName: 'GeneralCheck.FreeCages', inputType: 'text', helpText: '/9' },
   { itemName: '# of outstanding Click & Collect', registerName: 'GeneralCheck.NumOfClickCollect', inputType: 'number' },
   { itemName: '# of catalogue bundles', registerName: 'GeneralCheck.NumOfCataBundle', inputType: 'number' },
   { itemName: '# of magazine bundles', registerName: 'GeneralCheck.NumOfMagaBundle', inputType: 'number' },
-  { itemName: 'My Pals on charge', registerName: 'GeneralCheck.NumOfMyPals', inputType: 'text' },
-  { itemName: 'Fragrance keys on security desk', registerName: 'GeneralCheck.NumOfFragKeys', inputType: 'text' },
-  { itemName: 'Lift passes in dispensary', registerName: 'GeneralCheck.NumOfLiftPasses', inputType: 'text' },
-  { itemName: 'Augmodo in store room', registerName: 'GeneralCheck.NumOfAugmodos', inputType: 'text' },
+  { itemName: 'My Pals on charge', registerName: 'GeneralCheck.NumOfMyPals', inputType: 'text', helpText: '/5' },
+  {
+    itemName: 'Fragrance keys on security desk',
+    registerName: 'GeneralCheck.NumOfFragKeys',
+    inputType: 'text',
+    helpText: '/3',
+  },
+  {
+    itemName: 'Lift passes in dispensary',
+    registerName: 'GeneralCheck.NumOfLiftPasses',
+    inputType: 'text',
+    helpText: '/2',
+  },
+  { itemName: 'Augmodo in store room', registerName: 'GeneralCheck.NumOfAugmodos', inputType: 'text', helpText: '/4' },
 ] satisfies StockUpdateField[];
