@@ -34,9 +34,13 @@ import { NextRequest, NextResponse } from 'next/server';
 const ACCESS_COOKIE = 'accessToken';
 const REFRESH_COOKIE = 'refreshToken';
 
+/**
+ * Decide which paths are ALWAYS public.
+ * You said: "sign-in is public, the rest are private routes."
+ */
 function isPublicPath(pathname: string) {
   // Public UI route
-  if (pathname === '/sign-in' || pathname === '/') return true;
+  if (pathname === '/sign-in') return true;
 
   // (Optional) allow public BFF endpoints if you add them later
   if (pathname.startsWith('/api/public')) return true;
@@ -46,6 +50,7 @@ function isPublicPath(pathname: string) {
 
 /**
  * Next.js internal assets / static files must NOT be blocked.
+ * If you block these, your app will look broken (CSS/JS/images won't load).
  */
 function isNextOrStaticAsset(pathname: string) {
   if (pathname.startsWith('/_next')) return true;
@@ -59,6 +64,7 @@ function isNextOrStaticAsset(pathname: string) {
 
 /**
  * Is this a private API call?
+ * With the BFF setup, your UI will call /api/private/* for authenticated calls.
  */
 function isPrivateApi(pathname: string) {
   return pathname.startsWith('/api/private');
@@ -66,6 +72,7 @@ function isPrivateApi(pathname: string) {
 
 /**
  * Is this any API call?
+ * (We handle API a bit differently than page navigation.)
  */
 function isAnyApi(pathname: string) {
   return pathname.startsWith('/api/');
@@ -92,7 +99,7 @@ export async function proxy(req: NextRequest) {
 
   // If user is already authenticated, keep them out of /sign-in
   // (optional but nice UX)
-  if (isPublicPath(pathname) && hasSession) {
+  if ((pathname === '/sign-in' || pathname === '/') && hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

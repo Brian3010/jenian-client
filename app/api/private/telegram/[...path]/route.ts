@@ -9,7 +9,9 @@ export async function GET(_: Request, ctx: RouteContext<'/api/private/telegram/[
   // const url = `${API}/${ctx.params.path.join("/")}${req ? new URL(req.url).search : ""}`;
   const url = `/api/${path.join('/')}`;
   console.log('🚀 ~ GET ~ url:', url);
-  const aspRes = await aspnetFetch(url);
+  const aspRes = await aspnetFetch(url, {
+    credentials: 'include',
+  });
   // console.log('🚀 ~ GET ~ aspRes:', aspRes);
   const aspBody = await aspRes.res.text();
   // console.log('🚀 ~ GET ~ aspBody:', aspBody);
