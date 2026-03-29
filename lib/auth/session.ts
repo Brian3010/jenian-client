@@ -79,7 +79,7 @@ export async function setAccessCookie(params: {
 
   jar.set(AUTH_COOKIES.access, params.accessToken, {
     ...opt,
-    maxAge: params.accessMaxAgeSec ?? 60 * 5,
+    maxAge: params.accessMaxAgeSec ?? 60 * 30, // default 30 minutes
   });
 }
 

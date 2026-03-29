@@ -38,10 +38,7 @@ export async function login(userName: string, password: string) {
 
 export async function logout() {
   try {
-    const res = await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
+    const res = await fetch('/api/auth/logout');
     if (!res.ok) {
       console.error('Logout failed with status:', res.status);
       throw new Error('Logout failed');

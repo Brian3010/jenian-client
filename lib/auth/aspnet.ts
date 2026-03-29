@@ -95,6 +95,7 @@ async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetail
   await setAccessCookie({
     accessToken: data.accessToken,
     // Optionally set accessMaxAgeSec to match backend access TTL
+    accessMaxAgeSec: 60 * 30, // 30 minutes
   });
 
   return { ok: true, userDetails: data.userDetails };

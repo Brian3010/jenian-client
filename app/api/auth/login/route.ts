@@ -10,7 +10,10 @@ export async function POST(request: Request) {
   // Create deviceID, store it in cookie, send it to the asp and save it in db, attach to the body to submit
   const deviceId = crypto.randomUUID();
   const cookieStore = await cookies();
-  if (!cookieStore.get('deviceId')) cookieStore.set('deviceId', deviceId);
+  if (!cookieStore.get('deviceId'))
+    cookieStore.set('deviceId', deviceId, {
+      // expires: new Date(Date.now() + 3 * 1000), // 30 days
+    });
   console.log("🚀 ~ POST ~ !cookieStore.get('deviceId'):", !cookieStore.get('deviceId'));
 
   const aspRes = await fetch(`${BACKEND_URL}/api/Auth/login`, {
@@ -32,12 +35,14 @@ export async function POST(request: Request) {
 
   const { accessToken } = JSON.parse(bodyData);
   if (accessToken) {
+    const accessTokenEpxires = new Date(Date.now() + 30 * 60 * 1000); // 30 mins
+    // new Date(Date.now() + 30 * 60 * 1000), // 3 secs
     nextRes.cookies.set('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // false on localhost (http)
       sameSite: 'lax',
       path: '/',
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expires: accessTokenEpxires,
     });
   }
 

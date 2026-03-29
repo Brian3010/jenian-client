@@ -1,3 +1,4 @@
+import { UserInfo } from '@/context/userInfo/UserInfoContext';
 import { aspnetFetch } from '@/lib/auth/aspnet';
 import { NextResponse } from 'next/server';
 
@@ -5,7 +6,7 @@ export async function GET() {
   const aspRes = await aspnetFetch('/api/Auth/get-me', {
     credentials: 'include',
   });
-  const bodyData: { userId: string; username: string; email: string } = await aspRes.res.json();
+  const bodyData: UserInfo = await aspRes.res.json();
   const ct = aspRes.res.headers.get('content-type') ?? 'application/json';
 
   const nextRes = new NextResponse(JSON.stringify(bodyData), {

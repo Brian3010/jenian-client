@@ -33,15 +33,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // Keep cookie names consistent with src/lib/auth/session.ts
 const ACCESS_COOKIE = 'accessToken';
 const REFRESH_COOKIE = 'refreshToken';
-const DEVICE_ID = 'deviceId';
 
-/**
- * Decide which paths are ALWAYS public.
- * You said: "sign-in is public, the rest are private routes."
- */
 function isPublicPath(pathname: string) {
   // Public UI route
-  if (pathname === '/sign-in') return true;
+  if (pathname === '/sign-in' || pathname === '/') return true;
 
   // (Optional) allow public BFF endpoints if you add them later
   if (pathname.startsWith('/api/public')) return true;
@@ -51,7 +46,6 @@ function isPublicPath(pathname: string) {
 
 /**
  * Next.js internal assets / static files must NOT be blocked.
- * If you block these, your app will look broken (CSS/JS/images won't load).
  */
 function isNextOrStaticAsset(pathname: string) {
   if (pathname.startsWith('/_next')) return true;
@@ -65,7 +59,6 @@ function isNextOrStaticAsset(pathname: string) {
 
 /**
  * Is this a private API call?
- * With the BFF setup, your UI will call /api/private/* for authenticated calls.
  */
 function isPrivateApi(pathname: string) {
   return pathname.startsWith('/api/private');
@@ -73,7 +66,6 @@ function isPrivateApi(pathname: string) {
 
 /**
  * Is this any API call?
- * (We handle API a bit differently than page navigation.)
  */
 function isAnyApi(pathname: string) {
   return pathname.startsWith('/api/');
@@ -92,16 +84,15 @@ export async function proxy(req: NextRequest) {
   // Read cookies. Refresh cookie is the best "session exists" indicator.
   const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
   const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
-  const deviceId = req.cookies.get(DEVICE_ID)?.value;
 
   // Treat user as authenticated if they have refresh OR access
   // (refresh is the important one for your setup)
-  const hasSession = Boolean((refreshToken && deviceId) || accessToken);
+  const hasSession = Boolean(refreshToken || accessToken);
   console.log('🚀 ~ proxy ~ hasSession:', hasSession);
 
   // If user is already authenticated, keep them out of /sign-in
   // (optional but nice UX)
-  if ((pathname === '/sign-in' || pathname === '/') && hasSession) {
+  if (isPublicPath(pathname) && hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
@@ -119,7 +110,12 @@ export async function proxy(req: NextRequest) {
   // NOTE: We check refreshToken here (not accessToken) because access can expire.
   console.log('🚀 ~ proxy ~ isPrivateApi(pathname) && !hasSession:', isPrivateApi(pathname) && !hasSession);
   if (isPrivateApi(pathname) && !hasSession) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    // return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    console.warn({ message: 'Unauthorized' }, { status: 401 });
+    const url = req.nextUrl.clone();
+    url.pathname = '/sign-in';
+    url.searchParams.set('next', pathname);
+    return NextResponse.redirect(url);
   }
 
   // Protect private pages:
