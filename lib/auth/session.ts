@@ -20,6 +20,7 @@ import 'server-only';
 export const AUTH_COOKIES = {
   access: 'accessToken',
   refresh: 'refreshToken',
+  deviceId: 'deviceId',
 } as const;
 
 type CookieOptions = {
@@ -97,6 +98,7 @@ export async function clearAuthCookies(cookieOptions?: CookieOptions) {
 
   jar.set(AUTH_COOKIES.access, '', { ...opt, maxAge: 0 });
   jar.set(AUTH_COOKIES.refresh, '', { ...opt, maxAge: 0 });
+  jar.set(AUTH_COOKIES.deviceId, '', { ...opt, maxAge: 0 });
 }
 /**
  * Read access token from cookie.

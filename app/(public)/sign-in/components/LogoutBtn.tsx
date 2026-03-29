@@ -2,8 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { logout } from '@/features/auth/services/auth.service';
-import { setLocalStorageJson } from '@/lib/auth/localStorage';
-import React from 'react';
 
 export default function LogoutBtn() {
   const handleLogout = async () => {

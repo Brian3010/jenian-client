@@ -38,7 +38,10 @@ export async function login(userName: string, password: string) {
 
 export async function logout() {
   try {
-    const res = await fetch('/api/auth/logout');
+    const res = await fetch('/api/auth/logout', {
+      method: 'DELETE',
+      credentials: 'include',
+    });
     if (!res.ok) {
       console.error('Logout failed with status:', res.status);
       throw new Error('Logout failed');

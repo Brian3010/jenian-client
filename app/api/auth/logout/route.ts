@@ -1,16 +1,15 @@
 import { aspnetFetch } from '@/lib/auth/aspnet';
-import { clearAuthCookies, getAccessToken } from '@/lib/auth/session';
+import { clearAuthCookies } from '@/lib/auth/session';
 
-export async function GET() {
+export async function DELETE() {
   const urlPath = '/api/Auth/logout';
 
-  console.log('Logout POST');
+  console.log('Logout DELETE route entered');
 
   try {
-    const accessToken = await getAccessToken();
-    console.log('🚀 ~ POST ~ accessToken:', accessToken);
-
-    const { res } = await aspnetFetch(urlPath);
+    const { res } = await aspnetFetch(urlPath, {
+      method: 'DELETE',
+    });
 
     if (res.ok) {
       clearAuthCookies();
