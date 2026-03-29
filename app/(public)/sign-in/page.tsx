@@ -69,11 +69,11 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex justify-center p-10">
+    <div className="flex justify-center p-4">
       <Card className="w-sm=full md:w-[400px]">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Enter your username/email to login to your account</CardDescription>
+          <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
           <div>
@@ -82,13 +82,17 @@ export default function SignIn() {
               <p>{errors.userName?.message}</p> */}
               <div>
                 <InputGroup>
-                  <InputGroupInput placeholder="Enter your username" {...register('userName')} />
+                  <InputGroupInput className="" placeholder="Enter your username" {...register('userName')} />
                 </InputGroup>
                 <p>{errors.userName?.message}</p>
               </div>
               <div>
-                <InputGroup className="pr-3">
-                  <InputGroupInput type={showPassword ? 'text' : 'password'} {...register('password')} />
+                <InputGroup className="pr-3 ">
+                  <InputGroupInput
+                    placeholder="Enter your password"
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('password')}
+                  />
                   <InputGroupButton
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     title={showPassword ? 'Hide password' : 'Show password'}
@@ -105,17 +109,18 @@ export default function SignIn() {
               <p>{errors.password?.message}</p> */}
               <div>
                 {/* {!isLoading ? <LoaderCircle className="animate-spin" /> : <Button type="submit">Submit</Button>} */}
-                <Button type="submit" className="w-25">
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <LoaderCircle className="animate-spin" /> : 'Sign in'}
                 </Button>
               </div>
             </form>
           </div>
         </CardContent>
-        <CardFooter className="">
+        <CardFooter className="flex flex-col items-baseline text-sm gap-1">
           <p>
-            Please contact <ContactMeAlertDialog /> to create an account. Access is for authorized users only.
+            Please contact <ContactMeAlertDialog /> to create an account.
           </p>
+          <p>Access is restricted to authorized users.</p>
         </CardFooter>
       </Card>
     </div>

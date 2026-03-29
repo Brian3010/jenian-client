@@ -1,11 +1,11 @@
 'use client';
 
-import { useNotifications } from '@/components/notifications/NotificationContext';
 import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useNotifications } from '@/context/notifications/NotificationContext';
 import { handleReport } from '@/features/cwh/services/cwh.service';
 import {
   ailesFacing,
@@ -18,6 +18,7 @@ import {
   stockUpdate,
 } from '@/zodSchema/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { NotebookIcon, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -30,9 +31,13 @@ export default function EodReportForm() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<ReportValuesInput, unknown, ReportValuesOutput>({
     resolver: zodResolver(reportSchema),
     mode: 'onSubmit',
+    defaultValues: {
+      DeliveryScreenShots: [],
+    },
   });
 
   const router = useRouter();
@@ -49,7 +54,7 @@ export default function EodReportForm() {
       setIsLoading(false);
       if (data.status === 200) {
         notifySuccess('Report submitted successfully!');
-        return router.push('/chemist-warehouse');
+        return router.push('/dashboard');
       }
       // proxy will return message = Unauthorized when refreshtoken not detected
       if (data.message === 'Unauthorized' || data.status === 401) return router.push('/sign-in');
@@ -58,53 +63,60 @@ export default function EodReportForm() {
       notifyError('Failed to submit report. Please try again.');
       alert(error instanceof Error ? error + '|' + error.message : 'An unknown error occurred');
       setIsLoading(false);
-      return router.push('/chemist-warehouse');
+      return router.push('/dashboard');
     }
   };
 
   return (
-    <div className="min-h-screen pb-36 sm:p-3 flex justify-center">
+    <div className="w-full min-h-screen pb-36 sm:p-3 flex justify-center">
       <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto">
         {/* Content */}
-        <div className="flex justify-end py-1 px-3 underline" onClick={() => router.replace('/chemist-warehouse')}>
-          go back
+        <div
+          className="flex py-1 hover:cursor-pointer text-sm font-medium"
+          onClick={() => router.replace('/dashboard')}
+        >
+          ← Back
         </div>
-        <div className="p-2 sm:p-6 space-y-6 text-sm flex flex-col gap-2">
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Deliveries</h2>
-            <div className="pt-4">
+        <div className="sm:p-6 space-y-6 pt-5 flex flex-col gap-2">
+          {/* Deliveries */}
+          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-black font-medium text-md">Deliveries</h2>
+              <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
+            </div>
+            <div className="px-5 py-3">
               <Field>
                 {errors.DeliveryScreenShots && (
                   <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
                 )}
 
-                <FieldLabel></FieldLabel>
                 <Input type="file" {...register('DeliveryScreenShots')} multiple />
-                <FieldDescription>Upload your delivery screenshot, I&apos;ll take care of the rest 🤓</FieldDescription>
-                <FieldDescription className="italic">
-                  * Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
-                </FieldDescription>
+                <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+                </div>
               </Field>
             </div>
           </section>
+
           {/* Stock Updates */}
           {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
-
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Stock Updates</h2>
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
-                <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
-              </div>
+          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-black font-medium text-md">Stock Updates</h2>
+            </div>
+            <div className="px-5 py-3">
+              <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
             </div>
           </section>
-          {/*Night Task*/}
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Night Tasks</h2>
 
+          {/*Night Task*/}
+          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-black font-medium text-md">Night Tasks</h2>
+              <p className="text-gray-600">Off Locations (Fill & Face) @ 8.00pm</p>
+            </div>
             {/* Off Locations */}
-            <div className="py-4">
-              <h3 className="text-gray-700 font-bold pb-4">Off Locations (Fill & Face) @ 8.00pm</h3>
+            <div className="px-5 py-3">
               <div className="space-y-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
@@ -117,10 +129,15 @@ export default function EodReportForm() {
                 </Field>
               </div>
             </div>
+          </section>
 
-            {/* Off Aisles (Fill & Face) */}
-            <div className="py-4">
-              <h3 className="text-gray-700 font-bold pb-4">Aisles (Fill & Face) @ 8.00pm</h3>
+          {/* Off Aisles (Fill & Face) */}
+          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-black font-medium text-md">Night Tasks</h2>
+              <p className="text-gray-600">Aisles (Fill & Face) @ 8.00pm</p>
+            </div>
+            <div className="px-5 py-3">
               <div className="space-y-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
@@ -130,33 +147,44 @@ export default function EodReportForm() {
           </section>
 
           {/*Cleaning*/}
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Cleaning</h2>
-            <div className="py-4">
+          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-black font-medium text-md">Cleaning</h2>
+            </div>
+            <div className="px-5 py-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
               </div>
             </div>
           </section>
+
           {/*General check*/}
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">General checks</h2>
-            <div className="py-4">
+          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-black font-medium text-md">General checks</h2>
+            </div>
+            <div className="px-5 py-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
               </div>
             </div>
           </section>
-          <div>
-            <Button disabled={isLoading} type="submit" className="w-25">
+          <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
+            <Button
+              disabled={isLoading}
+              type="submit"
+              className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+            >
               {isLoading && <Spinner data-icon="inline-start" />}
               Submit
             </Button>
 
-            <p className="text-sm italic pt-3">
-              You will receive the report summary via Telegram (@JenianBot), make sure you have linked your Telegram
-              account in the Chemist Warehouse dashboard to receive it. If you have any issues, please contact support.
-            </p>
+            <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-sm text-gray-600">
+                You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account is linked
+                in the dashboard.
+              </p>
+            </div>
           </div>
         </div>
       </form>

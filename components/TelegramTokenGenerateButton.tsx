@@ -14,27 +14,38 @@ import { getTelegramToken } from '@/features/telegram/services/telegram.service'
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { Check, Copy } from 'lucide-react';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { InputGroup, InputGroupButton, InputGroupInput } from './ui/input-group';
 
 export default function TelegramTokenGenerateButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   const [token, setToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const getToken = async () => {
-      const { linkToken } = await getTelegramToken();
-      setToken(linkToken);
-    };
+  // useEffect(() => {
+  //   const getToken = async () => {
+  //     const { linkToken } = await getTelegramToken();
+  //     setToken(linkToken);
+  //   };
 
-    getToken();
-  }, []);
+  //   getToken();
+  // }, []);
+
+  const handleOnClick = async () => {
+    console.log('clicked clicked');
+    setIsLoading(true);
+    const { linkToken } = await getTelegramToken();
+    setToken(linkToken);
+    setIsLoading(false);
+  };
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline">Connect Bot</Button>
+        <Button className="w-full" disabled={isLoading} onClick={handleOnClick}>
+          <p className="text-sm">Connect Telegram</p>
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

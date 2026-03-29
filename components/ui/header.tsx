@@ -1,17 +1,47 @@
+'use client';
 import Link from 'next/link';
-import { SidebarTrigger } from './sidebar';
+// import { SidebarTrigger } from './sidebar';
+import LogoutBtn from '@/app/(public)/sign-in/components/LogoutBtn';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useUser } from '@/context/userInfo/UserInfoContext';
+import { Button } from './button';
 
 export default function Header() {
+  const { userInfo } = useUser();
   return (
-    <header className="block sticky top-0 z-20 border-b backdrop-blur border rounded-md">
-      <div className="mx-auto flex items-center p-1 sm:p-2 lg:p-3">
-        <SidebarTrigger className="md:hidden" />
-        <Link
-          href="/"
-          className="flex-1 text-center font-semibold italic tracking-wide underline decoration-amber-500 "
-        >
+    <header className="block sticky top-0 z-20 backdrop-blur px-2">
+      {/* <div className="flex items-center justify-center h-14 mb-4"> */}
+      <div className="mb-5 flex h-14 items-center justify-between">
+        {/* <SidebarTrigger className="md:hidden" /> */}
+        <Link href="/" className="font-semibold text-gray-900 font-semibold italic tracking-wide underline ">
           <span className="">Jenian</span>
         </Link>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size={'icon'} className="rounded-full">
+              {userInfo != null && userInfo.username.charAt(0)}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="rounded-xl p-3">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{userInfo !== null && userInfo.username}</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-gray-700 font-normal">
+                {userInfo?.isTelegramConnected ? 'Telegram connected' : 'Telegram not connected'}
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>
+              <LogoutBtn />
+            </DropdownMenuLabel>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
