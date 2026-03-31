@@ -1,19 +1,25 @@
-import NavigationBar from '@/components/NavigationBar';
+import AppSidebar from '@/components/AppSidebar';
+import AppSidebarMain from '@/components/AppSidebarMain';
+import NavBottomBar from '@/components/NavBottomBar';
 import Header from '@/components/ui/header';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { NotificationsToaster } from '@/context/notifications/NotificationToaster';
 import { UserInfoContextProvider } from '@/context/userInfo/UserInfoContext';
 
 export default function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <UserInfoContextProvider>
-      <div className="w-full">
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <NotificationsToaster />
-          <div className="py-1 flex-1">{children}</div>
-          <NavigationBar />
+      <SidebarProvider>
+        <div className="w-full min-h-dvh md:flex">
+          <AppSidebar />
+          <div className="flex-1 justify-center">
+            <Header />
+            <NotificationsToaster />
+            <div className="w-full max-w-5xl p-2 sm:p-0">{children}</div>
+          </div>
+          <NavBottomBar />
         </div>
-      </div>
+      </SidebarProvider>
     </UserInfoContextProvider>
   );
 

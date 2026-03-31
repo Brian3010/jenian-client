@@ -16,12 +16,11 @@ import { Button } from './button';
 export default function Header() {
   const { userInfo } = useUser();
   return (
-    <header className="block sticky top-0 z-20 backdrop-blur px-2">
+    <header className="block sticky top-0 z-20 backdrop-blur px-5 py-2 border-b border-gray-200">
       {/* <div className="flex items-center justify-center h-14 mb-4"> */}
       <div className="mb-5 flex h-14 items-center justify-between">
-        {/* <SidebarTrigger className="md:hidden" /> */}
-        <Link href="/" className="font-semibold text-gray-900 font-semibold italic tracking-wide underline ">
-          <span className="">Jenian</span>
+        <Link href="/">
+          <span className="text-lg font-semibold text-gray-900">Jenian</span>
         </Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

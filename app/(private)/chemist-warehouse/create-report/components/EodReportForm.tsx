@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button, GradientButton } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -170,14 +170,15 @@ export default function EodReportForm() {
             </div>
           </section>
           <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
-            <Button
+            <GradientButton
               disabled={isLoading}
               type="submit"
-              className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+              className=""
+              // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
             >
               {isLoading && <Spinner data-icon="inline-start" />}
-              Submit
-            </Button>
+              <span className="font-semibold">Submit</span>
+            </GradientButton>
 
             <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
               <p className="text-sm text-gray-600">

@@ -10,8 +10,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Jenian Client',
-  description: 'Frontend for Jenian',
+  title: 'Jenian',
+  description: 'Jenian App',
 };
 
 export default function RootLayout({
@@ -21,8 +21,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-dvh bg-[#F7F7F8] flex justify-center">
-        <main className="w-full max-w-xl px-1 sm:px-4">
+      <body className="min-h-dvh bg-gray-50 flex justify-center">
+        <main className="w-full">
           <NotificationProvider>
             <div>{children}</div>
           </NotificationProvider>

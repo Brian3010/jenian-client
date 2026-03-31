@@ -2,12 +2,14 @@ import TelegramIntegrationCard from './components/TelegramIntegrationCard';
 
 export default function Dashboard() {
   return (
-    <div className="w-full sm:p-2">
-      <div className="flex w-full flex-col gap-6">
-        {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 "> */}
-        <div className="flex flex-col gap-2">
+    <div className="w-full">
+      {/* <div className=""> */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
+        {/**Card-1 */}
+        <div className="flex flex-col">
           <TelegramIntegrationCard />
         </div>
+        {/**Card-2 */}
       </div>
     </div>
   );
