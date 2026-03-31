@@ -69,7 +69,7 @@ export default function EodReportForm() {
 
   return (
     <div className="w-full min-h-screen pb-36 sm:p-3 flex justify-center ">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto ">
+      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto ">
         {/* Content */}
         <div
           className="flex py-1 hover:cursor-pointer text-sm font-medium"
@@ -77,8 +77,10 @@ export default function EodReportForm() {
         >
           ← Back
         </div>
-        <div className="sm:p-6 space-y-6 pt-5 flex flex-col gap-2">
-          <div className={`${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}>
+        <div className="sm:p-6">
+          <div
+            className={`flex flex-col gap-2 pt-5  space-y-6 pb-2 ${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}
+          >
             {/* Deliveries */}
             <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
               <div className="border-b px-5 py-3">
