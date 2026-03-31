@@ -68,8 +68,8 @@ export default function EodReportForm() {
   };
 
   return (
-    <div className="w-full min-h-screen pb-36 sm:p-3 flex justify-center">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto">
+    <div className="w-full min-h-screen pb-36 sm:p-3 flex justify-center ">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto ">
         {/* Content */}
         <div
           className="flex py-1 hover:cursor-pointer text-sm font-medium"
@@ -78,106 +78,107 @@ export default function EodReportForm() {
           ← Back
         </div>
         <div className="sm:p-6 space-y-6 pt-5 flex flex-col gap-2">
-          {/* Deliveries */}
-          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <div className="border-b px-5 py-3">
-              <h2 className="text-black font-medium text-md">Deliveries</h2>
-              <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
-            </div>
-            <div className="px-5 py-3">
-              <Field>
-                {errors.DeliveryScreenShots && (
-                  <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
-                )}
-
-                <Input type="file" {...register('DeliveryScreenShots')} multiple />
-                <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
-                </div>
-              </Field>
-            </div>
-          </section>
-
-          {/* Stock Updates */}
-          {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
-          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <div className="border-b px-5 py-3">
-              <h2 className="text-black font-medium text-md">Stock Updates</h2>
-            </div>
-            <div className="px-5 py-3">
-              <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
-            </div>
-          </section>
-
-          {/*Night Task*/}
-          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <div className="border-b px-5 py-3">
-              <h2 className="text-black font-medium text-md">Night Tasks</h2>
-              <p className="text-gray-600">Off Locations (Fill & Face) @ 8.00pm</p>
-            </div>
-            {/* Off Locations */}
-            <div className="px-5 py-3">
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
-                </div>
+          <div className={`${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}>
+            {/* Deliveries */}
+            <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <div className="border-b px-5 py-3">
+                <h2 className="text-black font-medium text-md">Deliveries</h2>
+                <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
               </div>
-              <div>
+              <div className="px-5 py-3">
                 <Field>
-                  <FieldLabel>Addtional Tasks: </FieldLabel>
-                  <Textarea {...register('AdditionalTasks')} />
+                  {errors.DeliveryScreenShots && (
+                    <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+                  )}
+
+                  <Input type="file" {...register('DeliveryScreenShots')} multiple />
+                  <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+                  </div>
                 </Field>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Off Aisles (Fill & Face) */}
-          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <div className="border-b px-5 py-3">
-              <h2 className="text-black font-medium text-md">Night Tasks</h2>
-              <p className="text-gray-600">Aisles (Fill & Face) @ 8.00pm</p>
-            </div>
-            <div className="px-5 py-3">
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
+            {/* Stock Updates */}
+            {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
+            <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <div className="border-b px-5 py-3">
+                <h2 className="text-black font-medium text-md">Stock Updates</h2>
+              </div>
+              <div className="px-5 py-3">
+                <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
+              </div>
+            </section>
+
+            {/*Night Task*/}
+            <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <div className="border-b px-5 py-3">
+                <h2 className="text-black font-medium text-md">Night Tasks</h2>
+                <p className="text-gray-600">Off Locations (Fill & Face) @ 8.00pm</p>
+              </div>
+              {/* Off Locations */}
+              <div className="px-5 py-3">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
+                  </div>
+                </div>
+                <div>
+                  <Field>
+                    <FieldLabel>Addtional Tasks: </FieldLabel>
+                    <Textarea {...register('AdditionalTasks')} />
+                  </Field>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/*Cleaning*/}
-          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <div className="border-b px-5 py-3">
-              <h2 className="text-black font-medium text-md">Cleaning</h2>
-            </div>
-            <div className="px-5 py-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
+            {/* Off Aisles (Fill & Face) */}
+            <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <div className="border-b px-5 py-3">
+                <h2 className="text-black font-medium text-md">Night Tasks</h2>
+                <p className="text-gray-600">Aisles (Fill & Face) @ 8.00pm</p>
               </div>
-            </div>
-          </section>
+              <div className="px-5 py-3">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          {/*General check*/}
-          <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <div className="border-b px-5 py-3">
-              <h2 className="text-black font-medium text-md">General checks</h2>
-            </div>
-            <div className="px-5 py-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
+            {/*Cleaning*/}
+            <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <div className="border-b px-5 py-3">
+                <h2 className="text-black font-medium text-md">Cleaning</h2>
               </div>
-            </div>
-          </section>
+              <div className="px-5 py-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
+                </div>
+              </div>
+            </section>
+
+            {/*General check*/}
+            <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <div className="border-b px-5 py-3">
+                <h2 className="text-black font-medium text-md">General checks</h2>
+              </div>
+              <div className="px-5 py-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
+                </div>
+              </div>
+            </section>
+          </div>
           <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
             <GradientButton
               disabled={isLoading}
               type="submit"
-              className=""
+              className="flex items-center justify-center w-full rounded-2xl text-sm font-medium text-white transition active:scale-[0.99]"
               // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
             >
-              {isLoading && <Spinner data-icon="inline-start" />}
-              <span className="font-semibold">Submit</span>
+              {isLoading ? <Spinner data-icon="inline-start" /> : <span className="font-semibold">Submit</span>}
             </GradientButton>
 
             <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">

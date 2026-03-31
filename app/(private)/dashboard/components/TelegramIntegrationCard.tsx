@@ -6,12 +6,13 @@ import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/c
 import useIsUserConnected from '@/hooks/useIsUserConnected';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
 
 export default function TelegramIntegrationCard() {
   const router = useRouter();
   const { isUserConnected, isLoading } = useIsUserConnected();
 
-  if (isLoading) return null;
+  if (isLoading) return <TelegramIntegrationCardSkeleton />;
 
   return (
     <Card className="p-5 gap-0 ">
