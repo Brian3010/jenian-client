@@ -1,11 +1,11 @@
 'use client';
 
-import { useNotifications } from '@/components/notifications/NotificationContext';
-import { Button } from '@/components/ui/button';
+import { Button, GradientButton } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useNotifications } from '@/context/notifications/NotificationContext';
 import { handleReport } from '@/features/cwh/services/cwh.service';
 import {
   ailesFacing,
@@ -19,23 +19,69 @@ import {
 } from '@/zodSchema/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import InputFieldAndError from './InputFieldAndError';
 
+const STORAGE_KEY = 'eod-report-draft';
+
 export default function EodReportForm() {
+  const [step, setStep] = useState(1);
   const { notifySuccess, notifyError } = useNotifications();
   const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
+    subscribe,
+    reset,
     formState: { errors },
   } = useForm<ReportValuesInput, unknown, ReportValuesOutput>({
     resolver: zodResolver(reportSchema),
     mode: 'onSubmit',
+    defaultValues: {
+      DeliveryScreenShots: [],
+    },
   });
 
   const router = useRouter();
+
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(STORAGE_KEY);
+
+    if (savedDraft) {
+      try {
+        const parsedDraft = JSON.parse(savedDraft);
+
+        reset({
+          ...parsedDraft,
+          DeliveryScreenShots: [], // file inputs should not be restored (reconmended)
+        });
+      } catch (error) {
+        console.error('Failed to parse saved draft', error);
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, [reset]);
+
+  useEffect(() => {
+    // Subscribe to form value changes (runs on every change, no re-render)
+    const unsubscribe = subscribe({
+      // start the listent
+      formState: {
+        values: true, // we only care about form values (not errors, touched, etc.)
+      },
+      callback: ({ values }) => {
+        // Exclude file inputs (cannot/should not be stored in localStorage)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { DeliveryScreenShots, ...rest } = values;
+
+        // Persist form data as a string in localStorage (auto-save draft)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
+      },
+    });
+    // Cleanup: stop listening when component unmounts
+    return unsubscribe;
+  }, [subscribe]);
 
   const onSubmit = async (signInData: ReportValuesOutput) => {
     console.log('clicked clicked');
@@ -48,8 +94,9 @@ export default function EodReportForm() {
       console.log('🚀 ~ onSubmit ~ data:', data);
       setIsLoading(false);
       if (data.status === 200) {
+        localStorage.removeItem(STORAGE_KEY);
         notifySuccess('Report submitted successfully!');
-        return router.push('/chemist-warehouse');
+        return router.push('/dashboard');
       }
       // proxy will return message = Unauthorized when refreshtoken not detected
       if (data.message === 'Unauthorized' || data.status === 401) return router.push('/sign-in');
@@ -58,105 +105,178 @@ export default function EodReportForm() {
       notifyError('Failed to submit report. Please try again.');
       alert(error instanceof Error ? error + '|' + error.message : 'An unknown error occurred');
       setIsLoading(false);
-      return router.push('/chemist-warehouse');
+      return router.push('/dashboard');
     }
   };
 
   return (
-    <div className="min-h-screen pb-36 sm:p-3 flex justify-center">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-4xl mx-auto">
+    <div className="w-full min-h-screen pb-36 sm:p-3 flex justify-center ">
+      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto ">
         {/* Content */}
-        <div className="flex justify-end py-1 px-3 underline" onClick={() => router.replace('/chemist-warehouse')}>
-          go back
-        </div>
-        <div className="p-2 sm:p-6 space-y-6 text-sm flex flex-col gap-2">
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Deliveries</h2>
-            <div className="pt-4">
-              <Field>
-                {errors.DeliveryScreenShots && (
-                  <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
-                )}
+        {/* <div
+          className="flex py-1 hover:cursor-pointer text-sm font-medium"
+          onClick={() => router.replace('/dashboard')}
+        >
+          ← Back
+        </div> */}
+        <div className="sm:p-6">
+          <div className={'flex flex-col gap-2 pt-5  space-y-6 pb-2'}>
+            {/* Deliveries */}
 
-                <FieldLabel></FieldLabel>
-                <Input type="file" {...register('DeliveryScreenShots')} multiple />
-                <FieldDescription>Upload your delivery screenshot, I&apos;ll take care of the rest 🤓</FieldDescription>
-                <FieldDescription className="italic">
-                  * Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
-                </FieldDescription>
-              </Field>
-            </div>
-          </section>
-          {/* Stock Updates */}
-          {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
-
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Stock Updates</h2>
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
-                <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
-              </div>
-            </div>
-          </section>
-          {/*Night Task*/}
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Night Tasks</h2>
-
-            {/* Off Locations */}
-            <div className="py-4">
-              <h3 className="text-gray-700 font-bold pb-4">Off Locations (Fill & Face) @ 8.00pm</h3>
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
+            {step === 1 && (
+              <>
+                <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                  <div className="border-b px-5 py-3">
+                    <h2 className="text-black font-medium text-md">Deliveries</h2>
+                    <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
+                  </div>
+                  <div className="px-5 py-3">
+                    <Field>
+                      {errors.DeliveryScreenShots && (
+                        <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+                      )}
+                      <div className="flex gap-4 items-center">
+                        <Input type="file" {...register('DeliveryScreenShots')} multiple />
+                        <FieldDescription className="font-semibold">Optional</FieldDescription>
+                      </div>
+                      <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+                      </div>
+                    </Field>
+                  </div>
+                </section>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => router.replace('/dashboard')}
+                    type="button"
+                    variant={'outline'}
+                    className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
+                    // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+                  >
+                    <span className="font-semibold">Back</span>
+                  </Button>
+                  <GradientButton
+                    onClick={() => setStep(2)}
+                    type="button"
+                    className="flex-1 flex items-center justify-center rounded-2xl text-sm font-medium text-white transition"
+                    // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+                  >
+                    <span className="font-semibold">Next</span>
+                  </GradientButton>
                 </div>
-              </div>
+              </>
+            )}
+
+            {step === 2 && (
               <div>
-                <Field>
-                  <FieldLabel>Addtional Tasks: </FieldLabel>
-                  <Textarea {...register('AdditionalTasks')} />
-                </Field>
-              </div>
-            </div>
+                <div className={`${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}>
+                  {/* Stock Updates */}
+                  {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
+                  <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                    <div className="border-b px-5 py-3">
+                      <h2 className="text-black font-medium text-md">Stock Updates</h2>
+                    </div>
+                    <div className="px-5 py-3">
+                      <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
+                    </div>
+                  </section>
 
-            {/* Off Aisles (Fill & Face) */}
-            <div className="py-4">
-              <h3 className="text-gray-700 font-bold pb-4">Aisles (Fill & Face) @ 8.00pm</h3>
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
+                  {/*Night Task*/}
+                  <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                    <div className="border-b px-5 py-3">
+                      <h2 className="text-black font-medium text-md">Night Tasks</h2>
+                      <p className="text-gray-600">Off Locations (Fill & Face) @ 8.00pm</p>
+                    </div>
+                    {/* Off Locations */}
+                    <div className="px-5 py-3">
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <InputFieldAndError fieldArray={nightTasks} register={register} errors={errors} />
+                        </div>
+                      </div>
+                      <div>
+                        <Field>
+                          <FieldLabel>Addtional Tasks: </FieldLabel>
+                          <Textarea {...register('AdditionalTasks')} />
+                        </Field>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Off Aisles (Fill & Face) */}
+                  <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                    <div className="border-b px-5 py-3">
+                      <h2 className="text-black font-medium text-md">Night Tasks</h2>
+                      <p className="text-gray-600">Aisles (Fill & Face) @ 8.00pm</p>
+                    </div>
+                    <div className="px-5 py-3">
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <InputFieldAndError fieldArray={ailesFacing} register={register} errors={errors} />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/*Cleaning*/}
+                  <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                    <div className="border-b px-5 py-3">
+                      <h2 className="text-black font-medium text-md">Cleaning</h2>
+                    </div>
+                    <div className="px-5 py-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
+                      </div>
+                    </div>
+                  </section>
+
+                  {/*General check*/}
+                  <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                    <div className="border-b px-5 py-3">
+                      <h2 className="text-black font-medium text-md">General checks</h2>
+                    </div>
+                    <div className="px-5 py-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
+                  <div className="flex items-center justify-center gap-3">
+                    <Button
+                      onClick={() => setStep(1)}
+                      type="button"
+                      disabled={isLoading}
+                      variant={'outline'}
+                      className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
+                      // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+                    >
+                      <span className="font-semibold">Back</span>
+                    </Button>
+                    <GradientButton
+                      disabled={isLoading}
+                      type="submit"
+                      className="flex-1 flex justify-center rounded-2xl text-sm font-medium text-white transition active:scale-[0.99]"
+                      // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+                    >
+                      {isLoading ? (
+                        <Spinner className="size-6" data-icon="inline-start" />
+                      ) : (
+                        <span className="font-semibold">Submit</span>
+                      )}
+                    </GradientButton>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm text-gray-600">
+                      You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account is
+                      linked in the dashboard.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/*Cleaning*/}
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">Cleaning</h2>
-            <div className="py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <InputFieldAndError fieldArray={cleaning} register={register} errors={errors} />
-              </div>
-            </div>
-          </section>
-          {/*General check*/}
-          <section>
-            <h2 className="text-gray-700 font-medium text-lg border-b border-black">General checks</h2>
-            <div className="py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <InputFieldAndError fieldArray={generalCheck} register={register} errors={errors} />
-              </div>
-            </div>
-          </section>
-          <div>
-            <Button disabled={isLoading} type="submit" className="w-25">
-              {isLoading && <Spinner data-icon="inline-start" />}
-              Submit
-            </Button>
-
-            <p className="text-sm italic pt-3">
-              You will receive the report summary via Telegram (@JenianBot), make sure you have linked your Telegram
-              account in the Chemist Warehouse dashboard to receive it. If you have any issues, please contact support.
-            </p>
+            )}
           </div>
         </div>
       </form>

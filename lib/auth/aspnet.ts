@@ -29,7 +29,6 @@ if (!BACKEND_URL) {
 }
 
 /**
- *
  *   POST /api/Auth/refresh-token
  *   -> { accessToken, userDetails }
  */
@@ -57,19 +56,13 @@ async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetail
   const cookieHeader = (await cookieStore).toString();
   console.log('🚀 ~ refreshAccessToken ~ cookieHeader:', cookieHeader);
 
-  // const localStorageData = { userId: '2714785d-40c7-4e09-9c4b-780a821a0d50', deviceName: 'local host' };
-
-  // const localStorageDataTest = getLocalStorageJSON('user', { idol: 'momo sakura' });
-  // console.log('🚀 ~ refreshAccessToken ~ localStorageDataTest:', localStorageDataTest);
-
-  // const bodyData = JSON.stringify({ ...localStorageData });
-  // console.log('object: ', bodyData);
   // Call ASP.NET refresh endpoint
   const r = await fetch(`${BACKEND_URL}/api/Auth/refresh-token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
-
-    // body: bodyData,
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookieHeader, // manually forward incoming cookies
+    },
 
     // Avoid caching auth calls
     cache: 'no-store',
@@ -95,6 +88,7 @@ async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetail
   await setAccessCookie({
     accessToken: data.accessToken,
     // Optionally set accessMaxAgeSec to match backend access TTL
+    accessMaxAgeSec: 60 * 30, // 30 minutes
   });
 
   return { ok: true, userDetails: data.userDetails };
@@ -135,21 +129,23 @@ export async function aspnetFetch(
   const baseUrl = opts?.baseUrlOverride ?? BACKEND_URL;
 
   /**
-   * doRequest():
    * Performs the actual fetch to ASP.NET with bearer token injected.
    */
   const doRequest = async (): Promise<Response> => {
     const accessToken = await getAccessToken();
     console.log('🚀 ~ doRequest ~ accessToken:', accessToken);
 
+    // read cookies from the incoming browser -> Next.js request
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
     // Merge caller headers safely (supports both object and Headers inputs)
     const headers = new Headers(init.headers);
     console.log('🚀 ~ doRequest ~ init.headers:', init.headers);
 
-    if (accessToken) {
-      // Add bearer token if present
-      headers.set('Authorization', `Bearer ${accessToken}`);
-    }
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+
+    if (cookieHeader) headers.set('Cookie', cookieHeader); // Forward cookies to ASP.NET
 
     // Make request to ASP.NET server
     return fetch(`${baseUrl}${path}`, {

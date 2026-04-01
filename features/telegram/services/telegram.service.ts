@@ -7,16 +7,22 @@ export async function getTelegramToken() {
   const data: { linkToken: string } = await res.json();
   return data;
 }
+export async function isTelegramLinked(): Promise<boolean> {
+  const res = await fetch('/api/private/telegram/Telegram/is-linked', {
+    method: 'GET',
+    credentials: 'include',
+    cache: 'no-store',
+  });
 
-export async function isTelegramLinked() {
-  // call api/private/telegram/is-linked
-  const res = await fetch('/api/private/telegram/Telegram/is-linked');
+  // if (res.status === 401) {
+  //   // redirectToSignIn();
+  //   throw new Error('Redirecting to sign-in');
+  // }
 
-  if (!res.ok && res.status == 401) throw new Error('Unauthorized');
-  if (!res.ok) throw new Error('Internal server error');
+  if (!res.ok) {
+    throw new Error(`Failed to check Telegram link: ${res.status}`);
+  }
 
-  const { isLinked } = await res.json();
-  console.log('🚀 ~ isTelegramLinked ~ isLinked:', isLinked);
-
-  return isLinked as boolean;
+  const data = await res.json();
+  return Boolean(data?.isLinked);
 }

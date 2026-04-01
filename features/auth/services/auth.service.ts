@@ -39,7 +39,7 @@ export async function login(userName: string, password: string) {
 export async function logout() {
   try {
     const res = await fetch('/api/auth/logout', {
-      method: 'POST',
+      method: 'DELETE',
       credentials: 'include',
     });
     if (!res.ok) {

@@ -82,16 +82,16 @@ export const reportSchema = z.object({
 
   // preprocess empty string to '0' for these fields, because the input type is text, but we want to store it as number in the backend, and the backend will treat empty string as 0
   GeneralCheck: z.object({
-    FreeTrolleys: z.string().nonempty('Free troleys is required').max(1000),
-    FreeCages: z.string().nonempty('Free cages is required').max(1000),
+    FreeTrolleys: z.coerce.number().max(50, { message: 'Seems lots of trolleys here!' }),
+    FreeCages: z.coerce.number().max(50, { message: 'Seems lots of cages here!' }),
     // freeCagesNote: z.string().max(1000).optional(),
     NumOfClickCollect: z.coerce.number().optional(),
     NumOfCataBundle: z.coerce.number().optional(),
     NumOfMagaBundle: z.coerce.number().optional(),
-    NumOfMyPals: z.string().nonempty('My pals number is required').max(1000),
-    NumOfFragKeys: z.string().nonempty('Fragrance key number is required').max(1000),
-    NumOfLiftPasses: z.string().nonempty('Lift passes number is required').max(1000),
-    NumOfAugmodos: z.string().nonempty('Augmodo number is required').max(1000),
+    NumOfMyPals: z.coerce.number().max(50, { message: 'Seems lots of MyPals here!' }),
+    NumOfFragKeys: z.coerce.number().max(50, { message: 'Seems lots of keys here!' }),
+    NumOfLiftPasses: z.coerce.number().max(50, { message: 'Seems lots of lift keys here!' }),
+    NumOfAugmodos: z.coerce.number().max(50, { message: 'Seems lots of Augmodos here!' }),
   }),
   AdditionalTasks: z.string().max(5000).optional(),
 });
@@ -103,14 +103,30 @@ export type StockUpdateField = {
   registerName: FieldPath<ReportValuesInput>;
   inputType: 'number' | 'text';
   helpText?: string;
+  inputMode?: 'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search' | undefined;
 };
 
 export const stockUpdate = [
-  { itemName: 'Trolley of stock', registerName: 'StockUpdate.TrolleyOfStock', inputType: 'number' },
+  {
+    itemName: 'Trolley of stock',
+    registerName: 'StockUpdate.TrolleyOfStock',
+    inputType: 'number',
+    inputMode: 'numeric',
+  },
   { itemName: 'Stock note', registerName: 'StockUpdate.StockNote', inputType: 'text' },
-  { itemName: 'Trolley of cosmetic', registerName: 'StockUpdate.TrolleyOfCosmetics', inputType: 'number' },
+  {
+    itemName: 'Trolley of cosmetic',
+    registerName: 'StockUpdate.TrolleyOfCosmetics',
+    inputType: 'number',
+    inputMode: 'numeric',
+  },
   { itemName: 'Cosmetic note', registerName: 'StockUpdate.CosmeticNote', inputType: 'text' },
-  { itemName: 'Trolley of fragrance', registerName: 'StockUpdate.TrolleyofFragrances', inputType: 'number' },
+  {
+    itemName: 'Trolley of fragrance',
+    registerName: 'StockUpdate.TrolleyofFragrances',
+    inputType: 'number',
+    inputMode: 'numeric',
+  },
   { itemName: 'Fragrance note', registerName: 'StockUpdate.FragranceNote', inputType: 'text' },
   {
     itemName: 'Additional stock',
@@ -164,27 +180,63 @@ export const cleaning = [
 
 export const generalCheck = [
   {
-    itemName: 'Free trolleys',
+    itemName: 'Free trolleys *',
     registerName: 'GeneralCheck.FreeTrolleys',
-    inputType: 'text',
+    inputType: 'number',
     helpText: '/14',
+    inputMode: 'numeric',
   },
-  { itemName: 'Free cages', registerName: 'GeneralCheck.FreeCages', inputType: 'text', helpText: '/9' },
-  { itemName: '# of outstanding Click & Collect', registerName: 'GeneralCheck.NumOfClickCollect', inputType: 'number' },
-  { itemName: '# of catalogue bundles', registerName: 'GeneralCheck.NumOfCataBundle', inputType: 'number' },
-  { itemName: '# of magazine bundles', registerName: 'GeneralCheck.NumOfMagaBundle', inputType: 'number' },
-  { itemName: 'My Pals on charge', registerName: 'GeneralCheck.NumOfMyPals', inputType: 'text', helpText: '/5' },
   {
-    itemName: 'Fragrance keys on security desk',
+    itemName: 'Free cages *',
+    registerName: 'GeneralCheck.FreeCages',
+    inputType: 'number',
+    helpText: '/9',
+    inputMode: 'numeric',
+  },
+  {
+    itemName: '# of outstanding Click & Collect',
+    registerName: 'GeneralCheck.NumOfClickCollect',
+    inputType: 'number',
+    inputMode: 'numeric',
+  },
+  {
+    itemName: '# of catalogue bundles',
+    registerName: 'GeneralCheck.NumOfCataBundle',
+    inputType: 'number',
+    inputMode: 'numeric',
+  },
+  {
+    itemName: '# of magazine bundles',
+    registerName: 'GeneralCheck.NumOfMagaBundle',
+    inputType: 'number',
+    inputMode: 'numeric',
+  },
+  {
+    itemName: 'My Pals on charge',
+    registerName: 'GeneralCheck.NumOfMyPals',
+    inputType: 'number',
+    helpText: '/5',
+    inputMode: 'numeric',
+  },
+  {
+    itemName: 'Fragrance keys on security desk *',
     registerName: 'GeneralCheck.NumOfFragKeys',
-    inputType: 'text',
+    inputType: 'number',
     helpText: '/3',
+    inputMode: 'numeric',
   },
   {
-    itemName: 'Lift passes in dispensary',
+    itemName: 'Lift passes in dispensary *',
     registerName: 'GeneralCheck.NumOfLiftPasses',
-    inputType: 'text',
+    inputType: 'number',
     helpText: '/2',
+    inputMode: 'numeric',
   },
-  { itemName: 'Augmodo in store room', registerName: 'GeneralCheck.NumOfAugmodos', inputType: 'text', helpText: '/4' },
+  {
+    itemName: 'Augmodo in store room *',
+    registerName: 'GeneralCheck.NumOfAugmodos',
+    inputType: 'number',
+    helpText: '/4',
+    inputMode: 'numeric',
+  },
 ] satisfies StockUpdateField[];

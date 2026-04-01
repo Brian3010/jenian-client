@@ -1,24 +1,14 @@
 import { aspnetFetch } from '@/lib/auth/aspnet';
-import { clearAuthCookies, getAccessToken } from '@/lib/auth/session';
-import { cookies } from 'next/headers';
+import { clearAuthCookies } from '@/lib/auth/session';
 
-export async function POST() {
+export async function DELETE() {
   const urlPath = '/api/Auth/logout';
 
-  console.log('Logout POST');
+  console.log('Logout DELETE route entered');
 
   try {
-    const cookieStore = await cookies();
-    const deviceId = cookieStore.get('deviceId');
-    console.log('🚀 ~ POST ~ deviceId:', deviceId);
-
-    const accessToken = await getAccessToken();
-    console.log('🚀 ~ POST ~ accessToken:', accessToken);
-
     const { res } = await aspnetFetch(urlPath, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookieStore.toString() },
-      body: JSON.stringify({ deviceId: deviceId?.value }),
+      method: 'DELETE',
     });
 
     if (res.ok) {

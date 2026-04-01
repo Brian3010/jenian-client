@@ -1,8 +1,8 @@
 import { isTelegramLinked } from '@/features/telegram/services/telegram.service';
 import { useEffect, useState } from 'react';
 
-export default function useIsUserLinked() {
-  const [isUserLinked, setIsUserLinked] = useState<{ status: boolean; message: string } | null>(null);
+export default function useIsUserConnected() {
+  const [isUserConnected, setIsUserConnected] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -11,8 +11,7 @@ export default function useIsUserLinked() {
         setIsLoading(true);
 
         const isLinked = await isTelegramLinked();
-        if (!isLinked) setIsUserLinked({ status: false, message: 'Telegram not linked' });
-        else setIsUserLinked({ status: true, message: 'Telegram is linked' });
+        setIsUserConnected(isLinked);
       } catch (error) {
         console.error('Error checking if user is linked:', error);
       } finally {
@@ -22,5 +21,5 @@ export default function useIsUserLinked() {
     checkUserLinked();
   }, []);
 
-  return { isUserLinked, isLoading };
+  return { isUserConnected, isLoading };
 }

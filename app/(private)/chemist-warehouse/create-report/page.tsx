@@ -3,7 +3,7 @@ import EodReportForm from './components/EodReportForm';
 
 export default function CreateReport() {
   return (
-    <div>
+    <div className="w-full">
       <EodReportForm />
     </div>
   );
