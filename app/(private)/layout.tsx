@@ -12,10 +12,10 @@ export default function PrivateLayout({ children }: Readonly<{ children: React.R
       <SidebarProvider>
         <div className="w-full min-h-dvh md:flex">
           <AppSidebar />
-          <div className="flex-1 justify-center">
+          <div className="flex-1 justify-center flex flex-col">
             <Header />
             <NotificationsToaster />
-            <div className="w-full max-w-5xl p-2 sm:p-0">{children}</div>
+            <div className="w-full max-w-5xl p-2 sm:p-0 flex-1 self-center">{children}</div>
           </div>
           <NavBottomBar />
         </div>
