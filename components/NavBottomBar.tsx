@@ -9,7 +9,7 @@ const items = [
     url: '/dashboard',
   },
   {
-    title: 'Salary',
+    title: 'Salary (coming soon)',
     url: '',
   },
 ];

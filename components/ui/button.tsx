@@ -74,7 +74,7 @@ function GradientButton({
       data-variant={variant}
       data-size={size}
       // className={cn(buttonVariants({ variant, size, className }))}
-      className={`px-4 py-3 rounded-xl text-white font-semibold shadow-md transition hover:cursor-pointer ${className}`}
+      className={`px-3 py-2 rounded-xl text-white font-semibold shadow-md transition hover:cursor-pointer ${className}`}
       style={{ background: 'linear-gradient(135deg,#6C5CE7,#3B82F6)' }}
       {...props}
     />
