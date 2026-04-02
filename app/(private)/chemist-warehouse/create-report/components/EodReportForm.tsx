@@ -110,7 +110,7 @@ export default function EodReportForm() {
   };
 
   return (
-    <div className="w-full min-h-screen pb-36 sm:p-3 flex justify-center ">
+    <div className="w-full sm:p-3 flex justify-center ">
       <form onSubmit={handleSubmit(onSubmit)} className="mx-auto ">
         {/* Content */}
         {/* <div
@@ -168,7 +168,7 @@ export default function EodReportForm() {
             )}
 
             {step === 2 && (
-              <div>
+              <div className="pb-20">
                 <div className={`${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}>
                   {/* Stock Updates */}
                   {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}

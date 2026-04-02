@@ -19,7 +19,7 @@ export default function NavBottomBar() {
   const router = useRouter();
 
   return (
-    <div className="md:hidden fixed left-0 right-0 z-50 border-t backdrop-blur" style={{ bottom: 0 }}>
+    <div className="md:hidden fixed left-0 right-0 z-50 border-t backdrop-blur-3xl" style={{ bottom: 0 }}>
       <div className="mx-auto flex justify-around py-1">
         {items.map(i => {
           const isActive = activeTab === i.title;
