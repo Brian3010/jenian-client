@@ -1,5 +1,4 @@
 import AppSidebar from '@/components/AppSidebar';
-import AppSidebarMain from '@/components/AppSidebarMain';
 import NavBottomBar from '@/components/NavBottomBar';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';

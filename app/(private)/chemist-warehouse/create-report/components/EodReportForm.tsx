@@ -21,7 +21,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import BackStepButton from './BackStepButton';
 import InputFieldAndError from './InputFieldAndError';
+import NextStepButton from './NextStepButton';
 
 const STORAGE_KEY = 'eod-report-draft';
 
@@ -44,6 +46,14 @@ export default function EodReportForm() {
   });
 
   const router = useRouter();
+
+  const stepForward = (targetStep: number) => {
+    setStep(targetStep);
+  };
+
+  const stepBack = (targetStep: number) => {
+    setStep(targetStep);
+  };
 
   useEffect(() => {
     const savedDraft = localStorage.getItem(STORAGE_KEY);
@@ -111,7 +121,7 @@ export default function EodReportForm() {
 
   return (
     <div className="w-full sm:p-3 flex justify-center ">
-      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto ">
+      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-full max-w-3xl">
         {/* Content */}
         {/* <div
           className="flex py-1 hover:cursor-pointer text-sm font-medium"
@@ -169,12 +179,13 @@ export default function EodReportForm() {
 
             {step === 2 && (
               <div className="pb-20">
-                <div className={`${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}>
+                <div className={`flex flex-col gap-2${isLoading ? 'blur-xs pointer-events-none select-none' : ''}`}>
                   {/* Stock Updates */}
                   {/* <p className="text-sm text-destructive">{errors.stockUpdate?.trolleyOfStock?.message}</p> */}
                   <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                    <div className="border-b px-5 py-3">
+                    <div className="border-b px-5 py-3 flex items-center justify-between">
                       <h2 className="text-black font-medium text-md">Stock Updates</h2>
+                      <p className="text-muted-foreground text-sm">Optional</p>
                     </div>
                     <div className="px-5 py-3">
                       <InputFieldAndError fieldArray={stockUpdate} register={register} errors={errors} />
@@ -241,38 +252,38 @@ export default function EodReportForm() {
                       </div>
                     </div>
                   </section>
-                </div>
-                <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
-                  <div className="flex items-center justify-center gap-3">
-                    <Button
-                      onClick={() => setStep(1)}
-                      type="button"
-                      disabled={isLoading}
-                      variant={'outline'}
-                      className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
-                      // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
-                    >
-                      <span className="font-semibold">Back</span>
-                    </Button>
-                    <GradientButton
-                      disabled={isLoading}
-                      type="submit"
-                      className="flex-1 flex justify-center rounded-2xl text-sm font-medium text-white transition active:scale-[0.99]"
-                      // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
-                    >
-                      {isLoading ? (
-                        <Spinner className="size-6" data-icon="inline-start" />
-                      ) : (
-                        <span className="font-semibold">Submit</span>
-                      )}
-                    </GradientButton>
-                  </div>
+                  <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
+                    <div className="flex items-center justify-center gap-3">
+                      <Button
+                        onClick={() => setStep(1)}
+                        type="button"
+                        disabled={isLoading}
+                        variant={'outline'}
+                        className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
+                        // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+                      >
+                        <span className="font-semibold">Back</span>
+                      </Button>
+                      <GradientButton
+                        disabled={isLoading}
+                        type="submit"
+                        className="flex-1 flex justify-center rounded-2xl text-sm font-medium text-white transition active:scale-[0.99]"
+                        // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
+                      >
+                        {isLoading ? (
+                          <Spinner className="size-6" data-icon="inline-start" />
+                        ) : (
+                          <span className="font-semibold">Submit</span>
+                        )}
+                      </GradientButton>
+                    </div>
 
-                  <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-sm text-gray-600">
-                      You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account is
-                      linked in the dashboard.
-                    </p>
+                    <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                      <p className="text-sm text-gray-600">
+                        You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account
+                        is linked in the dashboard.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
