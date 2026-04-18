@@ -31,8 +31,8 @@ export default function Header() {
           <DropdownMenuContent className="rounded-xl p-3">
             <DropdownMenuGroup>
               <DropdownMenuLabel>{userInfo !== null && userInfo.username}</DropdownMenuLabel>
-              <DropdownMenuLabel className="text-gray-700 font-normal">
-                {userInfo?.isTelegramConnected ? 'Telegram connected' : 'Telegram not connected'}
+              <DropdownMenuLabel className="text-gray-800 font-normal">
+                <Link href="/settings">Settings</Link>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

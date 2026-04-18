@@ -193,7 +193,7 @@ export default function CreateEodReportForm() {
 
   return (
     <div className="flex flex-col gap-5" ref={stepTopRef}>
-      <ReportFormHeader />
+      <ReportFormHeader stepNumber={stepNumber} totalStep={sectionSteps.length + 1} />
       <div className="sm:p-3 flex justify-center pb-28" ref={stepTopRef}>
         <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-full max-w-3xl flex flex-col gap-2">
           {/* <div ref={stepTopRef}> */}

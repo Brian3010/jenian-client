@@ -1,5 +1,4 @@
 'use client';
-import { getLocalStorageJSON, setLocalStorageJson } from '@/lib/auth/localStorage';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 export type UserInfo = {
@@ -17,12 +16,14 @@ const UserInfoContext = createContext<{
 export function UserInfoContextProvider({ children }: { children: React.ReactNode }) {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const localSavedUserInfo = getLocalStorageJSON('UserInfo', null);
+      const sessionSavedUserInfo = sessionStorage.getItem('UserInfo');
 
-      if (localSavedUserInfo) {
-        setUserInfo(localSavedUserInfo);
+      if (sessionSavedUserInfo) {
+        setUserInfo(JSON.parse(sessionSavedUserInfo));
+        setLoading(false);
         return;
       }
 
@@ -36,9 +37,10 @@ export function UserInfoContextProvider({ children }: { children: React.ReactNod
 
         const data: UserInfo = await res.json();
         setUserInfo(data);
-        setLocalStorageJson('UserInfo', data);
+        sessionStorage.setItem('UserInfo', JSON.stringify(data));
       } catch (error) {
         console.error('fetchUserInfo error:', error);
+        setUserInfo(null);
       } finally {
         setLoading(false);
       }
@@ -49,6 +51,7 @@ export function UserInfoContextProvider({ children }: { children: React.ReactNod
 
   const AddUserInfo = (userInfo: UserInfo) => {
     setUserInfo(userInfo);
+    sessionStorage.setItem('UserInfo', JSON.stringify(userInfo));
   };
 
   return <UserInfoContext.Provider value={{ userInfo, AddUserInfo, loading }}>{children}</UserInfoContext.Provider>;
@@ -57,7 +60,7 @@ export function UserInfoContextProvider({ children }: { children: React.ReactNod
 export function useUser() {
   const context = useContext(UserInfoContext);
   if (!context) {
-    throw new Error('useUser must be used within a NotificationProvider');
+    throw new Error('useUser must be used within a UserInfoContextProvider');
   }
   return context;
 }
