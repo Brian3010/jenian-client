@@ -25,17 +25,17 @@ export const reportSchema = z.object({
   DeliveryScreenShots: deliveryScreenshotsSchema,
   StockUpdate: z
     .object({
-      TrolleyOfStock: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
-      StockNote: z.string().max(1000),
+      // TrolleyOfStock: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
+      // StockNote: z.string().max(1000),
 
-      TrolleyOfCosmetics: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
-      CosmeticNote: z.string().max(1000),
+      // TrolleyOfCosmetics: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
+      // CosmeticNote: z.string().max(1000),
 
-      TrolleyofFragrances: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
-      FragranceNote: z.string().max(1000).optional(),
+      // TrolleyofFragrances: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
+      // FragranceNote: z.string().max(1000).optional(),
 
       AdditionalStock: z.string().max(1000).optional(),
-      AdditionalNote: z.string().max(1000),
+      // AdditionalNote: z.string().max(1000),
     })
     .optional(),
   NightTasks: z
@@ -106,40 +106,50 @@ export type StockUpdateField = {
   inputMode?: 'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search' | undefined;
 };
 
+export const additionalTasks = [
+  {
+    itemName: '',
+    registerName: 'AdditionalTasks',
+    inputType: 'text',
+    helpText: 'E.g. Capping, stocktake, staff training, etc.',
+  },
+] satisfies StockUpdateField[];
+
 export const stockUpdate = [
+  // {
+  //   itemName: 'Trolley of stock',
+  //   registerName: 'StockUpdate.TrolleyOfStock',
+  //   inputType: 'number',
+  //   inputMode: 'numeric',
+  // },
+  // { itemName: 'Stock note', registerName: 'StockUpdate.StockNote', inputType: 'text' },
+  // {
+  //   itemName: 'Trolley of cosmetic',
+  //   registerName: 'StockUpdate.TrolleyOfCosmetics',
+  //   inputType: 'number',
+  //   inputMode: 'numeric',
+  // },
+  // { itemName: 'Cosmetic note', registerName: 'StockUpdate.CosmeticNote', inputType: 'text' },
+  // {
+  //   itemName: 'Trolley of fragrance',
+  //   registerName: 'StockUpdate.TrolleyofFragrances',
+  //   inputType: 'number',
+  //   inputMode: 'numeric',
+  // },
+  // { itemName: 'Fragrance note', registerName: 'StockUpdate.FragranceNote', inputType: 'text' },
   {
-    itemName: 'Trolley of stock',
-    registerName: 'StockUpdate.TrolleyOfStock',
-    inputType: 'number',
-    inputMode: 'numeric',
-  },
-  { itemName: 'Stock note', registerName: 'StockUpdate.StockNote', inputType: 'text' },
-  {
-    itemName: 'Trolley of cosmetic',
-    registerName: 'StockUpdate.TrolleyOfCosmetics',
-    inputType: 'number',
-    inputMode: 'numeric',
-  },
-  { itemName: 'Cosmetic note', registerName: 'StockUpdate.CosmeticNote', inputType: 'text' },
-  {
-    itemName: 'Trolley of fragrance',
-    registerName: 'StockUpdate.TrolleyofFragrances',
-    inputType: 'number',
-    inputMode: 'numeric',
-  },
-  { itemName: 'Fragrance note', registerName: 'StockUpdate.FragranceNote', inputType: 'text' },
-  {
-    itemName: 'Additional stock',
+    // itemName: 'Additional stock',
+    itemName: '',
     registerName: 'StockUpdate.AdditionalStock',
     inputType: 'text',
-    helpText: 'Other stocks',
+    helpText: 'E.g. Stock finished, 2 trolleys of fragrance, 2 trolleys of cosmetics',
   },
-  {
-    itemName: 'Additional note',
-    registerName: 'StockUpdate.AdditionalNote',
-    inputType: 'text',
-    helpText: 'e.g. Stock finished...',
-  },
+  // {
+  //   itemName: 'Additional note',
+  //   registerName: 'StockUpdate.AdditionalNote',
+  //   inputType: 'text',
+  //   helpText: 'e.g. Stock finished...',
+  // },
 ] satisfies StockUpdateField[];
 
 export const nightTasks = [
