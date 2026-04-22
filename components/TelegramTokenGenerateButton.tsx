@@ -37,6 +37,7 @@ export default function TelegramTokenGenerateButton() {
     setIsLoading(true);
     const { linkToken } = await getTelegramToken();
     setToken(linkToken);
+    sessionStorage.removeItem('UserInfo');
     setIsLoading(false);
   };
 
