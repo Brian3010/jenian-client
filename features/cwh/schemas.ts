@@ -24,17 +24,7 @@ export const reportSchema = z.object({
   DeliveryScreenShots: deliveryScreenshotsSchema,
   StockUpdate: z
     .object({
-      TrolleyOfStock: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
-      StockNote: z.string().max(1000),
-
-      TrolleyOfCosmetics: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
-      CosmeticNote: z.string().max(1000),
-
-      TrolleyofFragrances: z.coerce.number().max(100, { message: 'Too many trolleys' }).optional(),
-      FragranceNote: z.string().max(1000).optional(),
-
       AdditionalStock: z.string().max(1000).optional(),
-      AdditionalNote: z.string().max(1000),
     })
     .optional(),
   NightTasks: z

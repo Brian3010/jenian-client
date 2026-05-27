@@ -3,12 +3,8 @@
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { GradientButton } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-<<<<<<< HEAD:features/telegram/components/TelegramIntegrationCard.tsx
+import { useUser } from '@/features/auth/context/UserInfoContext';
 import useIsUserConnected from '@/features/telegram/hooks/useIsUserConnected';
-=======
-import { useUser } from '@/context/userInfo/UserInfoContext';
-import useIsUserConnected from '@/hooks/useIsUserConnected';
->>>>>>> origin/newfeatures:app/(private)/dashboard/components/TelegramIntegrationCard.tsx
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
@@ -37,7 +33,7 @@ export default function TelegramIntegrationCard() {
       </CardHeader>
 
       <CardDescription>
-        {isUserConnected ? 'Create and send today’s report' : 'Connect Telegram to enable report generation'}
+        {isUserConnected ? "Create and send today's report" : 'Connect Telegram to enable report generation'}
       </CardDescription>
 
       {!isUserConnected && <p className="text-sm text-red-500">Telegram is required before generating reports</p>}

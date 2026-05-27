@@ -1,4 +1,4 @@
-import { stockUpdate } from '@/zodSchema/schemas';
+import { stockUpdate } from '@/features/cwh/constants';
 import React from 'react';
 import InputFieldAndError, { InputFieldAndErrorProps } from './InputFieldAndError';
 
@@ -19,7 +19,6 @@ export default function SectionInputs({
         {optional && <p className="text-muted-foreground text-sm">Optional</p>}
         {description && <p className="text-gray-600">{description}</p>}
       </div>
-      {/* <div className="px-5 py-3 grid sm:grid-cols-2 gap-4"> */}
       <div className={`px-5 py-3 grid ${fieldArray === stockUpdate ? 'sm:grid-cols-1' : 'sm:grid-cols-2'} gap-4`}>
         <InputFieldAndError fieldArray={fieldArray} register={register} errors={errors} />
       </div>

@@ -13,16 +13,9 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-<<<<<<< HEAD:components/layout/AppSidebar.tsx
-import LogoutBtn from '@/features/auth/components/LogoutBtn';
-import { LayoutDashboard, SquareLibrary } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-=======
 import { BadgeDollarSign, LayoutDashboard, Settings, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
->>>>>>> origin/newfeatures:components/AppSidebar.tsx
 
 type SidebarItem = {
   title: string;

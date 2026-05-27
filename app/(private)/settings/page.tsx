@@ -1,4 +1,4 @@
-import LogoutBtn from '@/app/(public)/sign-in/components/LogoutBtn';
+import LogoutBtn from '@/features/auth/components/LogoutBtn';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/ui/header';
 
