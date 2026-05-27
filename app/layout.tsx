@@ -1,5 +1,5 @@
 // import { SidebarBackdrop } from '@/components/sidebar-backdrop';
-import { NotificationProvider } from '@/context/notifications/NotificationContext';
+import { NotificationProvider } from '@/components/providers/NotificationContext';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 

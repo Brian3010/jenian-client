@@ -15,7 +15,7 @@ import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { Check, Copy } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { InputGroup, InputGroupButton, InputGroupInput } from './ui/input-group';
+import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 
 export default function TelegramTokenGenerateButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();

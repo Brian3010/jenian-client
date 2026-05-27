@@ -1,9 +1,9 @@
-import AppSidebar from '@/components/AppSidebar';
-import NavBottomBar from '@/components/NavBottomBar';
+import AppSidebar from '@/components/layout/AppSidebar';
+import NavBottomBar from '@/components/layout/NavBottomBar';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { NotificationsToaster } from '@/context/notifications/NotificationToaster';
-import { UserInfoContextProvider } from '@/context/userInfo/UserInfoContext';
+import { NotificationsToaster } from '@/components/providers/NotificationToaster';
+import { UserInfoContextProvider } from '@/features/auth/context/UserInfoContext';
 
 export default function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

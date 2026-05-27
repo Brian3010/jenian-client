@@ -13,12 +13,12 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
-} from './ui/sidebar';
+} from '@/components/ui/sidebar';
 
-import LogoutBtn from '@/app/(public)/sign-in/components/LogoutBtn';
+import LogoutBtn from '@/features/auth/components/LogoutBtn';
 import { LayoutDashboard, SquareLibrary } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 
 const items = [
   {

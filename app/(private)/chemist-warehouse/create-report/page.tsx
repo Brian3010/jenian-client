@@ -1,5 +1,5 @@
 import React from 'react';
-import EodReportForm from './components/EodReportForm';
+import EodReportForm from '@/features/cwh/components/EodReportForm';
 
 export default function CreateReport() {
   return (

@@ -1,4 +1,4 @@
-import { UserInfo } from '@/context/userInfo/UserInfoContext';
+import { UserInfo } from '@/features/auth/context/UserInfoContext';
 import { aspnetFetch } from '@/lib/auth/aspnet';
 import { NextResponse } from 'next/server';
 

@@ -1,4 +1,4 @@
-import TelegramIntegrationCard from './components/TelegramIntegrationCard';
+import TelegramIntegrationCard from '@/features/telegram/components/TelegramIntegrationCard';
 
 export default function Dashboard() {
   return (

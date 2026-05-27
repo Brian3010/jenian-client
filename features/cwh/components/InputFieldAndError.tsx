@@ -1,8 +1,8 @@
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Textarea } from '@/components/ui/textarea';
-import { getByPath } from '@/lib/utils';
-import { ReportValuesInput, StockUpdateField } from '@/zodSchema/schemas';
+import { getByPath } from '@/lib/utils/form';
+import { ReportValuesInput, StockUpdateField } from '@/features/cwh/types';
 import React from 'react';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
 

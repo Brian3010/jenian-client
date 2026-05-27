@@ -5,18 +5,11 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import { useNotifications } from '@/context/notifications/NotificationContext';
+import { useNotifications } from '@/components/providers/NotificationContext';
 import { handleReport } from '@/features/cwh/services/cwh.service';
-import {
-  ailesFacing,
-  cleaning,
-  generalCheck,
-  nightTasks,
-  reportSchema,
-  ReportValuesInput,
-  ReportValuesOutput,
-  stockUpdate,
-} from '@/zodSchema/schemas';
+import { ailesFacing, cleaning, generalCheck, nightTasks, stockUpdate } from '@/features/cwh/constants';
+import { reportSchema } from '@/features/cwh/schemas';
+import { ReportValuesInput, ReportValuesOutput } from '@/features/cwh/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';

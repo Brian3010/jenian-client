@@ -1,9 +1,9 @@
 'use client';
 
-import TelegramTokenGenerateButton from '@/components/TelegramTokenGenerateButton';
+import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { GradientButton } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import useIsUserConnected from '@/hooks/useIsUserConnected';
+import useIsUserConnected from '@/features/telegram/hooks/useIsUserConnected';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
