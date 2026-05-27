@@ -1,4 +1,4 @@
-import { ReportValuesOutput } from '@/zodSchema/schemas';
+import { ReportValuesOutput } from '@/features/cwh/types';
 
 type FormReportT = ReportValuesOutput;
 

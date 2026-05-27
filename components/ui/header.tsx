@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 // import { SidebarTrigger } from './sidebar';
-import LogoutBtn from '@/app/(public)/sign-in/components/LogoutBtn';
+import LogoutBtn from '@/features/auth/components/LogoutBtn';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useUser } from '@/context/userInfo/UserInfoContext';
+import { useUser } from '@/features/auth/context/UserInfoContext';
 import { Button } from './button';
 
 export default function Header() {

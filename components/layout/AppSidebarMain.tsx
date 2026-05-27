@@ -7,7 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from './ui/sidebar';
+} from '@/components/ui/sidebar';
 
 import { LayoutDashboard } from 'lucide-react';
 

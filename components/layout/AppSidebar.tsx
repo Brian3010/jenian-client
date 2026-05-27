@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
-} from './ui/sidebar';
+} from '@/components/ui/sidebar';
 
 import { BadgeDollarSign, LayoutDashboard, Settings, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';

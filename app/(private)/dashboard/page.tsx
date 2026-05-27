@@ -1,5 +1,5 @@
 import Header from '@/components/ui/header';
-import TelegramIntegrationCard from './components/TelegramIntegrationCard';
+import TelegramIntegrationCard from '@/features/telegram/components/TelegramIntegrationCard';
 
 export default function Dashboard() {
   return (
@@ -17,22 +17,4 @@ export default function Dashboard() {
       </div>
     </>
   );
-
-  // return (
-  //   <div className="w-full">
-  //     <div className="flex flex-col gap-3">
-  //       {/* <HelloMe /> */}
-  //       <div className="flex flex-col sm:flex-row w-full items-center gap-4 shadow-">
-  //         <Link href="/chemist-warehouse" className="w-full">
-  //           <Card className="w-full hover:bg-gray-100 cursor-pointer">
-  //             <CardHeader>
-  //               <CardTitle>Chemist Warehouse</CardTitle>
-  //               <CardDescription>Link Telegram account, generate report</CardDescription>
-  //             </CardHeader>
-  //           </Card>
-  //         </Link>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
 }

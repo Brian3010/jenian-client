@@ -4,26 +4,24 @@ import { Button, GradientButton } from '@/components/ui/button';
 import { Field, FieldDescription } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { useNotifications } from '@/context/notifications/NotificationContext';
+import { useNotifications } from '@/components/providers/NotificationContext';
 import { handleReport } from '@/features/cwh/services/cwh.service';
 import {
-  // additionalTasks,
   ailesFacing,
   cleaning,
   generalCheck,
   nightTasks,
-  reportSchema,
-  ReportValuesInput,
-  ReportValuesOutput,
   stockUpdate,
-} from '@/zodSchema/schemas';
+} from '@/features/cwh/constants';
+import { reportSchema } from '@/features/cwh/schemas';
+import { ReportValuesInput, ReportValuesOutput } from '@/features/cwh/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import ReportFormHeader from './components/ReportFormHeader';
-import SectionInputs, { SectionInputsProps } from './components/SectionInputs';
+import ReportFormHeader from '@/features/cwh/components/ReportFormHeader';
+import SectionInputs, { SectionInputsProps } from '@/features/cwh/components/SectionInputs';
 
 const STORAGE_KEY = 'eod-report-draft';
 
@@ -110,12 +108,10 @@ export default function CreateEodReportForm() {
   const router = useRouter();
 
   const stepForward = () => {
-    // Only allow going forward if current step is less than target step (prevents skipping steps)
     setStepNumber(prev => prev + 1);
   };
 
   const stepBack = () => {
-    // Only allow going back if current step is greater than target step (prevents skipping steps)
     setStepNumber(prev => prev - 1);
   };
 
@@ -128,7 +124,7 @@ export default function CreateEodReportForm() {
 
         reset({
           ...parsedDraft,
-          DeliveryScreenShots: [], // file inputs should not be restored (recommended)
+          DeliveryScreenShots: [],
         });
       } catch (error) {
         console.error('Failed to parse saved draft', error);
@@ -139,7 +135,6 @@ export default function CreateEodReportForm() {
 
   useEffect(() => {
     const unsubscribe = subscribe({
-      // start the listener only for form values changes (not errors, touched, etc.)
       formState: {
         values: true,
       },
@@ -147,11 +142,9 @@ export default function CreateEodReportForm() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { DeliveryScreenShots, ...rest } = values;
 
-        // Persist form data as a string in localStorage (auto-save draft)
         localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
       },
     });
-    // Cleanup: stop listening when component unmounts
     return unsubscribe;
   }, [subscribe]);
 
@@ -168,11 +161,9 @@ export default function CreateEodReportForm() {
   const onSubmit = async (signInData: ReportValuesOutput) => {
     console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
-    // alert(`Report is being submitted, please wait... ${JSON.stringify(signInData)}`);
     try {
       setIsLoading(true);
       const data: { message: string; status: number } = await handleReport(signInData);
-      // alert(data.message);
       console.log('🚀 ~ onSubmit ~ data:', data);
       setIsLoading(false);
       if (data.status === 200) {
@@ -180,7 +171,6 @@ export default function CreateEodReportForm() {
         notifySuccess('Report submitted successfully!');
         return router.push('/dashboard');
       }
-      // proxy will return message = Unauthorized when refreshtoken not detected
       if (data.message === 'Unauthorized' || data.status === 401) return router.push('/sign-in');
     } catch (error) {
       console.error(error);
@@ -196,15 +186,6 @@ export default function CreateEodReportForm() {
       <ReportFormHeader stepNumber={stepNumber} totalStep={sectionSteps.length + 1} />
       <div className="sm:p-3 flex justify-center pb-28" ref={stepTopRef}>
         <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-full max-w-3xl flex flex-col gap-2">
-          {/* <div ref={stepTopRef}> */}
-          {/* Content */}
-          {/* <div
-          className="flex py-1 hover:cursor-pointer text-sm font-medium"
-          onClick={() => router.replace('/dashboard')}
-        >
-          ← Back
-        </div> */}
-
           {stepNumber === 1 && (
             <>
               <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
@@ -233,7 +214,6 @@ export default function CreateEodReportForm() {
                   type="button"
                   variant={'outline'}
                   className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
-                  // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
                 >
                   <span className="font-semibold">Back</span>
                 </Button>
@@ -241,7 +221,6 @@ export default function CreateEodReportForm() {
                   onClick={() => stepForward()}
                   type="button"
                   className="flex-1 flex items-center justify-center rounded-2xl text-sm font-medium text-white transition"
-                  // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
                 >
                   <span className="font-semibold">Next</span>
                 </GradientButton>
@@ -271,7 +250,6 @@ export default function CreateEodReportForm() {
                         type="button"
                         variant={'outline'}
                         className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
-                        // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
                       >
                         <span className="font-semibold">Back</span>
                       </Button>
@@ -279,7 +257,6 @@ export default function CreateEodReportForm() {
                         onClick={() => stepForward()}
                         type="button"
                         className="flex-1 flex items-center justify-center rounded-2xl text-sm font-medium text-white transition"
-                        // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
                       >
                         <span className="font-semibold">Next</span>
                       </GradientButton>
@@ -298,7 +275,6 @@ export default function CreateEodReportForm() {
                   disabled={isLoading}
                   variant={'outline'}
                   className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
-                  // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
                 >
                   <span className="font-semibold">Back</span>
                 </Button>
@@ -306,7 +282,6 @@ export default function CreateEodReportForm() {
                   disabled={isLoading}
                   type="submit"
                   className="flex-1 flex justify-center rounded-2xl text-sm font-medium text-white transition active:scale-[0.99]"
-                  // className="w-full rounded-2xl bg-gray-900 py-3.5 text-sm font-medium text-white transition active:scale-[0.99]"
                 >
                   {isLoading ? (
                     <Spinner className="size-6" data-icon="inline-start" />
@@ -324,7 +299,6 @@ export default function CreateEodReportForm() {
               </div>
             </div>
           )}
-          {/* </div> */}
         </form>
       </div>
     </div>
