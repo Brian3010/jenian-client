@@ -9,6 +9,7 @@ export default function LogoutBtn() {
     try {
       await logout();
       localStorage.clear();
+      sessionStorage.removeItem('UserInfo');
       console.log('Logout successful, redirecting to sign-in page');
       window.location.href = '/sign-in';
     } catch (error) {

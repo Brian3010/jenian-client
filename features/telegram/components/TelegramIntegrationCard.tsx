@@ -3,16 +3,23 @@
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { GradientButton } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
+<<<<<<< HEAD:features/telegram/components/TelegramIntegrationCard.tsx
 import useIsUserConnected from '@/features/telegram/hooks/useIsUserConnected';
+=======
+import { useUser } from '@/context/userInfo/UserInfoContext';
+import useIsUserConnected from '@/hooks/useIsUserConnected';
+>>>>>>> origin/newfeatures:app/(private)/dashboard/components/TelegramIntegrationCard.tsx
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
 
 export default function TelegramIntegrationCard() {
   const router = useRouter();
-  const { isUserConnected, isLoading } = useIsUserConnected();
+  const { userInfo, loading } = useUser();
+  const isUserConnected = userInfo?.isTelegramConnected;
+  // const { isUserConnected, isLoading } = useIsUserConnected();
 
-  if (isLoading) return <TelegramIntegrationCardSkeleton />;
+  if (loading) return <TelegramIntegrationCardSkeleton />;
 
   return (
     <Card className="p-5 gap-0 ">

@@ -1,12 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -15,12 +13,25 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
+<<<<<<< HEAD:components/layout/AppSidebar.tsx
 import LogoutBtn from '@/features/auth/components/LogoutBtn';
 import { LayoutDashboard, SquareLibrary } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+=======
+import { BadgeDollarSign, LayoutDashboard, Settings, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+>>>>>>> origin/newfeatures:components/AppSidebar.tsx
 
-const items = [
+type SidebarItem = {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  disabled?: boolean;
+};
+
+const items: SidebarItem[] = [
   {
     title: 'Dashboard',
     url: '/dashboard',
@@ -28,14 +39,20 @@ const items = [
   },
   {
     title: 'Salary',
-    url: '',
-    icon: SquareLibrary,
+    url: '/salary',
+    icon: BadgeDollarSign,
+    disabled: true,
+  },
+  {
+    title: 'Settings',
+    url: '/settings',
+    icon: Settings,
   },
 ];
 
 export default function AppSidebar() {
   const { isMobile } = useSidebar();
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const pathname = usePathname();
 
   return (
     <Sidebar variant="sidebar" collapsible={isMobile ? 'offcanvas' : 'icon'} className="z-50 block">
@@ -53,24 +70,29 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {items.map(i => {
-                const isActive = i.title === activeTab;
+                const isActive = pathname === i.url || pathname.startsWith(`${i.url}/`);
+
+                if (i.disabled) {
+                  return (
+                    <SidebarMenuItem key={i.title}>
+                      <div className="flex items-center gap-2 rounded-lg px-2 py-2 text-slate-400">
+                        <i.icon className="h-4 w-4" />
+                        <span className="px-2 font-medium">{i.title}</span>
+                      </div>
+                    </SidebarMenuItem>
+                  );
+                }
 
                 return (
                   <SidebarMenuItem key={i.title}>
-                    <SidebarMenuButton
-                      asChild
-                      onClick={() => {
-                        setActiveTab(i.title);
-                      }}
-                      className="hover:cursor-pointer"
-                    >
-                      <a
+                    <SidebarMenuButton asChild className="hover:cursor-pointer">
+                      <Link
                         href={i.url}
-                        className={`rounded-lg ${isActive ? 'bg-gray-100 font-semibold' : ' hover:bg-gray-50'}`}
+                        className={`rounded-lg ${isActive ? 'bg-gray-100 font-semibold' : 'hover:bg-gray-50'}`}
                       >
                         <i.icon />
                         <span className={`${isActive ? 'font-semibold' : ''} px-2`}>{i.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

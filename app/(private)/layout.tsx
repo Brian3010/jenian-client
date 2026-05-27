@@ -12,7 +12,6 @@ export default function PrivateLayout({ children }: Readonly<{ children: React.R
         <div className="w-full min-h-dvh md:flex">
           <AppSidebar />
           <div className="flex-1 min-h-dvh justify-center flex flex-col md:gap-4">
-            <Header />
             <NotificationsToaster />
             <div className="w-full max-w-5xl pt-2 px-2 sm:p-0 flex-1 self-center">{children}</div>
           </div>

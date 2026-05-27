@@ -37,6 +37,7 @@ export default function TelegramTokenGenerateButton() {
     setIsLoading(true);
     const { linkToken } = await getTelegramToken();
     setToken(linkToken);
+    sessionStorage.removeItem('UserInfo');
     setIsLoading(false);
   };
 
@@ -87,7 +88,14 @@ export default function TelegramTokenGenerateButton() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction
+            onClick={() => {
+              sessionStorage.removeItem('UserInfo');
+              window.location.reload();
+            }}
+          >
+            Continue
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

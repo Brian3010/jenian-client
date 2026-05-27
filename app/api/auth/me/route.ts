@@ -15,12 +15,5 @@ export async function GET() {
     headers: { 'content-type': ct },
   });
 
-  // nextRes.cookies.set('user', JSON.stringify(bodyData), {
-  //   httpOnly: true,
-  //   secure: process.env.NODE_ENV === 'production', // false on localhost (http)
-  //   sameSite: 'lax',
-  //   path: '/',
-  // });
-
   return nextRes;
 }
