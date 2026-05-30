@@ -1,21 +1,22 @@
 'use client';
 
-import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { GradientButton } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import { useUser } from '@/features/auth/context/UserInfoContext';
-import useIsUserConnected from '@/features/telegram/hooks/useIsUserConnected';
+import { useAuth } from '@/features/auth/context/AuthContext';
+import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
 
 export default function TelegramIntegrationCard() {
   const router = useRouter();
-  const { userInfo, loading } = useUser();
-  const isUserConnected = userInfo?.isTelegramConnected;
   // const { isUserConnected, isLoading } = useIsUserConnected();
+  const { userInfo, loading } = useAuth();
 
   if (loading) return <TelegramIntegrationCardSkeleton />;
+
+  if (!userInfo) return null;
+
+  const isUserConnected = userInfo.isTelegramConnected;
 
   return (
     <Card className="p-5 gap-0 ">

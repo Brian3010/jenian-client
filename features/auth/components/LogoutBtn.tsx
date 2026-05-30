@@ -1,13 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { logout } from '@/features/auth/services/auth.service';
+import { logoutUser } from '@/features/auth/services/auth.service';
 
 export default function LogoutBtn() {
   const handleLogout = async () => {
     console.log('Logout clicked');
     try {
-      await logout();
+      await logoutUser();
       localStorage.clear();
       sessionStorage.removeItem('UserInfo');
       console.log('Logout successful, redirecting to sign-in page');

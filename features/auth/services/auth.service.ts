@@ -1,42 +1,24 @@
-// const BACKEND_URL = process.env.BACKEND_URL;
+import { LoginResponse, User } from '@/features/auth/types';
 
-type dataT = { ok: boolean; message: string } & {
-  ok: boolean;
-  message: string;
-  user: { id: string; userName: string; email: string };
-};
-
-export async function login(userName: string, password: string) {
+export async function loginUser(userName: string, password: string): Promise<LoginResponse> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userName, password }),
     credentials: 'include',
   });
-  // console.log(res);
 
-  const data: dataT = await res.json().catch(() => null);
+  if (res.status == 401) throw new Error('Invalid username or password');
+  if (!res.ok) throw new Error('Something went wrong');
+
+  const data = (await res.json()) as LoginResponse;
   console.log('🚀 ~ login ~ data:', data);
 
-  if (!res.ok || res.status == 401) {
-    throw new Error('Invalid username or password');
-  }
-
-  if (res.status == 500) {
-    throw new Error('Internal server error');
-  }
-
-  // if (!res.ok || !data?.ok) {
-  //   throw new Error(data?.message || 'Login failed');
-  // }
-  data.ok = res.ok;
-
-  // setLocalStorageJson('User', data.user);
-
-  return data;
+  return data as LoginResponse;
 }
 
-export async function logout() {
+//TODO:  review this
+export async function logoutUser() {
   try {
     const res = await fetch('/api/auth/logout', {
       method: 'DELETE',
@@ -52,4 +34,18 @@ export async function logout() {
     console.error('An error occurred during logout:', error);
     throw error;
   }
+}
+
+export async function GetUser() {
+  const res = await fetch('/api/auth/me', {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch user info');
+  }
+  const data = (await res.json()) as User;
+
+  return data;
 }

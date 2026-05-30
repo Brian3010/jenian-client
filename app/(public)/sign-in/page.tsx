@@ -2,37 +2,37 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
-import { login } from '@/features/auth/services/auth.service';
+import ContactMeAlertDialog from '@/features/auth/components/ContactMeAlertDialog';
+import { useAuth } from '@/features/auth/context/AuthContext';
+import { loginUser } from '@/features/auth/services/auth.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import ContactMeAlertDialog from '@/features/auth/components/ContactMeAlertDialog';
 
 const signInSchema = z.object({
   userName: z.string('Please enter a valid userName'),
-  // password: z.regex(/^(?=.{8,128}$)(?!.\s)(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[^\w\s]).$/),
   password: z
     .string()
-    .trim() // blocks leading/trailing spaces; if you want to allow them, remove this
-    .min(8, 'Password must be at least 12 characters')
+    .trim()
+    .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password must be at most 128 characters')
     .refine(v => !/\s/.test(v), 'Password must not contain spaces')
     .refine(v => /[a-z]/.test(v), 'Password must include a lowercase letter')
     .refine(v => /[A-Z]/.test(v), 'Password must include an uppercase letter')
     .refine(v => /\d/.test(v), 'Password must include a number')
     .refine(v => /[^\w\s]/.test(v), 'Password must include a symbol'),
-  // password: z.string(),
+  // password: z.string(),s
 });
 type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
+  const { addUser } = useAuth();
   const router = useRouter();
-
   const [error, setError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const {
@@ -49,17 +49,13 @@ export default function SignIn() {
   });
 
   const onSubmit = async (signInData: SignInValues) => {
+    setError('');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       setIsLoading(true);
-      const res = await login(signInData.userName, signInData.password);
-      console.log('🚀 ~ onSubmit ~ res:', res);
-
-      // After login succeeds, cookies are set.
-      if (res.ok) {
-        setError('');
-        router.push('/dashboard');
-      }
+      const { user } = await loginUser(signInData.userName, signInData.password);
+      addUser(user);
+      router.push('/dashboard');
     } catch (err) {
       console.log('🚀 ~ onSubmit ~ err:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -78,8 +74,6 @@ export default function SignIn() {
         <CardContent>
           <div>
             <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 flex-col">
-              {/* <input {...register('userName')} />
-              <p>{errors.userName?.message}</p> */}
               <div>
                 <InputGroup>
                   <InputGroupInput className="" placeholder="Enter your username" {...register('userName')} />
@@ -104,11 +98,8 @@ export default function SignIn() {
                 </InputGroup>
                 <p className="p-2 text-red-600">{errors.password?.message}</p>
               </div>
-              {error != '' && <p className="text-red-600 italic">{error}</p>}
-              {/* <input {...register('password')} />
-              <p>{errors.password?.message}</p> */}
+              {error && <p className="text-red-600 italic">{error}</p>}
               <div>
-                {/* {!isLoading ? <LoaderCircle className="animate-spin" /> : <Button type="submit">Submit</Button>} */}
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <LoaderCircle className="animate-spin" /> : 'Sign in'}
                 </Button>

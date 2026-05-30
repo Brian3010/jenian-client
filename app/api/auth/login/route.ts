@@ -2,19 +2,19 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_URL;
+if (!BACKEND_URL) throw new Error('Missing BACKEND_URL environment variable');
 
 export async function POST(request: Request) {
-  console.log('AUTH POST');
-  const body = await request.text();
-  // console.log('Request: ', { ...body });
-  // Create deviceID, store it in cookie, send it to the asp and save it in db, attach to the body to submit
-  const deviceId = crypto.randomUUID();
   const cookieStore = await cookies();
-  if (!cookieStore.get('deviceId'))
-    cookieStore.set('deviceId', deviceId, {
-      // expires: new Date(Date.now() + 3 * 1000), // 30 days
-    });
-  console.log("🚀 ~ POST ~ !cookieStore.get('deviceId'):", !cookieStore.get('deviceId'));
+
+  // Reuse existing deviceId or create a new one, then store it as a session cookie
+  const existingDeviceId = cookieStore.get('deviceId')?.value;
+  const deviceId = existingDeviceId ?? crypto.randomUUID();
+  if (!existingDeviceId) {
+    cookieStore.set('deviceId', deviceId, { sameSite: 'lax', path: '/' });
+  }
+
+  const body = await request.text();
 
   const aspRes = await fetch(`${BACKEND_URL}/api/Auth/login`, {
     method: 'POST',
@@ -22,31 +22,35 @@ export async function POST(request: Request) {
     body,
   });
 
-  //NOTE: use be.text() insteadof be.json() to preserve the raw response
+  // Use text() to preserve raw response — avoids double-parsing
   const bodyData = await aspRes.text();
-  // console.log('🚀 ~ POST ~ data:', bodyData);
   const ct = aspRes.headers.get('content-type') ?? 'application/json';
+
   const nextRes = new NextResponse(bodyData, {
     status: aspRes.status,
     statusText: aspRes.statusText,
     headers: { 'content-type': ct },
   });
-  // console.log('🚀 ~ POST ~ res:', res);
 
-  const { accessToken } = JSON.parse(bodyData);
-  if (accessToken) {
-    const accessTokenEpxires = new Date(Date.now() + 30 * 60 * 1000); // 30 mins
-    // new Date(Date.now() + 30 * 60 * 1000), // 3 secs
-    nextRes.cookies.set('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // false on localhost (http)
-      sameSite: 'lax',
-      path: '/',
-      expires: accessTokenEpxires,
-    });
+  // Only set accessToken cookie on successful login
+  if (aspRes.ok) {
+    try {
+      const { accessToken } = JSON.parse(bodyData);
+      if (accessToken) {
+        nextRes.cookies.set('accessToken', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          expires: new Date(Date.now() + 30 * 60 * 1000), // 30 mins
+        });
+      }
+    } catch {
+      // bodyData wasn't JSON — skip setting cookie
+    }
   }
 
-  // pass through ALL cookies from backend (this is your refresh cookie) - set cookies from backend
+  // Forward refresh token cookie from ASP.NET
   const setCookie = aspRes.headers.get('set-cookie');
   if (setCookie) {
     for (const c of setCookie.split(/,(?=\s*[A-Za-z0-9_\-]+=)/g)) nextRes.headers.append('Set-Cookie', c);
