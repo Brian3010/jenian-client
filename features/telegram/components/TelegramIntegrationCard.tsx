@@ -1,6 +1,6 @@
 'use client';
 
-import { GradientButton } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
@@ -41,13 +41,21 @@ export default function TelegramIntegrationCard() {
 
       <CardAction className="pt-4 w-full">
         {isUserConnected ? (
-          <GradientButton
+          // <GradientButton
+          //   onClick={() => {
+          //     router.push('/chemist-warehouse/create-report');
+          //   }}
+          // >
+          //   <span className="font-semibold">Generate Report</span>
+          // </GradientButton>
+          <Button
+            variant="primary"
             onClick={() => {
               router.push('/chemist-warehouse/create-report');
             }}
           >
             <span className="font-semibold">Generate Report</span>
-          </GradientButton>
+          </Button>
         ) : (
           <TelegramTokenGenerateButton />
         )}

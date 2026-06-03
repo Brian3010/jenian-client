@@ -100,7 +100,7 @@ export default function SignIn() {
               </div>
               {error && <p className="text-red-600 italic">{error}</p>}
               <div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <LoaderCircle className="animate-spin" /> : 'Sign in'}
                 </Button>
               </div>

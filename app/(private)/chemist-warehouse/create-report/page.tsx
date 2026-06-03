@@ -1,19 +1,13 @@
 'use client';
 
-import { Button, GradientButton } from '@/components/ui/button';
+import { useNotifications } from '@/components/providers/NotificationContext';
+import { Button } from '@/components/ui/button';
 import { Field, FieldDescription } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { useNotifications } from '@/components/providers/NotificationContext';
-import { handleReport } from '@/features/cwh/services/cwh.service';
-import {
-  ailesFacing,
-  cleaning,
-  generalCheck,
-  nightTasks,
-  stockUpdate,
-} from '@/features/cwh/constants';
+import { ailesFacing, cleaning, generalCheck, nightTasks, stockUpdate } from '@/features/cwh/constants';
 import { reportSchema } from '@/features/cwh/schemas';
+import { handleReport } from '@/features/cwh/services/cwh.service';
 import { ReportValuesInput, ReportValuesOutput } from '@/features/cwh/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -213,17 +207,17 @@ export default function CreateEodReportForm() {
                   onClick={() => router.replace('/dashboard')}
                   type="button"
                   variant={'outline'}
-                  className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
+                  className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
                 >
                   <span className="font-semibold">Back</span>
                 </Button>
-                <GradientButton
+                <Button
                   onClick={() => stepForward()}
-                  type="button"
-                  className="flex-1 flex items-center justify-center rounded-2xl text-sm font-medium text-white transition"
+                  variant="primary"
+                  className="flex-1 flex items-center justify-center  font-medium text-white transition"
                 >
                   <span className="font-semibold">Next</span>
-                </GradientButton>
+                </Button>
               </div>
             </>
           )}
@@ -249,17 +243,18 @@ export default function CreateEodReportForm() {
                         onClick={() => stepBack()}
                         type="button"
                         variant={'outline'}
-                        className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
+                        className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
                       >
                         <span className="font-semibold">Back</span>
                       </Button>
-                      <GradientButton
+                      <Button
+                        variant="primary"
                         onClick={() => stepForward()}
                         type="button"
-                        className="flex-1 flex items-center justify-center rounded-2xl text-sm font-medium text-white transition"
+                        className="flex-1 flex items-center justify-center  font-medium text-white transition"
                       >
                         <span className="font-semibold">Next</span>
-                      </GradientButton>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -274,21 +269,22 @@ export default function CreateEodReportForm() {
                   type="button"
                   disabled={isLoading}
                   variant={'outline'}
-                  className="flex-1 py-5 rounded-xl text-sm transition active:scale-[0.99] border-gray-400"
+                  className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
                 >
                   <span className="font-semibold">Back</span>
                 </Button>
-                <GradientButton
+                <Button
+                  variant="primary"
                   disabled={isLoading}
                   type="submit"
-                  className="flex-1 flex justify-center rounded-2xl text-sm font-medium text-white transition active:scale-[0.99]"
+                  className="flex-1 flex items-center justify-center  font-medium text-white transition"
                 >
                   {isLoading ? (
                     <Spinner className="size-6" data-icon="inline-start" />
                   ) : (
                     <span className="font-semibold">Submit</span>
                   )}
-                </GradientButton>
+                </Button>
               </div>
 
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
