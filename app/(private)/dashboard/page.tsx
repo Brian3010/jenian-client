@@ -1,18 +1,16 @@
-import Header from '@/components/ui/header';
+import ShiftCalculatorCard from '@/features/shift/components/ShiftCalculatorCard';
 import TelegramIntegrationCard from '@/features/telegram/components/TelegramIntegrationCard';
 
 export default function Dashboard() {
   return (
     <>
-      <Header />
       <div className="w-full p-2">
         {/* <div className=""> */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           {/**Card-1 */}
-          <div className="flex flex-col">
-            <TelegramIntegrationCard />
-          </div>
+          <TelegramIntegrationCard />
           {/**Card-2 */}
+          <ShiftCalculatorCard />
         </div>
       </div>
     </>

@@ -176,127 +176,121 @@ export default function CreateEodReportForm() {
   };
 
   return (
-    <div className="flex flex-col gap-5" ref={stepTopRef}>
+    <>
       <ReportFormHeader stepNumber={stepNumber} totalStep={sectionSteps.length + 1} />
-      <div className="sm:p-3 flex justify-center pb-28" ref={stepTopRef}>
-        <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-full max-w-3xl flex flex-col gap-2">
-          {stepNumber === 1 && (
-            <>
-              <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                <div className="border-b px-5 py-3">
-                  <h2 className="text-black font-medium text-md">Deliveries</h2>
-                  <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
+      <div className="flex flex-col gap-5 p-2" ref={stepTopRef}>
+        <div className="flex justify-center pb-28 " ref={stepTopRef}>
+          <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-full max-w-3xl flex flex-col gap-5">
+            {stepNumber === 1 && (
+              <>
+                <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                  <div className="border-b px-5 py-3">
+                    <h2 className="text-black font-medium text-md">Deliveries</h2>
+                    <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
+                  </div>
+                  <div className="px-5 py-3">
+                    <Field>
+                      {errors.DeliveryScreenShots && (
+                        <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+                      )}
+                      <div className="flex gap-4 items-center">
+                        <Input type="file" {...register('DeliveryScreenShots')} multiple />
+                        <FieldDescription className="font-semibold">Optional</FieldDescription>
+                      </div>
+                      <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+                      </div>
+                    </Field>
+                  </div>
+                </section>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => stepForward()}
+                    variant="primary"
+                    className="flex-1 flex items-center justify-center  font-medium text-white transition"
+                  >
+                    <span className="font-semibold">Next</span>
+                  </Button>
                 </div>
-                <div className="px-5 py-3">
-                  <Field>
-                    {errors.DeliveryScreenShots && (
-                      <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+              </>
+            )}
+
+            {sectionSteps.map(
+              (it, i) =>
+                stepNumber === it.step.number && (
+                  <div
+                    key={i}
+                    className={`flex flex-col gap-2 ${isLoading ? ' blur-xs pointer-events-none select-none' : ''}`}
+                  >
+                    <SectionInputs
+                      fieldArray={it.step.to.fieldArray}
+                      register={it.step.to.register}
+                      title={it.step.to.title}
+                      errors={it.step.to.errors}
+                      description={it.step.to.description}
+                      optional={it.step.to.optional}
+                    />
+                    {it.step.number !== sectionSteps.length + 1 && (
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => stepBack()}
+                          type="button"
+                          variant={'outline'}
+                          className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
+                        >
+                          <span className="font-semibold">Previous</span>
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={() => stepForward()}
+                          type="button"
+                          className="flex-1 flex items-center justify-center  font-medium text-white transition"
+                        >
+                          <span className="font-semibold">Next</span>
+                        </Button>
+                      </div>
                     )}
-                    <div className="flex gap-4 items-center">
-                      <Input type="file" {...register('DeliveryScreenShots')} multiple />
-                      <FieldDescription className="font-semibold">Optional</FieldDescription>
-                    </div>
-                    <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
-                    </div>
-                  </Field>
+                  </div>
+                ),
+            )}
+
+            {stepNumber === sectionSteps.length + 1 && (
+              <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
+                <div className="flex items-center justify-center gap-3">
+                  <Button
+                    onClick={() => stepBack()}
+                    type="button"
+                    disabled={isLoading}
+                    variant={'outline'}
+                    className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
+                  >
+                    <span className="font-semibold">Back</span>
+                  </Button>
+                  <Button
+                    variant="primary"
+                    disabled={isLoading}
+                    type="submit"
+                    className="flex-1 flex items-center justify-center  font-medium text-white transition"
+                  >
+                    {isLoading ? (
+                      <Spinner className="size-6" data-icon="inline-start" />
+                    ) : (
+                      <span className="font-semibold">Submit</span>
+                    )}
+                  </Button>
                 </div>
-              </section>
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => router.replace('/dashboard')}
-                  type="button"
-                  variant={'outline'}
-                  className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
-                >
-                  <span className="font-semibold">Back</span>
-                </Button>
-                <Button
-                  onClick={() => stepForward()}
-                  variant="primary"
-                  className="flex-1 flex items-center justify-center  font-medium text-white transition"
-                >
-                  <span className="font-semibold">Next</span>
-                </Button>
-              </div>
-            </>
-          )}
 
-          {sectionSteps.map(
-            (it, i) =>
-              stepNumber === it.step.number && (
-                <div
-                  key={i}
-                  className={`flex flex-col gap-2 ${isLoading ? ' blur-xs pointer-events-none select-none' : ''}`}
-                >
-                  <SectionInputs
-                    fieldArray={it.step.to.fieldArray}
-                    register={it.step.to.register}
-                    title={it.step.to.title}
-                    errors={it.step.to.errors}
-                    description={it.step.to.description}
-                    optional={it.step.to.optional}
-                  />
-                  {it.step.number !== sectionSteps.length + 1 && (
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={() => stepBack()}
-                        type="button"
-                        variant={'outline'}
-                        className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
-                      >
-                        <span className="font-semibold">Back</span>
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onClick={() => stepForward()}
-                        type="button"
-                        className="flex-1 flex items-center justify-center  font-medium text-white transition"
-                      >
-                        <span className="font-semibold">Next</span>
-                      </Button>
-                    </div>
-                  )}
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-sm text-gray-600">
+                    You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account is
+                    linked in the dashboard.
+                  </p>
                 </div>
-              ),
-          )}
-
-          {stepNumber === sectionSteps.length + 1 && (
-            <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex flex-col gap-5">
-              <div className="flex items-center justify-center gap-3">
-                <Button
-                  onClick={() => stepBack()}
-                  type="button"
-                  disabled={isLoading}
-                  variant={'outline'}
-                  className="flex-1 text-sm transition active:scale-[0.99] border-gray-400"
-                >
-                  <span className="font-semibold">Back</span>
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={isLoading}
-                  type="submit"
-                  className="flex-1 flex items-center justify-center  font-medium text-white transition"
-                >
-                  {isLoading ? (
-                    <Spinner className="size-6" data-icon="inline-start" />
-                  ) : (
-                    <span className="font-semibold">Submit</span>
-                  )}
-                </Button>
               </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm text-gray-600">
-                  You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account is
-                  linked in the dashboard.
-                </p>
-              </div>
-            </div>
-          )}
-        </form>
+            )}
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -19,7 +19,7 @@ export default function TelegramIntegrationCard() {
   const isUserConnected = userInfo.isTelegramConnected;
 
   return (
-    <Card className="p-5 gap-0 ">
+    <Card className="flex flex-col gap-3">
       <CardHeader className="grid-rows-none p-0">
         <div className="flex items-center justify-between">
           <h1 className="text-base font-semibold text-gray-900">End-of-Day Report</h1>
@@ -39,16 +39,10 @@ export default function TelegramIntegrationCard() {
 
       {!isUserConnected && <p className="text-sm text-red-500">Telegram is required before generating reports</p>}
 
-      <CardAction className="pt-4 w-full">
+      <CardAction className="flex-1 w-full flex items-end">
         {isUserConnected ? (
-          // <GradientButton
-          //   onClick={() => {
-          //     router.push('/chemist-warehouse/create-report');
-          //   }}
-          // >
-          //   <span className="font-semibold">Generate Report</span>
-          // </GradientButton>
           <Button
+            className="w-full"
             variant="primary"
             onClick={() => {
               router.push('/chemist-warehouse/create-report');

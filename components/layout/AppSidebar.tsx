@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -31,10 +30,9 @@ const items: SidebarItem[] = [
     icon: LayoutDashboard,
   },
   {
-    title: 'Salary',
-    url: '/salary',
+    title: 'Shift Calculator',
+    url: '/chemist-warehouse/shift-calculator',
     icon: BadgeDollarSign,
-    disabled: true,
   },
   {
     title: 'Settings',
@@ -48,7 +46,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar variant="sidebar" collapsible={isMobile ? 'offcanvas' : 'icon'} className="z-50 block">
+    <Sidebar variant="sidebar" collapsible={isMobile ? 'offcanvas' : 'icon'} className="z-50 block bg-gray-50">
       <SidebarHeader>
         <SidebarMenu>
           <div className="flex justify-between">
