@@ -1,5 +1,5 @@
 import { PayCycleResponse } from '@/features/shift/types';
-import { getDefaultErrorMessage } from '@/lib/utils';
+import { getDefaultErrorMessage, parseJsonSafe } from '@/lib/utils';
 
 export async function getPayCycle(): Promise<PayCycleResponse> {
   const res = await fetch('/api/private/shift/shift-calculator/current', {
@@ -10,9 +10,13 @@ export async function getPayCycle(): Promise<PayCycleResponse> {
     const errorBody = await res.json().catch(() => null);
 
     const message = errorBody?.message || errorBody?.title || getDefaultErrorMessage(res.status);
-    throw new Error(`Server returned status: ${res.status} - ${message}`);
+    throw new Error(`${res.status} - ${message}`);
   }
 
-  const data: PayCycleResponse = await res.json();
+  const data = await parseJsonSafe<PayCycleResponse>(res);
+
+  if (!data) {
+    throw new Error('server response is not valid JSON');
+  }
   return data;
 }

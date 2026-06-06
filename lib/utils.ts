@@ -21,6 +21,14 @@ export function getDefaultErrorMessage(status: number): string {
   }
 }
 
+export async function parseJsonSafe<T>(res: Response): Promise<T | null> {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 export function formatDayMonth(dateString: string | null): string {
   if (!dateString) return '';
   const date = new Date(dateString);

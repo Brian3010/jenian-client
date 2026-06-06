@@ -18,10 +18,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/private/shift/[.
       },
     });
   } catch (error) {
-    console.error('BFF route error:', error);
-    return NextResponse.json(
-      { message: error instanceof Error ? error.message : 'Internal Server Error' },
-      { status: 500 },
-    );
+    console.error('BFF route handler error:', error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
