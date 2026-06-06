@@ -1,14 +1,13 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import { formatDayMonth } from '@/lib/utils';
+import { Card, CardDescription, CardHeader } from '@/components/ui/card';
+import { TelegramIntegrationCardSkeleton } from '@/features/telegram/components/TelegramIntegrationCardSkeleton';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getPayCycle } from '../services/shift.service';
 import { PayCycleResponse } from '../types';
-import DataTable from './DataTable';
-import DataTableSkeleton from './DataTableSkeleton';
+import HasPayCycleState from './HasPayCycleState';
+import PayCycleRequiredState from './PayCycleRequiredState';
 
 export default function ShiftCalculatorCard() {
   const router = useRouter();
@@ -47,50 +46,11 @@ export default function ShiftCalculatorCard() {
     );
   }
 
-  return (
-    <Card className="p-5 flex flex-col gap-3">
-      <CardHeader className="p-0">
-        <div className="flex items-center justify-between">
-          <h1 className="text-base font-semibold text-gray-900">Shift Calculator</h1>
-        </div>
-        <div className="text-sm text-gray-500">Manage shifts and estimate your pay for the current cycle.</div>
-      </CardHeader>
-      <CardDescription className="flex flex-col gap-3 py-3 border-y">
-        {loading ? (
-          <DataTableSkeleton />
-        ) : (
-          payCycleData !== null &&
-          payCycleData.hasPayCycleSettings && (
-            <DataTable
-              rows={[
-                {
-                  label: 'Current Cycle',
-                  value: `${formatDayMonth(payCycleData.payCycleStartDate)} - ${formatDayMonth(payCycleData.payCycleEndDate)}`,
-                },
-                {
-                  label: 'Shifts Worked',
-                  value: payCycleData.shiftCountInCycle ? payCycleData.shiftCountInCycle.toString() : '0',
-                },
-                {
-                  label: 'Estimated Pay',
-                  value: `$${payCycleData.estimatedGrossPay ? payCycleData.estimatedGrossPay.toFixed(2) : '0.00'}`,
-                },
-              ]}
-            />
-          )
-        )}
-      </CardDescription>
-      <CardAction className="w-full">
-        <Button
-          className="w-full"
-          variant="primary"
-          onClick={() => {
-            router.push('/chemist-warehouse/shift-calculator');
-          }}
-        >
-          <span className="font-semibold">Open Shift Calculator</span>
-        </Button>
-      </CardAction>
-    </Card>
+  if (loading) return <TelegramIntegrationCardSkeleton />;
+
+  return payCycleData && payCycleData.hasPayCycleSettings ? (
+    <HasPayCycleState payCycleData={payCycleData} />
+  ) : (
+    <PayCycleRequiredState />
   );
 }
