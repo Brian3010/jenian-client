@@ -8,11 +8,22 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  // themeColor: "#0F766E",
 };
 
 export const metadata: Metadata = {
   title: 'Jenian',
-  description: 'Jenian App',
+  description: 'A personal productivity assistant.',
+  applicationName: 'Jenian',
+  appleWebApp: {
+    capable: true,
+    title: 'Jenian',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({
