@@ -1,18 +1,25 @@
 'use client';
 
-import { PayCycleResponse } from '@/features/shift/types';
+import { UserShiftsResponse } from '@/features/shift/types';
 import { useState } from 'react';
 import PaySummaryCard from './PaySummaryCard';
 
-type ShiftCalculatorClientProps = {
-  initialSummary: PayCycleResponse;
+export type SummaryBreakdown = {
+  estimatedGrossPay: number;
+  shiftCountInCycle: number;
+  scheduledTotalHours: number;
 };
 
-export default function ShiftCalculatorClient({ initialSummary }: ShiftCalculatorClientProps) {
-  const [summary, setSummary] = useState<PayCycleResponse>(initialSummary);
+type ShiftCalculatorClientProps = {
+  summaryBreakdown: SummaryBreakdown;
+  userShifts: UserShiftsResponse;
+};
+
+export default function ShiftCalculatorClient({ summaryBreakdown, userShifts }: ShiftCalculatorClientProps) {
+  const [summary, setSummary] = useState<SummaryBreakdown>(summaryBreakdown);
+  const [shifts, setShifts] = useState<UserShiftsResponse>(userShifts);
 
   return (
-    // <div className="flex flex-col gap-5 p-2 py-5">
     <>
       <div className="flex gap-3 md:flex-row flex-col">
         <div>
@@ -28,31 +35,31 @@ export default function ShiftCalculatorClient({ initialSummary }: ShiftCalculato
         </div>
         <div className="flex items-center gap-2">
           {/* <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white">
-                <button
-                  // onClick={() => setCycleOffset(o => o - 1)} disabled={isSaving}
-                  aria-label="Previous cycle"
-                  className="px-3 py-1.5 text-sm text-slate-500 border-r border-slate-200
+            <button
+              // onClick={() => setCycleOffset(o => o - 1)} disabled={isSaving}
+              aria-label="Previous cycle"
+              className="px-3 py-1.5 text-sm text-slate-500 border-r border-slate-200
                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  ‹
-                </button>
-                <button
-                  // onClick={() => setCycleOffset(0)} disabled={isSaving}
-                  className="px-3 py-1.5
+            >
+              ‹
+            </button>
+            <button
+              // onClick={() => setCycleOffset(0)} disabled={isSaving}
+              className="px-3 py-1.5
                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  style={{ fontWeight: 500 }}
-                >
-                  <span className="text-xs text-slate-500">Current</span>
-                </button>
-                <button
-                  // onClick={() => setCycleOffset(o => o + 1)} disabled={isSaving}
-                  aria-label="Next cycle"
-                  className="px-3 py-1.5 text-sm text-slate-500 border-l border-slate-200
+              style={{ fontWeight: 500 }}
+            >
+              <span className="text-xs text-slate-500">Current</span>
+            </button>
+            <button
+              // onClick={() => setCycleOffset(o => o + 1)} disabled={isSaving}
+              aria-label="Next cycle"
+              className="px-3 py-1.5 text-sm text-slate-500 border-l border-slate-200
                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  ›
-                </button>
-              </div> */}
+            >
+              ›
+            </button>
+          </div> */}
           <button
             // onClick={() => setShowAddModal(true)} disabled={isSaving}
             className="px-3.5 py-1.5 text-sm bg-slate-700 text-white rounded-xl
@@ -64,8 +71,10 @@ export default function ShiftCalculatorClient({ initialSummary }: ShiftCalculato
         </div>
       </div>
       {/* Card summary */}
-      <PaySummaryCard summary={summary} className="flex md:flex-row flex-col gap-2" />{' '}
+      <PaySummaryCard summary={summary} className="flex md:flex-row flex-col gap-2" />
+
+      {/* shift details */}
+      <span className="text-sm text-slate-500">Shift details and management coming soon...</span>
     </>
-    // </div>
   );
 }

@@ -1,13 +1,12 @@
-import { PayCycleResponse } from '@/features/shift/types';
+import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorClient';
 
 type PaySummaryCardProps = {
-  summary: PayCycleResponse;
+  summary: SummaryBreakdown;
   className: string;
 };
 
 export default function PaySummaryCard({ summary, className }: PaySummaryCardProps) {
-  if (!summary) return null;
-
+  console.log('🚀 ~ PaySummaryCard ~ summary:', summary);
   return (
     <div className={className}>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
@@ -16,7 +15,7 @@ export default function PaySummaryCard({ summary, className }: PaySummaryCardPro
       </div>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
         <p className=" text-gray-400 text-sm uppercase font-medium">Scheduled Total Hours</p>
-        <p className="text-xl font-semibold">{summary.shiftCountInCycle} hrs</p>
+        <p className="text-xl font-semibold">{summary.scheduledTotalHours} hrs</p>
       </div>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
         <p className=" text-gray-400 text-sm uppercase font-medium">Shifts</p>
