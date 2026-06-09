@@ -9,7 +9,7 @@ type ErrorProps = {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error(error);
+    console.log('🚀 ~ Error ~ error:', error);
   }, [error]);
 
   return (
