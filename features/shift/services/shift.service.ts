@@ -1,5 +1,5 @@
 import { PayCycleResponse } from '@/features/shift/types';
-import { getDefaultErrorMessage, parseJsonSafe } from '@/lib/utils';
+import { getDefaultErrorMessage, parseJsonSafe } from '@/lib/api/api-error';
 
 export async function getPayCycle(): Promise<PayCycleResponse> {
   const res = await fetch('/api/private/shift/shift-calculator/current', {
@@ -20,3 +20,8 @@ export async function getPayCycle(): Promise<PayCycleResponse> {
   }
   return data;
 }
+
+// export async function getUserShiftsByPayCycle(p) {
+//   const res = await fetch('/api/private/shift/shift-calculator/shifts', {
+//     credentials: 'include',
+//   });
