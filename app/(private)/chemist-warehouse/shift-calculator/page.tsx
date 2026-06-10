@@ -49,7 +49,6 @@ export default async function ShiftCalculatorPage() {
   if (!userShifts) {
     throw new Error('Server response is not valid JSON');
   }
-  console.log('🚀 ~ ShiftCalculatorPage ~ userShifts:', userShifts);
 
   return (
     <>
@@ -63,8 +62,10 @@ export default async function ShiftCalculatorPage() {
               (total, shift) => total + getHoursBetween(shift.startAt, shift.endAt),
               0,
             ),
+            startCycleDate: payCycle.payCycleStartDate,
+            endCycleDate: payCycle.payCycleEndDate,
           }}
-          userShifts={userShifts}
+          initialUserShifts={userShifts}
         />
       </div>
     </>

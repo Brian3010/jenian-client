@@ -4,6 +4,18 @@ export enum PayCycle {
   Monthly = 3,
 }
 
+export enum EmploymentType {
+  FullTime = 1,
+  PartTime = 2,
+  Casual = 3,
+}
+
+export enum ShiftEntryType {
+  Worked = 1,
+  PaidNonWorked = 2,
+  Leave = 3,
+}
+
 export type PayCycleResponse = {
   hasPayCycleSettings: boolean;
   anchorStartDate: string;
@@ -14,26 +26,30 @@ export type PayCycleResponse = {
   estimatedGrossPay: number;
 };
 
+export type UserShift = {
+  id: string | null;
+  startAt: string;
+  endAt: string;
+  timeZoneId: string;
+  unpaidBreakMinutes: number;
+  paidBreakMinutes: number;
+  entryType: ShiftEntryType;
+  employmentType: EmploymentType;
+  source: string;
+};
+
+export type DailySummary = {
+  workDate: string;
+  totalPayableMinutes: number;
+  totalPaidBreakMinutes: number;
+  totalUnpaidBreakMinutes: number;
+  totalEveningPenaltyMinutes: number;
+  totalOvertimeMinutes: number;
+  baseRateUsed: number;
+  grossPay: number;
+};
+
 export type UserShiftsResponse = {
-  shifts: {
-    id: string | null;
-    startAt: string;
-    endAt: string;
-    timeZoneId: string;
-    unpaidBreakMinutes: number;
-    paidBreakMinutes: number;
-    entryType: string;
-    employmentType: string;
-    source: string;
-  }[];
-  dailySummaries: {
-    workDate: string;
-    totalPayableMinutes: number;
-    totalPaidBreakMinutes: number;
-    totalUnpaidBreakMinutes: number;
-    totalEveningPenaltyMinutes: number;
-    totalOvertimeMinutes: number;
-    baseRateUsed: number;
-    grossPay: number;
-  }[];
+  shifts: UserShift[];
+  dailySummaries: DailySummary[];
 };
