@@ -35,7 +35,7 @@ export default function NavBottomBar() {
   const pathname = usePathname();
   if (pathname === '/chemist-warehouse/create-report') return null;
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50  md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-50 md:hidden">
       <nav
         className={cn(
           'mx-auto w-full max-w-5xl border border-slate-200/70',
