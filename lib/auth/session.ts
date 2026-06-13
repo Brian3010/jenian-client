@@ -99,6 +99,7 @@ export async function clearAuthCookies(cookieOptions?: CookieOptions) {
   jar.set(AUTH_COOKIES.access, '', { ...opt, maxAge: 0 });
   jar.set(AUTH_COOKIES.refresh, '', { ...opt, maxAge: 0 });
   jar.set(AUTH_COOKIES.deviceId, '', { ...opt, maxAge: 0 });
+  jar.set('userName', '', { ...opt, maxAge: 0 });
 }
 /**
  * Read access token from cookie.

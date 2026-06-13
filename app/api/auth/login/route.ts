@@ -24,6 +24,7 @@ export async function POST(request: Request) {
 
   // Use text() to preserve raw response — avoids double-parsing
   const bodyData = await aspRes.text();
+  console.log('🚀 ~ POST ~ bodyData:', bodyData);
   const ct = aspRes.headers.get('content-type') ?? 'application/json';
 
   const nextRes = new NextResponse(bodyData, {
@@ -43,6 +44,13 @@ export async function POST(request: Request) {
           sameSite: 'lax',
           path: '/',
           expires: new Date(Date.now() + 30 * 60 * 1000), // 30 mins
+        });
+        nextRes.cookies.set('userName', JSON.parse(bodyData).user.userName || '', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
         });
       }
     } catch {
