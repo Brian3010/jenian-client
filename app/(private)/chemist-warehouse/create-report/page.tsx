@@ -2,7 +2,7 @@
 
 import { useNotifications } from '@/components/providers/NotificationContext';
 import { Button } from '@/components/ui/button';
-import { Field, FieldDescription } from '@/components/ui/field';
+import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { ailesFacing, cleaning, generalCheck, nightTasks, stockUpdate } from '@/features/cwh/constants';
@@ -12,8 +12,9 @@ import { ReportValuesInput, ReportValuesOutput } from '@/features/cwh/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { FieldErrors, useForm, UseFormRegister } from 'react-hook-form';
 
+import { Textarea } from '@/components/ui/textarea';
 import ReportFormHeader from '@/features/cwh/components/ReportFormHeader';
 import SectionInputs, { SectionInputsProps } from '@/features/cwh/components/SectionInputs';
 
@@ -147,7 +148,7 @@ export default function CreateEodReportForm() {
     if (!el) return;
 
     window.scrollTo({
-      top: el.getBoundingClientRect().top + window.scrollY,
+      top: el.getBoundingClientRect().top + window.scrollY + -200,
       behavior: 'auto',
     });
   }, [stepNumber]);
@@ -183,26 +184,7 @@ export default function CreateEodReportForm() {
           <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-full max-w-3xl flex flex-col gap-5">
             {stepNumber === 1 && (
               <>
-                <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                  <div className="border-b px-5 py-3">
-                    <h2 className="text-black font-medium text-md">Deliveries</h2>
-                    <p className="text-gray-600">Upload delivery screenshots for AI extraction.</p>
-                  </div>
-                  <div className="px-5 py-3">
-                    <Field>
-                      {errors.DeliveryScreenShots && (
-                        <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
-                      )}
-                      <div className="flex gap-4 items-center">
-                        <Input type="file" {...register('DeliveryScreenShots')} multiple />
-                        <FieldDescription className="font-semibold">Optional</FieldDescription>
-                      </div>
-                      <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                        Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
-                      </div>
-                    </Field>
-                  </div>
-                </section>
+                <StepDeliveries register={register} errors={errors} />
                 <div className="flex gap-3">
                   <Button
                     onClick={() => stepForward()}
@@ -291,6 +273,78 @@ export default function CreateEodReportForm() {
           </form>
         </div>
       </div>
+    </>
+  );
+}
+
+function StepDeliveries({
+  register,
+  errors,
+}: {
+  register: UseFormRegister<ReportValuesInput>;
+  errors: FieldErrors<ReportValuesInput>;
+}) {
+  const [method, setMethod] = useState<'upload' | 'manual'>('upload');
+
+  return (
+    <>
+      <section className="border rounded-2xl text-gray-800  border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <div className="px-5 py-3">
+          <h2 className="text-black font-medium text-md">
+            Deliveries <span className="text-gray-500 text-sm">(Optional)</span>
+          </h2>
+
+          <p className="text-gray-600 text-sm">Upload delivery screenshots or enter delivery details manually.</p>
+        </div>
+        <div className="px-5 py-2">
+          <div className="p-1 mt-2 rounded-lg border border-gray-200 bg-gray-100 w-full grid grid-cols-2 gap-6">
+            {['upload', 'manual'].map(m => {
+              const active = method === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setMethod(m as 'upload' | 'manual')}
+                  className={`border h-9 rounded-lg cursor-pointer transition-all  ${active ? 'bg-white' : 'border-none bg-transparent'}`}
+                >
+                  <span className="text-sm font-medium">
+                    {m === 'upload' ? 'Upload screenshots' : 'Enter manually'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="px-5 py-2">
+          {method === 'upload' && (
+            <Field>
+              {errors.DeliveryScreenShots && (
+                <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+              )}
+              <div className="flex gap-4 items-center">
+                <Input type="file" {...register('DeliveryScreenShots')} multiple />
+              </div>
+              <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Delivery result is AI-extracted and may contain errors. Review the final report on Telegram.
+              </div>
+            </Field>
+          )}
+
+          {method === 'manual' && (
+            <Field>
+              {/* {errors.DeliveryScreenShots && (
+            <p className="text-sm text-destructive mt-1">{errors.DeliveryScreenShots.message}</p>
+          )} */}
+              <div className="flex flex-col gap-4 items-center">
+                <Textarea
+                  placeholder="Example: Sigma - 12 @ 10:30am, Warehouse - 5 @ 11:00am, etc."
+                  className="resize-none rounded-md border border-gray-300 p-2 w-full min-h-[120px]"
+                  {...register('StockUpdate.AdditionalNote')}
+                />
+              </div>
+            </Field>
+          )}
+        </div>
+      </section>
     </>
   );
 }
