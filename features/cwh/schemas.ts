@@ -25,6 +25,7 @@ export const reportSchema = z.object({
   StockUpdate: z
     .object({
       AdditionalStock: z.string().max(1000).optional(),
+      AdditionalNote: z.string().max(1000).optional(),
     })
     .optional(),
   NightTasks: z
