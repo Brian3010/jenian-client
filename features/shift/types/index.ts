@@ -27,7 +27,7 @@ export type PayCycleResponse = {
 };
 
 export type UserShift = {
-  id: string | null;
+  id?: string;
   startAt: string;
   endAt: string;
   timeZoneId: string;
@@ -35,7 +35,7 @@ export type UserShift = {
   paidBreakMinutes: number;
   entryType: ShiftEntryType;
   employmentType: EmploymentType;
-  source: string;
+  // source: string;
 };
 
 export type DailySummary = {

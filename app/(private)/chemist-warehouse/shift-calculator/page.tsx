@@ -50,10 +50,12 @@ export default async function ShiftCalculatorPage() {
     throw new Error('Server response is not valid JSON');
   }
 
+  //TODO: Convert dates, times with timezone info from backend before passing to client, to avoid doing it multiple times in the client
+
   return (
     <>
       <ShiftCalculatorHeader />
-      <div className="flex flex-col gap-5 p-2 py-5">
+      <div className="flex flex-col gap-5 p-2 py-5 pb-30 md:pb-10">
         <ShiftCalculatorClient
           summaryBreakdown={{
             estimatedGrossPay: payCycle.estimatedGrossPay,

@@ -67,3 +67,24 @@ export function formatTime24h(time?: string | Date, timeZoneId?: string) {
     hour12: false,
   }).format(new Date(time));
 }
+
+export function formatDateTimeOffset(dateValue: string, timeValue: string, timeZoneId = 'Australia/Melbourne'): string {
+  const time = timeValue.length === 5 ? `${timeValue}:00` : timeValue;
+
+  const localDateTime = new Date(`${dateValue}T${time}`);
+
+  const parts = new Intl.DateTimeFormat('en-AU', {
+    timeZone: timeZoneId,
+    timeZoneName: 'longOffset',
+  }).formatToParts(localDateTime);
+
+  const offset =
+    parts
+      .find(part => part.type === 'timeZoneName')
+      ?.value.replace('GMT', '')
+      .trim() || '+00:00';
+
+  const dateTimeOffset = `${dateValue}T${time}${offset}`;
+
+  return new Date(dateTimeOffset).toISOString().replace('.000Z', '+00:00');
+}

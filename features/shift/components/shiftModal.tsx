@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { formatTime24h } from '@/lib/utils';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { shiftFormSchema, ShiftFormValues } from '@/features/shift/schemas';
+import { EmploymentType, ShiftEntryType, UserShift } from '@/features/shift/types';
+import { formatDateTimeOffset, formatTime24h } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { shiftFormSchema, ShiftFormValues } from '../schemas';
-import { UserShift } from '../types';
+import { Controller, useForm } from 'react-hook-form';
 
 type ShiftModalProps = {
   shift: UserShift | undefined;
@@ -14,11 +15,14 @@ type ShiftModalProps = {
 };
 
 export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps) {
+  console.log('🚀 ~ ShiftModal ~ shift:', shift);
   const isEditing = !!shift;
   const {
+    control,
+    trigger,
     register,
-    formState: { errors, isSubmitting },
-    watch,
+    formState: { errors },
+    getValues,
   } = useForm<ShiftFormValues>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues: {
@@ -29,10 +33,33 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
       endTime: isEditing ? formatTime24h(shift.endAt, shift.timeZoneId) : '17:00', // default to 17:00
       paidBreak: isEditing ? shift.paidBreakMinutes : 30,
       unpaidBreak: isEditing ? shift.unpaidBreakMinutes : 0,
-      entryType: 'Worked',
-      employmentType: 'Full-Time',
+      entryType: isEditing ? shift.entryType : ShiftEntryType.Worked, // default to 'Worked'
+      employmentType: isEditing ? shift.employmentType : EmploymentType.FullTime, // default to 'Full-time'
     },
   });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('Form values:', getValues().entryType, getValues().employmentType);
+
+    if (!(await trigger())) {
+      console.log('Validation failed:', errors);
+      return;
+    }
+
+    const toSaveData = {
+      ...(shift && shift.id ? { id: shift.id } : {}),
+      startAt: formatDateTimeOffset(getValues().workDate, getValues().startTime),
+      endAt: formatDateTimeOffset(getValues().workDate, getValues().endTime),
+      paidBreakMinutes: getValues().paidBreak,
+      unpaidBreakMinutes: getValues().unpaidBreak,
+      entryType: getValues().entryType,
+      employmentType: getValues().employmentType,
+    } as UserShift;
+    console.log('🚀 ~ handleSubmit ~ toSaveData:', toSaveData);
+    onSave(toSaveData);
+    // Handle form submission logic here
+  };
 
   return (
     <>
@@ -54,7 +81,7 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
           <h2 id="shift-modal-title" className="text-slate-900 text-xl font-semibold py-2 pb-4">
             {isEditing ? 'Edit shift' : 'Add shift'}
           </h2>
-          <form>
+          <form onSubmit={handleSubmit}>
             <FieldGroup>
               {/* Work date */}
               <Field>
@@ -88,13 +115,27 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <FieldLabel htmlFor="unpaidBreak">Unpaid Break (min)</FieldLabel>
-                  <Input className="rounded-xl" id="unpaidBreak" type="number" {...register('unpaidBreak')} />
+                  <Input
+                    className="rounded-xl"
+                    id="unpaidBreak"
+                    type="number"
+                    {...register('unpaidBreak', {
+                      setValueAs: value => (value === '' ? 0 : Number(value)),
+                    })}
+                  />
                   {errors.unpaidBreak && <p className="text-sm text-red-500 mt-1">{errors.unpaidBreak.message}</p>}
                 </Field>
 
                 <Field>
                   <FieldLabel htmlFor="paidBreak">Paid Break (min)</FieldLabel>
-                  <Input className="rounded-xl" id="paidBreak" type="number" {...register('paidBreak')} />
+                  <Input
+                    className="rounded-xl"
+                    id="paidBreak"
+                    type="number"
+                    {...register('paidBreak', {
+                      setValueAs: value => (value === '' ? 0 : Number(value)),
+                    })}
+                  />
                   {errors.paidBreak && <p className="text-sm text-red-500 mt-1">{errors.paidBreak.message}</p>}
                 </Field>
               </div>
@@ -102,18 +143,48 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
               {/* Entry type */}
               <Field>
                 <FieldLabel htmlFor="entryType">Entry Type</FieldLabel>
-                <Input className="appearance-none rounded-xl" id="entryType" type="text" {...register('entryType')} />
+                <Controller
+                  control={control}
+                  name="entryType"
+                  render={({ field }) => (
+                    <Select value={String(field.value)} onValueChange={value => field.onChange(Number(value))}>
+                      <SelectTrigger className="w-full max-w-48">
+                        <SelectValue placeholder="Select entry type" />
+                      </SelectTrigger>
+
+                      <SelectContent className="z-70" position="popper">
+                        <SelectGroup>
+                          <SelectItem value={String(ShiftEntryType.Worked)}>Worked</SelectItem>
+                          <SelectItem value={String(ShiftEntryType.PaidNonWorked)}>Paid Non-Worked</SelectItem>
+                          <SelectItem value={String(ShiftEntryType.Leave)}>Leave</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.entryType && <p className="text-sm text-red-500 mt-1">{errors.entryType.message}</p>}
               </Field>
 
               {/* Employment type */}
               <Field>
                 <FieldLabel htmlFor="employmentType">Employment Type</FieldLabel>
-                <Input
-                  className="appearance-none rounded-xl"
-                  id="employmentType"
-                  type="text"
-                  {...register('employmentType')}
+                <Controller
+                  control={control}
+                  name="employmentType"
+                  render={({ field }) => (
+                    <Select value={String(field.value)} onValueChange={value => field.onChange(Number(value))}>
+                      <SelectTrigger className="w-full max-w-48">
+                        <SelectValue placeholder="Select employment type" />
+                      </SelectTrigger>
+                      <SelectContent className="z-70" position="popper">
+                        <SelectGroup>
+                          <SelectItem value={String(EmploymentType.FullTime)}>Full-time</SelectItem>
+                          <SelectItem value={String(EmploymentType.PartTime)}>Part-time</SelectItem>
+                          <SelectItem value={String(EmploymentType.Casual)}>Casual</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.employmentType && <p className="text-sm text-red-500 mt-1">{errors.employmentType.message}</p>}
               </Field>
@@ -123,13 +194,7 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
                 <Button variant={'outline'} type="button" onClick={onCancel} className="flex-1 rounded-xl ">
                   Cancel
                 </Button>
-                <Button
-                  variant={'primary'}
-                  type="submit"
-                  disabled={isSubmitting}
-                  onClick={() => {}}
-                  className="flex-1 rounded-xl"
-                >
+                <Button variant={'primary'} type="submit" className="flex-1 rounded-xl">
                   {isEditing ? 'Save Changes' : 'Add Shift'}
                 </Button>
               </div>
