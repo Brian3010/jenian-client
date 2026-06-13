@@ -1,8 +1,9 @@
 'use client';
 
-import { EmploymentType, ShiftEntryType, UserShift, UserShiftsResponse } from '@/features/shift/types';
+import { UserShift, UserShiftsResponse } from '@/features/shift/types';
 import { formatDateToDayMonth, formatShortDate, formatTime12h } from '@/lib/utils';
 import { useState } from 'react';
+import { EmploymentTypeOptions, EntryTypeOptions } from '../schemas';
 import ShiftModal from './shiftModal';
 
 export type SummaryBreakdown = {
@@ -32,14 +33,16 @@ export default function ShiftCalculatorClient({ summaryBreakdown, initialUserShi
 
   // add shift
   const handleAdd = (shift: UserShift) => {
-    setDraftShifts(prev => [...prev, shift]);
+    setDraftShifts(prev => [...prev, { id: `draft-${crypto.randomUUID()}`, ...shift }]);
     setShowAddModal(false);
   };
 
   // edit shift
   const handleEdit = (shift: UserShift) => {
+    console.log('🚀 ~ handleEdit ~ shift:', shift);
     setDraftShifts(prev => prev.map(s => (s.id === shift.id ? shift : s)));
     setShowAddModal(false);
+    setEditingShift(null); // reset as shiftModal will have old shift data, won't close
   };
 
   // delete shift
@@ -158,17 +161,6 @@ type ShiftCardProps = {
 };
 
 function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProps) {
-  // const isNew    = shift.draftStatus === 'new';
-  // const isEdited = shift.draftStatus === 'edited';
-
-  // const borderCls = isError
-  //   ? 'border-red-200 bg-red-50'
-  //   : isNew
-  //   ? 'border-slate-200 bg-slate-50/30'
-  //   : isEdited
-  //   ? 'border-amber-200 bg-amber-50/20'
-  //   : 'border-slate-200 bg-white';
-
   return (
     <div className={`rounded-2xl border px-4 py-4 bg-white`}>
       <div className="flex items-start justify-between mb-2">
@@ -176,22 +168,6 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
           <span className="text-sm text-slate-900" style={{ fontWeight: 600 }}>
             {formatShortDate(shift.startAt, shift.timeZoneId)}
           </span>
-          {/* {isNew && (
-            <span
-              className="px-1.5 py-px rounded text-xs bg-slate-100 text-slate-700 border border-slate-200"
-              style={{ fontWeight: 500 }}
-            >
-              New
-            </span>
-          )}
-          {isEdited && (
-            <span
-              className="px-1.5 py-px rounded text-xs bg-amber-100 text-amber-800 border border-amber-200"
-              style={{ fontWeight: 500 }}
-            >
-              Edited
-            </span>
-          )} */}
         </div>
         <div className="flex gap-3 shrink-0 ml-2 text-sm">
           <button
@@ -222,21 +198,10 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-500">
-          <span>{ShiftEntryType[shift.entryType]}</span>
+          <span>{EntryTypeOptions[shift.entryType]}</span>
           <span className="text-slate-300">·</span>
-          <span>{EmploymentType[shift.employmentType]}</span>
+          <span>{EmploymentTypeOptions[shift.employmentType]}</span>
         </div>
-        {/* <div>
-          {isNew || isEdited ? (
-            <span className="text-xs text-amber-700" style={{ fontWeight: 500 }}>
-              Needs update
-            </span>
-          ) : shift.estimate != null ? (
-            <span className="text-sm text-slate-900" style={{ fontWeight: 600 }}>
-              ${shift.estimate.toFixed(2)}
-            </span>
-          ) : null}
-        </div> */}
       </div>
 
       {isError && (
