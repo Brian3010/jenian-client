@@ -31,7 +31,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
 
         setUser(user);
       } catch (error) {
-        console.error('Error fetching user info:', error);
+        console.error(error);
         setUser(null);
       } finally {
         setLoading(false);

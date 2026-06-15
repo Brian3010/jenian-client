@@ -1,4 +1,6 @@
 import { LoginResponse, User } from '@/features/auth/types';
+import { getDefaultErrorMessage, parseJsonSafe } from '@/lib/api/api-error';
+import { AppError } from '@/lib/AppError';
 
 export async function loginUser(userName: string, password: string): Promise<LoginResponse> {
   const res = await fetch('/api/auth/login', {
@@ -36,16 +38,30 @@ export async function logoutUser() {
   }
 }
 
-export async function GetUser() {
+export async function GetUser(): Promise<User> {
   const res = await fetch('/api/auth/me', {
     method: 'GET',
     credentials: 'include',
   });
 
   if (!res.ok) {
-    throw new Error('Failed to fetch user info');
+    const errorbody = await res.json().catch(() => null);
+    const message = errorbody?.message || errorbody?.title || getDefaultErrorMessage(res.status);
+    throw new AppError({
+      message,
+      code: 'GET_USER_FAILED',
+      status: res.status,
+    });
   }
-  const data = (await res.json()) as User;
+  const data = await parseJsonSafe<User>(res);
+
+  if (!data) {
+    throw new AppError({
+      message: 'Server response is not valid JSON',
+      code: 'INVALID_JSON_RESPONSE',
+      status: 500,
+    });
+  }
 
   return data;
 }
