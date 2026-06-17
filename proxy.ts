@@ -1,144 +1,121 @@
 // proxy.ts
-/**
- * ----------------------
- * This file runs BEFORE your route/page/API handler.
- * Think of it as a lightweight "gatekeeper" for routing.
- *
- * WHAT proxy.ts DO
- * -----------------------
- * ✅ Redirect unauthenticated users away from PRIVATE pages (to /sign-in)
- * ✅ Optionally redirect authenticated users away from /sign-in (to /dashboard)
- * ✅ Optionally block calls to /api/private/* if there is no session
- *
- * WHAT proxy.ts SHOULD NOT DO
- * ---------------------------
- * ❌ It should NOT call your ASP.NET API
- * ❌ It should NOT refresh tokens
- *
- * Refreshing access tokens happens in your server fetch wrapper:
- *   src/lib/auth/aspnet.ts
- *
- * IMPORTANT RULE FOR YOUR TOKEN MODEL
- * -----------------------------------
- * Access tokens expire frequently, so they may be missing/expired.
- * Your app should treat the user as "has a session" if they have a
- * refresh token cookie (because aspnet.ts can use it to get a new access token).
- *
- * Therefore proxy.ts should check for refresh_token (or refresh OR access),
- * NOT only access_token.
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 
-// Keep cookie names consistent with src/lib/auth/session.ts
-const ACCESS_COOKIE = 'accessToken';
 const REFRESH_COOKIE = 'refreshToken';
-const DEVICE_ID = 'deviceId';
+const DEVICE_ID_COOKIE = 'deviceId';
 
-/**
- * Decide which paths are ALWAYS public.
- * You said: "sign-in is public, the rest are private routes."
- */
-function isPublicPath(pathname: string) {
-  // Public UI route
-  if (pathname === '/sign-in') return true;
+function isStaticOrNextAsset(pathname: string) {
+  // Next.js generated assets
+  if (pathname.startsWith('/_next/static')) return true;
+  if (pathname.startsWith('/_next/image')) return true;
 
-  // (Optional) allow public BFF endpoints if you add them later
-  if (pathname.startsWith('/api/public')) return true;
-
-  return false;
-}
-
-/**
- * Next.js internal assets / static files must NOT be blocked.
- * If you block these, your app will look broken (CSS/JS/images won't load).
- */
-function isNextOrStaticAsset(pathname: string) {
-  if (pathname.startsWith('/_next')) return true;
+  // Metadata files
   if (pathname === '/favicon.ico') return true;
+  if (pathname === '/robots.txt') return true;
+  if (pathname === '/sitemap.xml') return true;
+  if (pathname === '/manifest.json') return true;
+  if (pathname === '/manifest.webmanifest') return true;
 
-  // Common static file extensions
-  if (/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js|map|txt|xml)$/.test(pathname)) return true;
-
-  return false;
+  // Public static assets
+  return /\.(png|jpg|jpeg|gif|svg|webp|avif|ico|css|js|map|txt|xml|webmanifest|woff|woff2|ttf|otf|pdf)$/.test(pathname);
 }
 
-/**
- * Is this a private API call?
- * With the BFF setup, your UI will call /api/private/* for authenticated calls.
- */
-function isPrivateApi(pathname: string) {
-  return pathname.startsWith('/api/private');
-}
-
-/**
- * Is this any API call?
- * (We handle API a bit differently than page navigation.)
- */
 function isAnyApi(pathname: string) {
-  return pathname.startsWith('/api/');
+  return pathname === '/api' || pathname.startsWith('/api/');
 }
 
-export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+function isPublicApi(pathname: string) {
+  return (
+    pathname === '/api/auth' ||
+    pathname.startsWith('/api/auth/') ||
+    pathname === '/api/public' ||
+    pathname.startsWith('/api/public/') ||
+    pathname === '/api/health' ||
+    pathname.startsWith('/api/health/')
+  );
+}
 
-  // Always allow Next internals + static files
-  if (isNextOrStaticAsset(pathname)) {
+function isPublicPage(pathname: string) {
+  return pathname === '/sign-in';
+}
+
+function hasSession(req: NextRequest) {
+  const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
+  const deviceId = req.cookies.get(DEVICE_ID_COOKIE)?.value;
+
+  return Boolean(refreshToken && deviceId);
+}
+
+export function proxy(req: NextRequest) {
+  console.log(`🚀 ~ Proxy - Incoming request: ${req.method} ${req.url}`);
+  const { pathname, search } = req.nextUrl;
+
+  /**
+   * Allow static assets and metadata files.
+   */
+  if (isStaticOrNextAsset(pathname)) {
     return NextResponse.next();
   }
 
-  // Read cookies. Refresh cookie is the best "session exists" indicator.
-  const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
-  const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
-  const deviceId = req.cookies.get(DEVICE_ID)?.value;
+  const sessionExists = hasSession(req);
 
-  // Treat user as authenticated if they have refresh OR access
-  // (refresh is the important one for your setup)
-  const hasSession = Boolean((refreshToken && deviceId) || accessToken);
-  console.log('🚀 ~ proxy ~ hasSession:', hasSession);
-
-  // If user is already authenticated, keep them out of /sign-in
-  // (optional but nice UX)
-  if ((pathname === '/sign-in' || pathname === '/') && hasSession) {
+  /**
+   * Signed-in users should not stay on / or /sign-in.
+   */
+  if (sessionExists && (pathname === '/' || pathname === '/sign-in')) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
+    url.search = '';
+
     return NextResponse.redirect(url);
   }
 
-  // Allow public paths through
-  if (isPublicPath(pathname)) {
+  /**
+   * Public page routes.
+   */
+  if (isPublicPage(pathname)) {
     return NextResponse.next();
   }
 
-  // Protect private API endpoints early
-  // If there's no refresh token, the user cannot refresh an expired access token,
-  // so private API calls should be rejected quickly.
-  //
-  // NOTE: We check refreshToken here (not accessToken) because access can expire.
-  console.log('🚀 ~ proxy ~ isPrivateApi(pathname) && !hasSession:', isPrivateApi(pathname) && !hasSession);
-  if (isPrivateApi(pathname) && !hasSession) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  /**
+   * API routes.
+   *
+   * Public:
+   * - /api/auth/*
+   * - /api/public/*
+   * - /api/health/*
+   *
+   * Protected:
+   * - every other /api/*
+   */
+  if (isAnyApi(pathname)) {
+    if (isPublicApi(pathname)) {
+      console.log('🚀 ~ Proxy - Public API route, allowing through without auth check');
+      return NextResponse.next();
+    }
+
+    if (!sessionExists) {
+      console.log('🚀 ~ Proxy - Protected API route, unauthorized access');
+      return NextResponse.json({ message: 'Unauthorizeds' }, { status: 401 });
+    }
+
+    return NextResponse.next();
   }
 
-  // Protect private pages:
-  // Anything that is not public and not an API route is treated as private UI.
-  //
-  // If no session => redirect to /sign-in and preserve "next" so you can return after login.
-  if (!isAnyApi(pathname) && !hasSession) {
+  /**
+   * Private pages.
+   */
+  if (!sessionExists) {
     const url = req.nextUrl.clone();
     url.pathname = '/sign-in';
-    url.searchParams.set('next', pathname);
+    url.searchParams.set('next', pathname + search);
+
     return NextResponse.redirect(url);
   }
 
-  // Otherwise allow request to continue
   return NextResponse.next();
 }
 
-/**
- * Apply to all routes.
- * If you later add more public routes, keep them in isPublicPath().
- */
 export const config = {
-  matcher: ['/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.json|manifest.webmanifest).*)'],
 };
