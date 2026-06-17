@@ -1,24 +1,62 @@
 import AppSidebar from '@/components/layout/AppSidebar';
 import NavBottomBar from '@/components/layout/NavBottomBar';
 import { NotificationsToaster } from '@/components/providers/NotificationToaster';
+import BackendUnavailableFallBack from '@/components/ui/BackendUnavailableFallBack';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { AuthContextProvider } from '@/features/auth/context/AuthContext';
 import { PayDetailContextProvider } from '@/features/shift/context/PayDetailContext';
+import { getSession } from '@/lib/auth/session';
+import { redirect } from 'next/navigation';
 
-export default function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+async function checkBackendHealth() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/health`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error('Backend health check failed with status:', res.status);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to GET /api/health: ', error);
+    return false;
+  }
+}
+
+export default async function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // first, check backend availabity by calling a simple endpoint, if it fails, show fallback UI with option to retry, if it succeeds, continue with auth check
+  const isBackendHealthy = await checkBackendHealth();
+  if (!isBackendHealthy) {
+    return <BackendUnavailableFallBack />;
+  }
+
+  const user = await getSession();
+  console.log('🚀 ~ PrivateLayout ~ user:', user);
+
+  if (!user) {
+    redirect('/api/auth/refresh?returnTo=/dashboard');
+  }
+
+  //TODO: review the report card, make sure to pass the user info to the AuthContext provider, and use it in the header to display user name and other info
+
   return (
-    <SidebarProvider defaultOpen={false}>
-      <PayDetailContextProvider>
-        <div className="w-full min-h-dvh md:flex">
-          <AppSidebar />
-          <div className="flex-1 min-h-dvh justify-center flex flex-col md:gap-4">
-            <NotificationsToaster />
-            <Header />
-            <div className="w-full max-w-5xl sm:p-0 flex-1 self-center">{children}</div>
+    <AuthContextProvider initialUser={user}>
+      <SidebarProvider defaultOpen={false}>
+        <PayDetailContextProvider>
+          <div className="w-full min-h-dvh md:flex">
+            <AppSidebar />
+            <div className="flex-1 min-h-dvh justify-center flex flex-col md:gap-4">
+              <NotificationsToaster />
+              <Header />
+              <div className="w-full max-w-5xl sm:p-0 flex-1 self-center">{children}</div>
+            </div>
+            <NavBottomBar />
           </div>
-          <NavBottomBar />
-        </div>
-      </PayDetailContextProvider>
-    </SidebarProvider>
+        </PayDetailContextProvider>
+      </SidebarProvider>
+    </AuthContextProvider>
   );
 }
