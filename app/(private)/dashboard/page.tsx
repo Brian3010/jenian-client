@@ -1,70 +1,41 @@
+import { GetUserResponse } from '@/features/auth/types';
 import ShiftCalculatorCard from '@/features/shift/components/ShiftCalculatorCard';
 import TelegramIntegrationCard from '@/features/telegram/components/TelegramIntegrationCard';
-import { cookies } from 'next/headers';
-
-type Weather = {
-  current: {
-    temperature_2m: number;
-    weather_code: number;
-  };
-  current_units: {
-    temperature_2m: string;
-  };
-};
-async function getMelbourneWeather() {
-  const res = await fetch(
-    'https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current=temperature_2m,weather_code&timezone=Australia%2FMelbourne',
-    {
-      next: { revalidate: 900 },
-    },
-  );
-
-  if (!res.ok) return null;
-
-  return res.json() as Promise<Weather>;
-}
-
-function getWeatherLabel(code: number) {
-  if (code === 0) return 'Clear';
-  if ([1, 2, 3].includes(code)) return 'Cloudy';
-  if ([45, 48].includes(code)) return 'Fog';
-  if ([51, 53, 55, 56, 57].includes(code)) return 'Drizzle';
-  if ([61, 63, 65, 66, 67].includes(code)) return 'Rain';
-  if ([80, 81, 82].includes(code)) return 'Showers';
-  if ([95, 96, 99].includes(code)) return 'Storm';
-
-  return 'Weather';
-}
+import { default as DateWeatherDisplay } from '@/features/weather/components/DateWeatherDisplay';
+import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
+import { AppError } from '@/lib/AppError';
+import { headers } from 'next/headers';
 
 export default async function Dashboard() {
-  const cookieStore = await cookies();
-  const weather = await getMelbourneWeather();
+  const headerStore = await headers();
+  // console.log('🚀 ~ Dashboard ~ headerStore:', headerStore);
+
+  //TODO: fetch User info and pass to the cards that need it, instead of fetching user info in each card component. This way we can avoid multiple calls to /api/auth/me and also have the user info available in the dashboard for any future cards that might need it.
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/me`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      cookie: headerStore.get('cookie') ?? '',
+    },
+  });
+
+  if (!res.ok) {
+    const message = await getErrorMessageFromResponse(res);
+    throw new AppError({
+      message,
+      code: 'FETCH_USER_FAILED',
+      status: res.status,
+    });
+  }
+
+  const user = await parseJsonSafe<GetUserResponse>(res);
+
   return (
     <div className="w-full p-3">
-      <div className="pb-4">
-        <p className="text-sm text-gray-500">
-          {new Date().toLocaleDateString('en-AU', {
-            timeZone: 'Australia/Melbourne',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-          })}
-        </p>
-
-        <h1 className="mt-1 text-lg font-semibold text-gray-900">
-          Hello, {cookieStore.get('userName')?.value ?? 'there'}
-        </h1>
-
-        {weather && (
-          <p className="mt-1 text-sm text-gray-600">
-            Melbourne · {Math.round(weather.current.temperature_2m)}
-            {weather.current_units.temperature_2m} · {getWeatherLabel(weather.current.weather_code)}
-          </p>
-        )}
-      </div>
+      <DateWeatherDisplay />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <TelegramIntegrationCard />
+        <TelegramIntegrationCard user={user} />
         <ShiftCalculatorCard />
       </div>
     </div>

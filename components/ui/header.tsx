@@ -17,6 +17,7 @@ import { Button } from './button';
 
 export default function Header() {
   const { userInfo } = useAuth();
+  console.log('🚀 ~ Header ~ userInfo:', userInfo);
   const pathname = usePathname();
   if (pathname !== '/dashboard') return null;
 
@@ -35,7 +36,7 @@ export default function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="rounded-xl p-3">
             <DropdownMenuGroup>
-              <DropdownMenuLabel>{userInfo !== null && userInfo.userName}</DropdownMenuLabel>
+              <DropdownMenuLabel>{userInfo?.name}</DropdownMenuLabel>
               <DropdownMenuLabel className="text-gray-800 font-normal">
                 <Link href="/settings">Settings</Link>
               </DropdownMenuLabel>

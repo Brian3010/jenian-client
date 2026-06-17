@@ -2,21 +2,24 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { GetUserResponse } from '@/features/auth/types';
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { useRouter } from 'next/navigation';
 import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
 
-export default function TelegramIntegrationCard() {
+export default function TelegramIntegrationCard({ user }: { user: GetUserResponse | null }) {
+  const isUserConnected = user?.isTelegramConnected ?? null;
   const router = useRouter();
   // const { isUserConnected, isLoading } = useIsUserConnected();
-  const { userInfo, loading } = useAuth();
+  // const { userInfo, loading } = useAuth();
 
-  if (loading) return <TelegramIntegrationCardSkeleton />;
+  // if (loading) return <TelegramIntegrationCardSkeleton />;
 
-  if (!userInfo) return null;
+  //TODO: review how to handle the card state, if the user is not connected
 
-  const isUserConnected = userInfo.isTelegramConnected;
+  if (isUserConnected === null) {
+    return <TelegramIntegrationCardSkeleton />;
+  }
 
   return (
     <Card className="flex flex-col gap-3">
