@@ -1,153 +1,88 @@
 /**
- * aspnet.ts
- * ---------
- * Server-side (BFF) helper for calling your ASP.NET Core API.
- * UI should call Next.js endpoints (e.g. /api/private/...)
- * and Next.js should call your ASP.NET API server-to-server.
+ * Server-side BFF helper for calling the ASP.NET Core API.
+ * Browser/UI code should call Next.js routes; Next.js forwards authenticated
+ * requests to ASP.NET and handles token refresh server-side.
  *
- * This file provides ONE consistent way to:
- *   1) Read the access token from httpOnly cookies (server-side only)
- *   2) Add `Authorization: Bearer <accessToken>` to ASP.NET requests
- *   3) If ASP.NET returns 401 (expired access token):
- *        - call ASP.NET refresh-token endpoint using refresh token
- *        - update the access token cookie
- *        - retry the original request ONCE
- *   4) If refresh fails (refresh token expired/invalid):
- *        - clear cookies so the user must log in again
+ * Handles:
+ * - Reading the access token from httpOnly cookies
+ * - Sending `Authorization: Bearer <token>` to ASP.NET
+ * - Refreshing once on 401, then retrying the original request
+ * - Clearing auth cookies when refresh fails
  *
- * IMPORTANT: proxy.ts is NOT the place to refresh tokens.
- * proxy.ts is just a "gatekeeper" to redirect users to /sign-in if there is no session.
+ * Note: proxy.ts should only gate/redirect unauthenticated users, not refresh tokens.
  */
 
 import { cookies } from 'next/headers';
 import 'server-only';
-import { clearAuthCookies, getAccessToken, setAccessCookie } from './session';
+import { clearAuthCookies, getAccessToken } from './session';
 
 const BACKEND_URL = process.env.BACKEND_URL!;
 if (!BACKEND_URL) {
   throw new Error('Missing BACKEND_URL in environment variables.');
 }
 
-/**
- *   POST /api/Auth/refresh-token
- *   -> { accessToken, userDetails }
- */
-export type UserDetails = {
-  id: string;
-  userName: string;
-  email: string;
-}; // Replace with your real type
-type RefreshResponse = {
-  accessToken: string;
-  userDetails: UserDetails;
-};
-
-async function refreshAccessToken(): Promise<{ ok: true; userDetails: UserDetails } | { ok: false }> {
-  /**The Next.js server does not automatically have the browser cookies
-    It only has them if the browser sends them in the request.
-
-    So on the server you can access cookies like:
-
-    import { cookies } from "next/headers";
-    cookies().get("refreshToken")
-  **/
-
+async function refreshAccessToken(): Promise<{ ok: true } | { ok: false }> {
+  // Forward browser cookies received by Next.js to the ASP.NET refresh endpoint.
   const cookieStore = cookies();
   const cookieHeader = (await cookieStore).toString();
-  console.log('🚀 ~ refreshAccessToken ~ cookieHeader:', cookieHeader);
 
-  // Call ASP.NET refresh endpoint
   const r = await fetch(`${BACKEND_URL}/api/Auth/refresh-token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: cookieHeader, // manually forward incoming cookies
+      Cookie: cookieHeader,
     },
-
-    // Avoid caching auth calls
-    cache: 'no-store',
+    cache: 'no-store', // Never cache auth requests.
   });
-  console.log('🚀 ~ refreshAccessToken ~ r:', r);
 
-  // Refresh failed => treat session as expired
+  // Refresh failed: expire the local session.
   if (!r.ok) {
-    console.log('Clearing cookies');
-    clearAuthCookies(); // force user to login next time
-    return { ok: false };
-  }
-
-  const data = (await r.json()) as RefreshResponse;
-
-  // If response doesn't contain a usable access token, treat as invalid session
-  if (!data?.accessToken) {
     clearAuthCookies();
     return { ok: false };
   }
 
-  // Refresh succeeded => update only access cookie (refresh token unchanged)
-  await setAccessCookie({
-    accessToken: data.accessToken,
-    // Optionally set accessMaxAgeSec to match backend access TTL
-    accessMaxAgeSec: 60 * 30, // 30 minutes
-  });
-
-  return { ok: true, userDetails: data.userDetails };
+  return { ok: true };
 }
 
 /**
- * Main helper you will use from Next.js route handlers.
+ * Fetches an ASP.NET endpoint from Next.js route handlers.
  *
- * Example usage:
- *   const { res } = await aspnetFetch("/api/CWH/eod-report", { method: "POST", body: JSON.stringify(payload) });
+ * Adds the bearer token when available. If ASP.NET returns 401, refreshes the
+ * access token once and retries the original request once.
  *
- * WHAT IT DOES
- * ------------
- * - Adds Authorization header if access token exists
- * - Calls ASP.NET
- * - If response is 401:
- *     * tries refresh once
- *     * retries the original request once
- * - Returns the final Response
+ * Example:
+ *   const { res } = await aspnetFetch('/api/CWH/eod-report', {
+ *     method: 'POST',
+ *     body: JSON.stringify(payload),
+ *   });
  */
 export async function aspnetFetch(
   path: string,
   init: RequestInit = {},
   opts?: {
-    /**
-     * If true (default), try refresh+retry once when ASP.NET returns 401.
-     * You may turn this off for endpoints where 401 should just pass through.
-     */
+    /** Retry once after refreshing the token when ASP.NET returns 401. Defaults to true. */
     retryOn401?: boolean;
 
-    /**
-     * Optional: override base URL if needed (rare).
-     */
+    /** Override the backend base URL for rare special cases. */
     baseUrlOverride?: string;
   },
-): Promise<{ res: Response; refreshedUser?: UserDetails }> {
+): Promise<{ res: Response }> {
   const retryOn401 = opts?.retryOn401 ?? true;
   const baseUrl = opts?.baseUrlOverride ?? BACKEND_URL;
 
-  /**
-   * Performs the actual fetch to ASP.NET with bearer token injected.
-   */
+  // Performs one ASP.NET request with current cookies and bearer token attached.
   const doRequest = async (): Promise<Response> => {
     const accessToken = await getAccessToken();
-    console.log('🚀 ~ doRequest ~ accessToken:', accessToken);
 
-    // read cookies from the incoming browser -> Next.js request
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
 
-    // Merge caller headers safely (supports both object and Headers inputs)
     const headers = new Headers(init.headers);
-    console.log('🚀 ~ doRequest ~ init.headers:', init.headers);
 
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+    if (cookieHeader) headers.set('Cookie', cookieHeader);
+    console.log('🚀 ~ doRequest ~ cookieHeader:', cookieHeader);
 
-    if (cookieHeader) headers.set('Cookie', cookieHeader); // Forward cookies to ASP.NET
-
-    // Make request to ASP.NET server
     return fetch(`${baseUrl}${path}`, {
       ...init,
       headers,
@@ -155,39 +90,36 @@ export async function aspnetFetch(
     });
   };
 
-  // First attempt (using current access token if present)
   let res = await doRequest();
 
-  // If access token is expired, ASP.NET typically returns 401
   if (res.status === 401 && retryOn401) {
-    // Try to refresh access token (using refresh token)
     const refreshed = await refreshAccessToken();
 
-    // If refresh succeeded, retry original request once with new access token
     if (refreshed.ok) {
       res = await doRequest();
-      return { res, refreshedUser: refreshed.userDetails };
+      return { res };
     }
 
-    // If refresh failed, cookies were cleared and we return the original 401.
-    // UI can redirect to /sign-in.
+    // Refresh failed; return the original 401 so the UI can redirect to sign-in.
   }
+
+  console.log(`🚀 ~ aspnetFetch to backend: ${path} - Status: ${res.status}`);
 
   return { res };
 }
 
 /**
- * Optional convenience wrapper if you commonly want JSON typed responses.
+ * Convenience wrapper for typed JSON responses.
  *
- * Usage:
- *   const result = await aspnetJson<MyType>("/api/CWH/final-report/123");
+ * Example:
+ *   const result = await aspnetJson<MyType>('/api/CWH/final-report/123');
  */
 export async function aspnetJson<T>(
   path: string,
   init: RequestInit = {},
   opts?: { retryOn401?: boolean },
-): Promise<{ ok: true; data: T; refreshedUser?: UserDetails } | { ok: false; status: number; errorText: string }> {
-  const { res, refreshedUser } = await aspnetFetch(path, init, opts);
+): Promise<{ ok: true; data: T } | { ok: false; status: number; errorText: string }> {
+  const { res } = await aspnetFetch(path, init, opts);
 
   if (!res.ok) {
     const errorText = await res.text().catch(() => '');
@@ -195,5 +127,5 @@ export async function aspnetJson<T>(
   }
 
   const data = (await res.json()) as T;
-  return { ok: true, data, refreshedUser };
+  return { ok: true, data };
 }

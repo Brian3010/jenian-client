@@ -14,6 +14,7 @@
  * login / refresh / logout routes.
  */
 
+import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import 'server-only';
 
@@ -117,20 +118,30 @@ export async function getRefreshToken(): Promise<string | undefined> {
   return (await cookies()).get(AUTH_COOKIES.refresh)?.value;
 }
 
-/**
- * Quick helper for "do we have any session at all?"
- * Typically, proxy.ts should treat having a refresh token as "logged in",
- * because access tokens can expire frequently.
- */
-export function hasSession(): boolean {
-  const refresh = getRefreshToken();
-  const access = getAccessToken();
-  return Boolean(refresh || access);
-}
+export type UserPayload = {
+  name: string;
+  email: string;
+};
 
-export async function clearallCookies() {
+export async function getSession(): Promise<UserPayload | null> {
   const jar = await cookies();
-  for (const cookie of jar.getAll()) {
-    jar.set(cookie.name, '', { ...baseCookieOptions(), maxAge: 0 });
+  const accessToken = jar.get(AUTH_COOKIES.access)?.value;
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+  if (!accessToken) return null;
+
+  try {
+    const { payload } = (await jwtVerify(accessToken, secret, {
+      issuer: process.env.JWT_ISSUER,
+      audience: process.env.JWT_AUDIENCE,
+    })) as { payload: UserPayload };
+
+    return {
+      name: payload.name,
+      email: payload.email,
+    };
+  } catch (error) {
+    console.error('Failed to validate access token', error);
+    return null;
   }
 }

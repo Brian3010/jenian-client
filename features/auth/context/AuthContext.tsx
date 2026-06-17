@@ -1,51 +1,60 @@
 'use client';
 
-import { GetUser } from '@/features/auth/services/auth.service';
-import { AuthContextType, User } from '@/features/auth/types';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { UserPayload } from '@/lib/auth/session';
+import { createContext, useContext, useState } from 'react';
+
+type AuthContextType = {
+  userInfo: UserPayload | null;
+  loading: boolean;
+  // logout: () => Promise<void>;
+  // refreshUser: () => Promise<void>;
+  addUser: (userInfo: UserPayload) => void;
+};
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthContextProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export function AuthContextProvider({
+  children,
+  initialUser,
+}: {
+  children: React.ReactNode;
+  initialUser: UserPayload;
+}) {
+  const [user, setUser] = useState<UserPayload>(initialUser);
   console.log('🚀 ~ AuthContextProvider ~ user:', user);
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [loading, setLoading] = useState<boolean>(true);
 
-  // logout
-  const logout = async () => {};
+  // // logout
+  // const logout = async () => {};
 
-  // refreshUser
-  const refreshUser = async () => {};
+  // // refreshUser
+  // const refreshUser = async () => {};
 
-  const addUser = (userInfo: User) => {
+  const addUser = (userInfo: UserPayload) => {
     setUser(userInfo);
   };
 
-  useEffect(() => {
-    console.log('AuthContextProvider mounted, fetching user info...');
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const user = await GetUser();
-        console.log('🚀 ~ fetchUser ~ user:', user);
+  // useEffect(() => {
+  //   console.log('AuthContextProvider mounted, fetching user info...');
+  //   const fetchUser = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const user = await GetUser();
+  //       console.log('🚀 ~ fetchUser ~ user:', user);
 
-        setUser(user);
-      } catch (error) {
-        console.error(error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setUser(user);
+  //     } catch (error) {
+  //       console.error(error);
+  //       setUser(null);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchUser();
-  }, []);
+  //   // fetchUser();
+  // }, []);
 
-  return (
-    <AuthContext.Provider value={{ addUser, logout, refreshUser, userInfo: user, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ addUser, userInfo: user, loading: false }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

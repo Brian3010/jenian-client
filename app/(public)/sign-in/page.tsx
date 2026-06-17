@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import ContactMeAlertDialog from '@/features/auth/components/ContactMeAlertDialog';
-import { useAuth } from '@/features/auth/context/AuthContext';
 import { loginUser } from '@/features/auth/services/auth.service';
+import { AppError } from '@/lib/AppError';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -29,7 +29,7 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
-  const { addUser } = useAuth();
+  // const { addUser } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -53,12 +53,16 @@ export default function SignIn() {
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       setIsLoading(true);
-      const { user } = await loginUser(signInData.userName, signInData.password);
-      addUser(user);
-      router.push('/dashboard');
+      await loginUser(signInData.userName, signInData.password);
+      // addUser(user);
+      router.replace('/dashboard');
     } catch (err) {
-      console.log('🚀 ~ onSubmit ~ err:', err);
-      setError(err instanceof Error ? err.message : 'Login failed');
+      console.error('🚀 ~ onSubmit ~ err:', err);
+      if (err instanceof AppError && err.code === 'INVALID_CREDENTIALS') {
+        setError('Invalid username or password');
+      } else {
+        setError('An unexpected error occurred. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }

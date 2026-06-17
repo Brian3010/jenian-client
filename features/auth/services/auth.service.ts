@@ -1,8 +1,8 @@
-import { LoginResponse, User } from '@/features/auth/types';
+import { GetUserResponse } from '@/features/auth/types';
 import { getDefaultErrorMessage, parseJsonSafe } from '@/lib/api/api-error';
 import { AppError } from '@/lib/AppError';
 
-export async function loginUser(userName: string, password: string): Promise<LoginResponse> {
+export async function loginUser(userName: string, password: string): Promise<void> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -10,13 +10,18 @@ export async function loginUser(userName: string, password: string): Promise<Log
     credentials: 'include',
   });
 
-  if (res.status == 401) throw new Error('Invalid username or password');
-  if (!res.ok) throw new Error('Something went wrong');
-
-  const data = (await res.json()) as LoginResponse;
-  console.log('🚀 ~ login ~ data:', data);
-
-  return data as LoginResponse;
+  if (res.status == 401)
+    throw new AppError({
+      message: 'Invalid username or password',
+      code: 'INVALID_CREDENTIALS',
+      status: 401,
+    });
+  if (!res.ok)
+    throw new AppError({
+      message: 'Something went wrong',
+      code: 'UNKNOWN_ERROR',
+      status: res.status,
+    });
 }
 
 //TODO:  review this
@@ -28,7 +33,11 @@ export async function logoutUser() {
     });
     if (!res.ok) {
       console.error('Logout failed with status:', res.status);
-      throw new Error('Logout failed');
+      throw new AppError({
+        message: 'Logout failed',
+        code: 'LOGOUT_FAILED',
+        status: res.status,
+      });
     } else {
       console.log('Logout successful');
     }
@@ -38,7 +47,7 @@ export async function logoutUser() {
   }
 }
 
-export async function GetUser(): Promise<User> {
+export async function GetUser(): Promise<GetUserResponse> {
   const res = await fetch('/api/auth/me', {
     method: 'GET',
     credentials: 'include',
@@ -53,7 +62,7 @@ export async function GetUser(): Promise<User> {
       status: res.status,
     });
   }
-  const data = await parseJsonSafe<User>(res);
+  const data = await parseJsonSafe<GetUserResponse>(res);
 
   if (!data) {
     throw new AppError({
