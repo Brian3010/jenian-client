@@ -154,25 +154,24 @@ export default function CreateEodReportForm() {
   }, [stepNumber]);
 
   const onSubmit = async (signInData: ReportValuesOutput) => {
-    console.log('clicked clicked');
     console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       setIsLoading(true);
-      const data: { message: string; status: number } = await handleReport(signInData);
+      const data = await handleReport(signInData);
       console.log('🚀 ~ onSubmit ~ data:', data);
-      setIsLoading(false);
-      if (data.status === 200) {
-        localStorage.removeItem(STORAGE_KEY);
-        notifySuccess('Report submitted successfully!');
-        return router.push('/dashboard');
-      }
-      if (data.message === 'Unauthorized' || data.status === 401) return router.push('/sign-in');
+      localStorage.removeItem(STORAGE_KEY);
+      notifySuccess('Report submitted successfully!');
+
+      //TODO: log data for now, can add data to /dashboard to show the submitted report in a summary card or something later
+      return router.push('/dashboard');
     } catch (error) {
       console.error(error);
       notifyError('Failed to submit report. Please try again.');
       alert(error instanceof Error ? error + '|' + error.message : 'An unknown error occurred');
       setIsLoading(false);
       return router.push('/dashboard');
+    } finally {
+      setIsLoading(false);
     }
   };
 
