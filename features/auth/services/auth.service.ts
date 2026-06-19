@@ -1,5 +1,5 @@
 import { GetUserResponse } from '@/features/auth/types';
-import { getDefaultErrorMessage, parseJsonSafe } from '@/lib/api/api-error';
+import { getDefaultErrorMessage, getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
 import { AppError } from '@/lib/AppError';
 
 export async function loginUser(userName: string, password: string): Promise<void> {
@@ -10,18 +10,20 @@ export async function loginUser(userName: string, password: string): Promise<voi
     credentials: 'include',
   });
 
-  if (res.status == 401)
+  if (res.status === 401)
     throw new AppError({
       message: 'Invalid username or password',
       code: 'INVALID_CREDENTIALS',
       status: 401,
     });
-  if (!res.ok)
+  if (!res.ok) {
+    const errorBody = await getErrorMessageFromResponse(res);
     throw new AppError({
-      message: 'Something went wrong',
-      code: 'UNKNOWN_ERROR',
+      message: errorBody,
+      code: 'LOGIN_FAILED',
       status: res.status,
     });
+  }
 }
 
 //TODO:  review this
