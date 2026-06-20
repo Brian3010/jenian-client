@@ -123,6 +123,7 @@ export type UserPayload = {
   email: string;
 };
 
+// checking accessToken and parsing user info
 export async function getSession(): Promise<UserPayload | null> {
   const jar = await cookies();
   const accessToken = jar.get(AUTH_COOKIES.access)?.value;

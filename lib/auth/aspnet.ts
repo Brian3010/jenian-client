@@ -79,9 +79,10 @@ export async function aspnetFetch(
 
     const headers = new Headers(init.headers);
 
+    // Attach the access token and cookies from the incoming Next.js request to the ASP.NET request.
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
     if (cookieHeader) headers.set('Cookie', cookieHeader);
-    console.log('🚀 ~ doRequest ~ cookieHeader:', cookieHeader);
+    // console.log('🚀 ~ aspnetFetch - doRequest ~ headers:', headers);
 
     return fetch(`${baseUrl}${path}`, {
       ...init,
