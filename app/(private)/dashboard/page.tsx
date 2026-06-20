@@ -6,16 +6,18 @@ import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error'
 import { AppError } from '@/lib/AppError';
 import { headers } from 'next/headers';
 
+//TODO: ask if move the fetch here to TelegramIntegrationCard
 export default async function Dashboard() {
   const headerStore = await headers();
   // console.log('🚀 ~ Dashboard ~ headerStore:', headerStore);
 
-  //TODO: fetch User info and pass to the cards that need it, instead of fetching user info in each card component. This way we can avoid multiple calls to /api/auth/me and also have the user info available in the dashboard for any future cards that might need it.
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/me`, {
     method: 'GET',
-    cache: 'no-store',
     headers: {
       cookie: headerStore.get('cookie') ?? '',
+    },
+    next: {
+      revalidate: 300,
     },
   });
 

@@ -1,17 +1,21 @@
 // Re-export for backward compatibility (shadcn components import from @/lib/utils)
 export { cn } from './utils/cn';
 export { getByPath } from './utils/form';
+import { DateTime } from 'luxon';
 
-export function formatDayMonth(dateString: string | null): string {
-  if (!dateString) return '';
-  const date = new Date(dateString);
+export function formatDateDayMonth(date: string): string {
+  const dateTime = DateTime.fromISO(date, {
+    zone: 'UTC',
+  }).setLocale('en-AU');
 
-  return new Intl.DateTimeFormat('en-AU', {
-    day: 'numeric',
-    month: 'short',
-  }).format(date);
+  if (!dateTime.isValid) {
+    return date;
+  }
+
+  return dateTime.toFormat('d LLLL');
 }
 
+// hours between two ISO date strings
 export function getHoursBetween(startAt: string, endAt: string): number {
   const start = new Date(startAt);
   const end = new Date(endAt);
@@ -21,70 +25,69 @@ export function getHoursBetween(startAt: string, endAt: string): number {
   return durationMs / (1000 * 60 * 60);
 }
 
-export function formatTime(dateString: string, timezone: string): string {
-  return new Intl.DateTimeFormat('en-AU', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: timezone,
-  }).format(new Date(dateString));
+// format to short date with day, e.g. Wed 1 Jan
+
+export function formatWorkDate(date: string): string {
+  const dateTime = DateTime.fromISO(date, {
+    zone: 'UTC',
+  }).setLocale('en-AU');
+
+  if (!dateTime.isValid) {
+    return date;
+  }
+
+  return dateTime.toFormat('ccc, d LLLL');
 }
 
-export function formatDateToDayMonth(dateString: string, timezone: string): string {
-  const [year, month, day] = dateString.split('-').map(Number);
+// convert utc iso string to local date and time with timezone info, e.g. 2024-01-01T14:30:00+11:00 to { date: '2024-01-01', time: '14:30' }
+export function convertUtcIsoToLocalDateAndTime(
+  utcDateTime: string,
+  timeZoneId: string,
+): {
+  date: string;
+  time: string;
+} {
+  if (!utcDateTime) {
+    throw new Error('utcDateTime is required');
+  }
 
-  const date = new Date(Date.UTC(year, month - 1, day));
+  if (!timeZoneId) {
+    throw new Error('timeZoneId is required');
+  }
 
-  return date.toLocaleDateString('en-AU', {
-    timeZone: timezone,
-    day: 'numeric',
-    month: 'long',
-  });
+  const dateTime = DateTime.fromISO(utcDateTime, {
+    zone: 'utc',
+  }).setZone(timeZoneId);
+
+  if (!dateTime.isValid) {
+    throw new Error(dateTime.invalidExplanation ?? 'Invalid UTC datetime');
+  }
+
+  return {
+    date: dateTime.toFormat('yyyy-MM-dd'),
+    time: dateTime.toFormat('HH:mm'),
+  };
 }
 
-export function formatShortDate(dateString: string, timezone: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', timeZone: timezone });
-}
+export function formatTime12h(time24h: string): string {
+  const [hoursString, minutesString] = time24h.split(':');
 
-export function formatTime12h(time: string, timezone: string): string {
-  const date = new Date(time);
-  return date.toLocaleTimeString('en-AU', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: timezone,
-  });
-}
+  const hours = Number(hoursString);
+  const minutes = Number(minutesString);
 
-export function formatTime24h(time?: string | Date, timeZoneId?: string) {
-  if (!time) return '';
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return time24h;
+  }
 
-  return new Intl.DateTimeFormat('en-GB', {
-    timeZone: timeZoneId,
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(time));
-}
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
 
-export function formatDateTimeOffset(dateValue: string, timeValue: string, timeZoneId = 'Australia/Melbourne'): string {
-  const time = timeValue.length === 5 ? `${timeValue}:00` : timeValue;
-
-  const localDateTime = new Date(`${dateValue}T${time}`);
-
-  const parts = new Intl.DateTimeFormat('en-AU', {
-    timeZone: timeZoneId,
-    timeZoneName: 'longOffset',
-  }).formatToParts(localDateTime);
-
-  const offset =
-    parts
-      .find(part => part.type === 'timeZoneName')
-      ?.value.replace('GMT', '')
-      .trim() || '+00:00';
-
-  const dateTimeOffset = `${dateValue}T${time}${offset}`;
-
-  return new Date(dateTimeOffset).toISOString().replace('.000Z', '+00:00');
+  return `${hours12}:${minutesString.padStart(2, '0')} ${period}`;
 }

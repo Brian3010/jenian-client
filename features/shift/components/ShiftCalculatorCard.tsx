@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
 import { TelegramIntegrationCardSkeleton } from '@/features/telegram/components/TelegramIntegrationCardSkeleton';
-import { formatDayMonth } from '@/lib/utils';
+import { formatDateDayMonth } from '@/lib/utils';
 import Link from 'next/link';
 import { usePayDetail } from '../context/PayDetailContext';
 
@@ -60,7 +60,7 @@ function HasPayCycleState({
           rows={[
             {
               label: 'Current Cycle',
-              value: `${formatDayMonth(payCycleStartDate)} - ${formatDayMonth(payCycleEndDate)}`,
+              value: `${formatDateDayMonth(payCycleStartDate)} - ${formatDateDayMonth(payCycleEndDate)}`,
             },
             {
               label: 'Shifts Worked',

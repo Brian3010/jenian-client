@@ -5,6 +5,7 @@ const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export const shiftFormSchema = z
   .object({
+    id: z.string().uuid().optional(),
     workDate: z.iso.date('Please select a valid date'),
     startTime: z.string().regex(timeRegex, 'Please enter a valid start time'),
     endTime: z.string().regex(timeRegex, 'Please enter a valid end time'),

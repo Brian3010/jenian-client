@@ -12,7 +12,9 @@ import { redirect } from 'next/navigation';
 async function checkBackendHealth() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/health`, {
-      cache: 'no-store',
+      next: {
+        revalidate: 300,
+      },
     });
 
     if (!res.ok) {
@@ -36,12 +38,11 @@ export default async function PrivateLayout({ children }: Readonly<{ children: R
   const user = await getSession();
   console.log('🚀 ~ PrivateLayout ~ user:', user);
 
+  // null returned, do redirect to refresh route to get new token
   if (!user) {
     redirect('/api/auth/refresh?returnTo=/dashboard');
   }
-
-  //TODO: review the report card, make sure to pass the user info to the AuthContext provider, and use it in the header to display user name and other info
-
+  //TODO: PayDetailContextProvider can combine with AuthContextProvider ??
   return (
     <AuthContextProvider initialUser={user}>
       <SidebarProvider defaultOpen={false}>

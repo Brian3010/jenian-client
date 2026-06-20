@@ -3,18 +3,19 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { shiftFormSchema, ShiftFormValues } from '@/features/shift/schemas';
-import { EmploymentType, ShiftEntryType, UserShift } from '@/features/shift/types';
-import { formatDateTimeOffset, formatTime24h } from '@/lib/utils';
+import { EmploymentType, ShiftEntryType } from '@/features/shift/types';
+// import { formatDateTimeOffset, formatTime24h } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 
 type ShiftModalProps = {
-  shift: UserShift | undefined;
+  shift: ShiftFormValues | undefined;
+  timeZoneId: string;
   onCancel: () => void;
-  onSave: (shift: UserShift) => void;
+  onSave: (shift: ShiftFormValues) => void;
 };
 
-export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps) {
+export default function ShiftModal({ shift, timeZoneId, onCancel, onSave }: ShiftModalProps) {
   console.log('🚀 ~ ShiftModal ~ shift:', shift);
   const isEditing = !!shift;
   const {
@@ -26,15 +27,14 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
   } = useForm<ShiftFormValues>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues: {
-      workDate: isEditing
-        ? new Date(shift.startAt).toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0], // default to today
-      startTime: isEditing ? formatTime24h(shift.startAt, shift.timeZoneId) : '09:00', // default to 09:00
-      endTime: isEditing ? formatTime24h(shift.endAt, shift.timeZoneId) : '17:00', // default to 17:00
-      paidBreak: isEditing ? shift.paidBreakMinutes : 30,
-      unpaidBreak: isEditing ? shift.unpaidBreakMinutes : 0,
-      entryType: isEditing ? shift.entryType : ShiftEntryType.Worked, // default to 'Worked'
-      employmentType: isEditing ? shift.employmentType : EmploymentType.FullTime, // default to 'Full-time'
+      workDate: isEditing ? shift.workDate : new Date().toISOString().split('T')[0], // default to today
+      //TODO: convert fallbakt times to user's system timezone for start and end times
+      startTime: isEditing ? shift.startTime : undefined,
+      endTime: isEditing ? shift.endTime : undefined,
+      paidBreak: isEditing ? shift.paidBreak : 30,
+      unpaidBreak: isEditing ? shift.unpaidBreak : 0,
+      entryType: isEditing ? shift.entryType : ShiftEntryType.Worked,
+      employmentType: isEditing ? shift.employmentType : EmploymentType.FullTime,
     },
   });
 
@@ -47,17 +47,30 @@ export default function ShiftModal({ shift, onCancel, onSave }: ShiftModalProps)
       return;
     }
 
-    const toSaveData = {
+    //INFO: if shift exists, include id for update, otherwise it's a new shift
+
+    console.log('🚀 ~ handleSubmit ~ getValues().startTime:', getValues().startTime);
+    onSave({
       ...(shift && shift.id ? { id: shift.id } : {}),
-      startAt: formatDateTimeOffset(getValues().workDate, getValues().startTime),
-      endAt: formatDateTimeOffset(getValues().workDate, getValues().endTime),
-      paidBreakMinutes: getValues().paidBreak,
-      unpaidBreakMinutes: getValues().unpaidBreak,
+      workDate: getValues().workDate,
+      startTime: getValues().startTime,
+      endTime: getValues().endTime,
+      paidBreak: getValues().paidBreak,
+      unpaidBreak: getValues().unpaidBreak,
       entryType: getValues().entryType,
       employmentType: getValues().employmentType,
-    } as UserShift;
-    console.log('🚀 ~ handleSubmit ~ toSaveData:', toSaveData);
-    onSave(toSaveData);
+    });
+    // const toSaveData = {
+    //   ...(shift && shift.id ? { id: shift.id } : {}),
+    //   startAt: getValues().workDate,
+    //   endAt: getValues().workDate,
+    //   paidBreakMinutes: getValues().paidBreak,
+    //   unpaidBreakMinutes: getValues().unpaidBreak,
+    //   entryType: getValues().entryType,
+    //   employmentType: getValues().employmentType,
+    // } as UserShift;
+    // console.log('🚀 ~ handleSubmit ~ toSaveData:', toSaveData);
+    // onSave(toSaveData);
     // Handle form submission logic here
   };
 

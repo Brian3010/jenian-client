@@ -1,30 +1,33 @@
 'use client';
 
-import { UserShift, UserShiftsResponse } from '@/features/shift/types';
-import { formatDateToDayMonth, formatShortDate, formatTime12h } from '@/lib/utils';
+// import { formatTime12h } from '@/lib/utils';
+import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
+import { formatDateDayMonth, formatTime12h, formatWorkDate } from '@/lib/utils';
 import { useState } from 'react';
-import { EmploymentTypeOptions, EntryTypeOptions } from '../schemas';
+import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
 import ShiftModal from './shiftModal';
 
-export type SummaryBreakdown = {
-  estimatedGrossPay: number;
-  shiftCountInCycle: number;
-  scheduledTotalHours: number;
-  startCycleDate: string;
-  endCycleDate: string;
-};
-
 type ShiftCalculatorClientProps = {
-  summaryBreakdown: SummaryBreakdown;
-  initialUserShifts: UserShiftsResponse;
+  initialSummaryBreakdown: SummaryBreakdown;
+  cycleStartDate: string;
+  cycleEndDate: string;
+  initialUserShifts: ShiftFormValues[];
+  timeZoneId: string;
 };
 
-export default function ShiftCalculatorClient({ summaryBreakdown, initialUserShifts }: ShiftCalculatorClientProps) {
-  const [summaryBreakDown, setSummaryBreakDown] = useState<SummaryBreakdown>(summaryBreakdown);
-  const [savedShifts, setSavedShifts] = useState<UserShift[]>(initialUserShifts.shifts);
-  const [draftShifts, setDraftShifts] = useState<UserShift[]>(initialUserShifts.shifts);
+export default function ShiftCalculatorClient({
+  initialSummaryBreakdown,
+  initialUserShifts,
+  cycleStartDate,
+  cycleEndDate,
+  timeZoneId,
+}: ShiftCalculatorClientProps) {
+  const [summaryBreakDown, setSummaryBreakDown] = useState<SummaryBreakdown>(initialSummaryBreakdown);
+  const [savedShifts, setSavedShifts] = useState<ShiftFormValues[]>(initialUserShifts);
+  const [draftShifts, setDraftShifts] = useState<ShiftFormValues[]>(initialUserShifts);
+  console.log('🚀 ~ ShiftCalculatorClient ~ draftShifts:', draftShifts);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [editingShift, setEditingShift] = useState<UserShift | null>(null);
+  const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
 
   const onModalCancel = () => {
     setShowAddModal(false);
@@ -32,13 +35,13 @@ export default function ShiftCalculatorClient({ summaryBreakdown, initialUserShi
   };
 
   // add shift
-  const handleAdd = (shift: UserShift) => {
+  const handleAdd = (shift: ShiftFormValues) => {
     setDraftShifts(prev => [...prev, { id: `draft-${crypto.randomUUID()}`, ...shift }]);
     setShowAddModal(false);
   };
 
   // edit shift
-  const handleEdit = (shift: UserShift) => {
+  const handleEdit = (shift: ShiftFormValues) => {
     console.log('🚀 ~ handleEdit ~ shift:', shift);
     setDraftShifts(prev => prev.map(s => (s.id === shift.id ? shift : s)));
     setShowAddModal(false);
@@ -68,8 +71,7 @@ export default function ShiftCalculatorClient({ summaryBreakdown, initialUserShi
           </p>
           <div className="mt-2 inline-flex items-center px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg">
             <span className="text-xs text-slate-700" style={{ fontWeight: 500 }}>
-              {formatDateToDayMonth(summaryBreakDown.startCycleDate, savedShifts[0]?.timeZoneId) || 'UTC'} -{' '}
-              {formatDateToDayMonth(summaryBreakDown.endCycleDate, savedShifts[0]?.timeZoneId) || 'UTC'}
+              {formatDateDayMonth(cycleStartDate)} - {formatDateDayMonth(cycleEndDate)}
             </span>
           </div>
         </div>
@@ -143,6 +145,7 @@ export default function ShiftCalculatorClient({ summaryBreakdown, initialUserShi
         {(showAddModal || editingShift) && (
           <ShiftModal
             shift={editingShift || undefined}
+            timeZoneId={timeZoneId}
             onCancel={onModalCancel}
             onSave={editingShift ? handleEdit : handleAdd}
           />
@@ -153,20 +156,22 @@ export default function ShiftCalculatorClient({ summaryBreakdown, initialUserShi
 }
 
 type ShiftCardProps = {
-  shift: UserShift;
+  shift: ShiftFormValues;
   isSaving: boolean;
   isError: boolean;
   onEdit: () => void;
   onDelete: () => void;
 };
 
+//TODO: convert start and end times to user's sytem timezone to display, and convert back to shift timezone when saving
 function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProps) {
   return (
     <div className={`rounded-2xl border px-4 py-4 bg-white`}>
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-sm text-slate-900" style={{ fontWeight: 600 }}>
-            {formatShortDate(shift.startAt, shift.timeZoneId)}
+            {/* {formatShortDate(shift.startAt, shift.timeZoneId)} */}
+            {formatWorkDate(shift.workDate)}
           </span>
         </div>
         <div className="flex gap-3 shrink-0 ml-2 text-sm">
@@ -188,12 +193,15 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
       </div>
 
       <p className="text-sm text-slate-600 mb-2">
-        {formatTime12h(shift.startAt, shift.timeZoneId)} - {formatTime12h(shift.endAt, shift.timeZoneId)}
+        {/* {formatTime12h(shift.startAt, shift.timeZoneId)} - {formatTime12h(shift.endAt, shift.timeZoneId)} */}
+        {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
       </p>
 
       <div className="flex gap-3 text-xs text-slate-400 mb-3">
-        <span>Unpaid: {shift.unpaidBreakMinutes} min</span>
-        <span>Paid: {shift.paidBreakMinutes} min</span>
+        {/* <span>Unpaid: {shift.unpaidBreakMinutes} min</span>
+        <span>Paid: {shift.paidBreakMinutes} min</span> */}
+        <span>Unpaid: {shift.unpaidBreak} min</span>
+        <span>Paid: {shift.paidBreak} min</span>
       </div>
 
       <div className="flex items-center justify-between">
