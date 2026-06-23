@@ -2,9 +2,10 @@
 
 // import { formatTime12h } from '@/lib/utils';
 import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
-import { formatDateDayMonth, formatTime12h, formatWorkDate } from '@/lib/utils';
-import { useState } from 'react';
+import { formatDateDayMonth, formatTime12h, formatWorkDate, getHoursBetweenTimes } from '@/lib/utils';
+import { useMemo, useReducer, useState } from 'react';
 import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
+import { createInitialState, reducer, ShiftWithStatus } from './shiftCalculator.reducer';
 import ShiftModal from './shiftModal';
 
 type ShiftCalculatorClientProps = {
@@ -22,42 +23,60 @@ export default function ShiftCalculatorClient({
   cycleEndDate,
   timeZoneId,
 }: ShiftCalculatorClientProps) {
-  const [summaryBreakDown, setSummaryBreakDown] = useState<SummaryBreakdown>(initialSummaryBreakdown);
-  const [savedShifts, setSavedShifts] = useState<ShiftFormValues[]>(initialUserShifts);
-  const [draftShifts, setDraftShifts] = useState<ShiftFormValues[]>(initialUserShifts);
-  console.log('🚀 ~ ShiftCalculatorClient ~ draftShifts:', draftShifts);
-  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  // reducer
+  const [state, dispatch] = useReducer(reducer, initialUserShifts, createInitialState);
+  console.log('🚀 ~ ShiftCalculatorClient ~ state:', state);
   const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
+
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+
+  // recalculate summary breakdown whenever draftShifts changes
+  const summaryBreakDown = useMemo<SummaryBreakdown>(() => {
+    const totalHours = state.draftShifts.reduce((total: number, s: ShiftFormValues) => {
+      return total + getHoursBetweenTimes(s.startTime, s.endTime);
+    }, 0);
+
+    return {
+      ...initialSummaryBreakdown,
+      shiftCountInCycle: state.draftShifts.length,
+      scheduledTotalHours: totalHours,
+    };
+  }, [state.draftShifts, initialSummaryBreakdown]);
+
+  //TODO: check for unsaved changes
+  // const unsavedChanges = useMemo<boolean>(() => {}, [state.draftShifts, state.savedShifts]);
 
   const onModalCancel = () => {
     setShowAddModal(false);
     setEditingShift(null);
   };
 
-  // add shift
+  // add shift to draftShifts
   const handleAdd = (shift: ShiftFormValues) => {
-    setDraftShifts(prev => [...prev, { id: `draft-${crypto.randomUUID()}`, ...shift }]);
+    dispatch({ type: 'ADD_SHIFT', shift });
     setShowAddModal(false);
   };
 
-  // edit shift
+  // edit shift in draftShifts
   const handleEdit = (shift: ShiftFormValues) => {
-    console.log('🚀 ~ handleEdit ~ shift:', shift);
-    setDraftShifts(prev => prev.map(s => (s.id === shift.id ? shift : s)));
+    dispatch({ type: 'EDIT_SHIFT', shift });
     setShowAddModal(false);
     setEditingShift(null); // reset as shiftModal will have old shift data, won't close
   };
 
-  // delete shift
+  // delete shift from draftShifts
   const handleDelete = (id: string | null) => {
     if (id === null) return;
-    setDraftShifts(prev => prev.filter(s => s.id !== id));
+    dispatch({ type: 'DELETE_SHIFT', shiftId: id });
     setShowAddModal(false);
   };
 
+  // handle save changes
+  const handleSaveChanges = () => {};
+
   // submit shift to backend
   const handleSubmit = async () => {
-    console.log('submiting .... ', draftShifts);
+    console.log('submiting .... ', state.draftShifts);
     await new Promise(r => setTimeout(r, 1600));
   };
 
@@ -117,8 +136,8 @@ export default function ShiftCalculatorClient({
 
       {/* shift details */}
       <div className="flex flex-col lg:flex-row gap-4">
-        {draftShifts.length > 0 ? (
-          draftShifts.map(shift => (
+        {state.draftShifts.length > 0 ? (
+          state.draftShifts.map(shift => (
             <ShiftCard
               key={shift.id}
               shift={shift}
@@ -144,26 +163,32 @@ export default function ShiftCalculatorClient({
         </div>
         {(showAddModal || editingShift) && (
           <ShiftModal
+            payStartDate={cycleStartDate}
+            payEndDate={cycleEndDate}
             shift={editingShift || undefined}
             timeZoneId={timeZoneId}
             onCancel={onModalCancel}
             onSave={editingShift ? handleEdit : handleAdd}
           />
         )}
+        {
+          //TODO: Add save changes button that triggers handleSubmit,
+          // only show when there are unsaved changes (draftShifts !== savedShifts),
+          // after submit, update savedShifts with draftShifts
+        }
       </div>
     </>
   );
 }
 
 type ShiftCardProps = {
-  shift: ShiftFormValues;
+  shift: ShiftWithStatus;
   isSaving: boolean;
   isError: boolean;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-//TODO: convert start and end times to user's sytem timezone to display, and convert back to shift timezone when saving
 function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProps) {
   return (
     <div className={`rounded-2xl border px-4 py-4 bg-white`}>
@@ -173,6 +198,17 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
             {/* {formatShortDate(shift.startAt, shift.timeZoneId)} */}
             {formatWorkDate(shift.workDate)}
           </span>
+          {shift.status === 'saved' ? null : (
+            <span
+              className={`px-1.5 py-px rounded text-xs ${
+                shift.status === 'new'
+                  ? 'bg-slate-100 text-slate-700 border border-slate-200'
+                  : 'bg-amber-100 text-amber-800 border border-amber-200'
+              }`}
+            >
+              {shift.status}
+            </span>
+          )}
         </div>
         <div className="flex gap-3 shrink-0 ml-2 text-sm">
           <button
@@ -221,6 +257,8 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
   );
 }
 
+// TODO: calculate pay breakdown from shifts including new and updated shifts, show total hours, base hours...
+// TODO: cross pay will be calculated from backend
 // function PayBreakDown({ shifts }: { shifts: UserShift[] }) {
 //   //TODO: calculate base hours, evening penalty, overtime, paid breaks, unpaid breaks from shifts
 //   return (
