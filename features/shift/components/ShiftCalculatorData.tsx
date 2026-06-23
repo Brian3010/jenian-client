@@ -96,7 +96,7 @@ export default async function ShiftCalculatorData() {
       initialUserShifts={mapShiftToFormValues(userShifts)}
       cycleStartDate={payCycle.payCycleStartDate}
       cycleEndDate={payCycle.payCycleEndDate}
-      timeZoneId={userShifts.shifts[0].timeZoneId ?? 'Australia/Melbourne'}
+      timeZoneId={userShifts.shifts.length > 0 ? userShifts.shifts[0].timeZoneId : 'Australia/Melbourne'}
     />
   );
 }
