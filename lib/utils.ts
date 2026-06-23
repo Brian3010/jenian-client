@@ -25,8 +25,20 @@ export function getHoursBetween(startAt: string, endAt: string): number {
   return durationMs / (1000 * 60 * 60);
 }
 
-// format to short date with day, e.g. Wed 1 Jan
+// hours between 2 string times in format 'HH:mm', e.g. '09:30' to '17:00'
+export function getHoursBetweenTimes(startTime: string, endTime: string): number {
+  const [startHours, startMinutes] = startTime.split(':').map(Number);
+  const [endHours, endMinutes] = endTime.split(':').map(Number);
+  const start = new Date();
+  start.setHours(startHours, startMinutes, 0, 0);
+  const end = new Date();
+  end.setHours(endHours, endMinutes, 0, 0);
 
+  const durationMs = end.getTime() - start.getTime();
+  return durationMs / (1000 * 60 * 60);
+}
+
+// format to short date with day, e.g. Wed 1 Jan
 export function formatWorkDate(date: string): string {
   const dateTime = DateTime.fromISO(date, {
     zone: 'UTC',

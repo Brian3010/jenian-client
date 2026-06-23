@@ -4,31 +4,35 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { shiftFormSchema, ShiftFormValues } from '@/features/shift/schemas';
 import { EmploymentType, ShiftEntryType } from '@/features/shift/types';
+import { formatDateDayMonth } from '@/lib/utils';
 // import { formatDateTimeOffset, formatTime24h } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { SubmitEvent } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 type ShiftModalProps = {
   shift: ShiftFormValues | undefined;
   timeZoneId: string;
+  payStartDate: string;
+  payEndDate: string;
   onCancel: () => void;
   onSave: (shift: ShiftFormValues) => void;
 };
 
-export default function ShiftModal({ shift, timeZoneId, onCancel, onSave }: ShiftModalProps) {
+export default function ShiftModal({ shift, payStartDate, payEndDate, onCancel, onSave }: ShiftModalProps) {
   console.log('🚀 ~ ShiftModal ~ shift:', shift);
   const isEditing = !!shift;
   const {
     control,
     trigger,
     register,
+    setError,
     formState: { errors },
     getValues,
   } = useForm<ShiftFormValues>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues: {
       workDate: isEditing ? shift.workDate : new Date().toISOString().split('T')[0], // default to today
-      //TODO: convert fallbakt times to user's system timezone for start and end times
       startTime: isEditing ? shift.startTime : undefined,
       endTime: isEditing ? shift.endTime : undefined,
       paidBreak: isEditing ? shift.paidBreak : 30,
@@ -38,18 +42,24 @@ export default function ShiftModal({ shift, timeZoneId, onCancel, onSave }: Shif
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     console.log('Form values:', getValues().entryType, getValues().employmentType);
 
+    // validate form before submitting
+    if (getValues().workDate < payStartDate || getValues().workDate > payEndDate) {
+      setError('workDate', {
+        type: 'manual',
+        message: `Work date is outside the pay period (${formatDateDayMonth(payStartDate)} - ${formatDateDayMonth(payEndDate)})`,
+      });
+      return;
+    }
     if (!(await trigger())) {
       console.log('Validation failed:', errors);
       return;
     }
 
-    //INFO: if shift exists, include id for update, otherwise it's a new shift
-
-    console.log('🚀 ~ handleSubmit ~ getValues().startTime:', getValues().startTime);
+    // pass validated form values to parent component to handle saving to backend
     onSave({
       ...(shift && shift.id ? { id: shift.id } : {}),
       workDate: getValues().workDate,
@@ -60,18 +70,6 @@ export default function ShiftModal({ shift, timeZoneId, onCancel, onSave }: Shif
       entryType: getValues().entryType,
       employmentType: getValues().employmentType,
     });
-    // const toSaveData = {
-    //   ...(shift && shift.id ? { id: shift.id } : {}),
-    //   startAt: getValues().workDate,
-    //   endAt: getValues().workDate,
-    //   paidBreakMinutes: getValues().paidBreak,
-    //   unpaidBreakMinutes: getValues().unpaidBreak,
-    //   entryType: getValues().entryType,
-    //   employmentType: getValues().employmentType,
-    // } as UserShift;
-    // console.log('🚀 ~ handleSubmit ~ toSaveData:', toSaveData);
-    // onSave(toSaveData);
-    // Handle form submission logic here
   };
 
   return (
