@@ -1,8 +1,10 @@
 'use client';
 
 // import { formatTime12h } from '@/lib/utils';
+import { Spinner } from '@/components/ui/spinner';
 import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
 import { formatDateDayMonth, formatTime12h, formatWorkDate, getHoursBetweenTimes } from '@/lib/utils';
+import { CircleAlert } from 'lucide-react';
 import { useMemo, useReducer, useState } from 'react';
 import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
 import { createInitialState, reducer, ShiftWithStatus } from './shiftCalculator.reducer';
@@ -25,13 +27,12 @@ export default function ShiftCalculatorClient({
 }: ShiftCalculatorClientProps) {
   // reducer
   const [state, dispatch] = useReducer(reducer, initialUserShifts, createInitialState);
-  console.log('🚀 ~ ShiftCalculatorClient ~ state:', state);
   const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
 
   // recalculate summary breakdown whenever draftShifts changes
-  const summaryBreakDown = useMemo<SummaryBreakdown>(() => {
+  const summaryBreakDown = useMemo<SummaryBreakdown & { hasUnsavedChanges: boolean }>(() => {
     const totalHours = state.draftShifts.reduce((total: number, s: ShiftFormValues) => {
       return total + getHoursBetweenTimes(s.startTime, s.endTime);
     }, 0);
@@ -40,11 +41,9 @@ export default function ShiftCalculatorClient({
       ...initialSummaryBreakdown,
       shiftCountInCycle: state.draftShifts.length,
       scheduledTotalHours: totalHours,
+      hasUnsavedChanges: state.changeCounter > 0,
     };
-  }, [state.draftShifts, initialSummaryBreakdown]);
-
-  //TODO: check for unsaved changes
-  // const unsavedChanges = useMemo<boolean>(() => {}, [state.draftShifts, state.savedShifts]);
+  }, [state.draftShifts, initialSummaryBreakdown, state.changeCounter]);
 
   const onModalCancel = () => {
     setShowAddModal(false);
@@ -71,6 +70,7 @@ export default function ShiftCalculatorClient({
     setShowAddModal(false);
   };
 
+  //TODO: add way to track if there are unsaved changes
   // handle save changes
   const handleSaveChanges = () => {};
 
@@ -124,7 +124,7 @@ export default function ShiftCalculatorClient({
           <button
             onClick={() => setShowAddModal(true)}
             className="px-3.5 py-1.5 text-sm bg-slate-700 text-white rounded-xl
-                  hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 500 }}
           >
             + Add shift
@@ -306,7 +306,7 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
 // }
 
 type PaySummaryCardProps = {
-  summary: SummaryBreakdown;
+  summary: SummaryBreakdown & { hasUnsavedChanges: boolean };
   className: string;
 };
 
@@ -315,15 +315,87 @@ function PaySummaryCard({ summary, className }: PaySummaryCardProps) {
     <div className={className}>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
         <p className=" text-gray-400 text-sm uppercase font-medium">Estimated Gross Pay</p>
-        <p className="text-xl font-semibold">${summary.estimatedGrossPay}</p>
+        <p className="text-xl font-semibold">${summary.estimatedGrossPay.toFixed(2)}</p>
+        {summary.hasUnsavedChanges ? (
+          <span className="flex items-center gap-1 text-xs leading-5 text-amber-600">
+            <CircleAlert size={14} />
+            <p>Save changes to update pay</p>
+          </span>
+        ) : (
+          <p className="text-xs leading-5 text-slate-400">Based on last saved shifts</p>
+        )}
       </div>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
         <p className=" text-gray-400 text-sm uppercase font-medium">Scheduled Total Hours</p>
-        <p className="text-xl font-semibold">{summary.scheduledTotalHours} hrs</p>
+        <p className="text-xl font-semibold">{summary.scheduledTotalHours.toFixed(2)} hrs</p>
+        <p className="text-xs leading-5 text-slate-400">
+          {summary.hasUnsavedChanges ? 'Includes unsaved changes' : 'Based on last saved shifts'}
+        </p>
       </div>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
         <p className=" text-gray-400 text-sm uppercase font-medium">Shifts</p>
         <p className="text-xl font-semibold">{summary.shiftCountInCycle}</p>
+        <p className="text-xs leading-5 text-slate-400">
+          {summary.hasUnsavedChanges ? 'Includes unsaved changes' : 'Based on last saved shifts'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sticky save bar ───────────────────────────────────────────────────────
+
+function StickyBar({
+  unsavedCount,
+  isSaving,
+  isError,
+  onSave,
+  onDiscard,
+}: {
+  unsavedCount: number;
+  isSaving: boolean;
+  isError: boolean;
+  onSave: () => void;
+  onDiscard: () => void;
+}) {
+  const msg = isSaving
+    ? 'Saving shifts and updating pay estimate…'
+    : isError
+      ? 'Save failed. Review the highlighted row and try again.'
+      : `You have ${unsavedCount} unsaved change${unsavedCount !== 1 ? 's' : ''}. Save to update pay estimate.`;
+
+  return (
+    <div
+      className="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200"
+      style={{ boxShadow: '0 -2px 10px rgba(15,23,42,0.06)' }}
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <p className="text-sm text-slate-500 truncate">{msg}</p>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={onDiscard}
+            disabled={isSaving}
+            className="px-3 py-1.5 text-sm text-slate-600 border border-slate-200 rounded-xl bg-white
+              hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Discard
+          </button>
+          <button
+            onClick={onSave}
+            disabled={isSaving}
+            className="px-4 py-1.5 text-sm bg-slate-700 text-white rounded-xl flex items-center gap-1.5
+              hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            style={{ fontWeight: 500 }}
+          >
+            {isSaving && <Spinner />}
+            {isSaving ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
       </div>
     </div>
   );

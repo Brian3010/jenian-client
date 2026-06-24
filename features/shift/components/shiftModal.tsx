@@ -83,7 +83,11 @@ export default function ShiftModal({ shift, payStartDate, payEndDate, onCancel, 
         aria-labelledby="shift-modal-title"
         className="fixed z-60 inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:px-4 "
       >
-        <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl border border-slate-200 p-6  backdrop-blur shadow-lg shadow-[rgba(15,23,42,0.10)]">
+        <div
+          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+          className="bg-white w-full overflow-y-auto max-h-[90dvh] sm:max-w-md rounded-t-2xl 
+          sm:rounded-2xl border border-slate-200 p-6  backdrop-blur shadow-lg shadow-[rgba(15,23,42,0.10)]"
+        >
           {/* Mobile drag handle */}
           <div className="sm:hidden flex justify-center mb-4" aria-hidden="true">
             <div className="w-10 h-1 rounded-full bg-slate-200" />
