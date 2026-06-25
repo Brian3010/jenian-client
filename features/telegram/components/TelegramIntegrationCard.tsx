@@ -25,7 +25,7 @@ export default async function TelegramIntegrationCard() {
 
   if (!res.ok) {
     if (res.status === 401) {
-      return redirect('/api/auth/refresh?returnTo=/dashboard');
+      return redirect(`${process.env.NEXT_PUBLIC_APP_URL}/sign-in`);
     }
 
     const message = await getErrorMessageFromResponse(res);

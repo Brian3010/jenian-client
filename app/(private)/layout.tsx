@@ -40,7 +40,7 @@ export default async function PrivateLayout({ children }: Readonly<{ children: R
 
   // null returned, do redirect to refresh route to get new token
   if (!user) {
-    redirect('/api/auth/refresh?returnTo=/dashboard');
+    return redirect('/api/auth/refresh?returnTo=/dashboard');
   }
   //TODO: PayDetailContextProvider can combine with AuthContextProvider ??
   return (
