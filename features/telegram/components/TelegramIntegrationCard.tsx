@@ -4,30 +4,21 @@ import { GetUserResponse } from '@/features/auth/types';
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
 import { AppError } from '@/lib/AppError';
-import { headers } from 'next/headers';
+import { aspnetFetch } from '@/lib/auth/aspnet';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 export default async function TelegramIntegrationCard() {
-  const headerStore = await headers();
-  // console.log('🚀 ~ Dashboard ~ headerStore:', headerStore);
-
   // Check if user is connected to Telegram
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/me`, {
-    method: 'GET',
-    headers: {
-      cookie: headerStore.get('cookie') ?? '',
+  const { res } = await aspnetFetch(
+    '/api/Auth/get-me',
+    {
+      method: 'GET',
+      cache: 'no-store',
     },
-    next: {
-      revalidate: 300,
-    },
-  });
+    { retryOn401: false },
+  );
 
   if (!res.ok) {
-    if (res.status === 401) {
-      return redirect(`${process.env.NEXT_PUBLIC_APP_URL}/sign-in`);
-    }
-
     const message = await getErrorMessageFromResponse(res);
     throw new AppError({
       message,

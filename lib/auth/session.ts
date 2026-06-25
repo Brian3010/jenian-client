@@ -16,7 +16,9 @@
 
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
+import { cache } from 'react';
 import 'server-only';
 
 export const AUTH_COOKIES = {
@@ -158,3 +160,23 @@ export async function getSession(): Promise<UserPayload | null> {
     return null;
   }
 }
+
+export async function requireSession(returnTo: string) {
+  const user = await getSession();
+
+  if (!user) {
+    redirect(`/api/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
+  }
+
+  return user;
+}
+
+export const requireSessionCached = cache(async (returnTo = '/dashboard') => {
+  const user = await getSession();
+
+  if (!user) {
+    redirect(`/api/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
+  }
+
+  return user;
+});

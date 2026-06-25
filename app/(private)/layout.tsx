@@ -6,7 +6,7 @@ import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AuthContextProvider } from '@/features/auth/context/AuthContext';
 import { PayDetailContextProvider } from '@/features/shift/context/PayDetailContext';
-import { getSession } from '@/lib/auth/session';
+import { requireSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 
 // backend health check, no cookies needed
@@ -35,7 +35,7 @@ export default async function PrivateLayout({ children }: Readonly<{ children: R
     return <BackendUnavailableFallBack />;
   }
 
-  const user = await getSession();
+  const user = await requireSession('/dashboard');
   console.log('🚀 ~ PrivateLayout ~ user:', user);
 
   // null returned, do redirect to refresh route to get new token
