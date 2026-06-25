@@ -6,6 +6,7 @@ import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error'
 import { AppError } from '@/lib/AppError';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 export default async function TelegramIntegrationCard() {
   const headerStore = await headers();
@@ -23,6 +24,10 @@ export default async function TelegramIntegrationCard() {
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      return redirect('/api/auth/refresh?returnTo=/dashboard');
+    }
+
     const message = await getErrorMessageFromResponse(res);
     throw new AppError({
       message,
