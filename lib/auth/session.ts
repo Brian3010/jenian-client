@@ -16,6 +16,7 @@
 
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 import 'server-only';
 
 export const AUTH_COOKIES = {
@@ -93,7 +94,18 @@ export async function setAccessCookie(params: {
  *
  * We set maxAge: 0 to delete them in the browser.
  */
-export async function clearAuthCookies(cookieOptions?: CookieOptions) {
+export async function clearAuthCookies(response?: NextResponse, cookieOptions?: CookieOptions) {
+  if (response) {
+    const cookieOptions = {
+      expires: new Date(0),
+      path: '/',
+    };
+
+    response.cookies.set(AUTH_COOKIES.access, '', cookieOptions);
+    response.cookies.set(AUTH_COOKIES.refresh, '', cookieOptions);
+    response.cookies.set(AUTH_COOKIES.deviceId, '', cookieOptions);
+  }
+
   const jar = await cookies();
   const opt = baseCookieOptions(cookieOptions);
 

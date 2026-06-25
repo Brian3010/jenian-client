@@ -23,3 +23,12 @@ export default async function DateWeatherDisplay() {
     </div>
   );
 }
+
+export function DateWeatherSkeleton() {
+  return (
+    <div className="pb-4">
+      <div className="h-5 w-24 animate-pulse rounded bg-gray-200" />
+      <div className="mt-2 h-5 w-48 animate-pulse rounded bg-gray-200" />
+    </div>
+  );
+}

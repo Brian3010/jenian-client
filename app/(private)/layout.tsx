@@ -9,6 +9,7 @@ import { PayDetailContextProvider } from '@/features/shift/context/PayDetailCont
 import { getSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 
+// backend health check, no cookies needed
 async function checkBackendHealth() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/health`, {
@@ -29,7 +30,6 @@ async function checkBackendHealth() {
 }
 
 export default async function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // first, check backend availabity by calling a simple endpoint, if it fails, show fallback UI with option to retry, if it succeeds, continue with auth check
   const isBackendHealthy = await checkBackendHealth();
   if (!isBackendHealthy) {
     return <BackendUnavailableFallBack />;

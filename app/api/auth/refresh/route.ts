@@ -1,3 +1,4 @@
+import { clearAuthCookies } from '@/lib/auth/session';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -11,13 +12,16 @@ export async function GET(request: NextRequest) {
   });
 
   if (!res.ok) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    // clear cookies and return to sign-in if refresh token is invalid
+    const response = NextResponse.redirect(new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL));
+    clearAuthCookies(response);
+    return response;
   }
   const url = new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL);
   const response = NextResponse.redirect(url);
 
+  // Forward cookies from ASP.NET response,
   const setCookie = res.headers.getSetCookie?.() ?? [];
-
   for (const cookie of setCookie) {
     response.headers.append('Set-Cookie', cookie);
   }

@@ -1,25 +1,47 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
 import { GetUserResponse } from '@/features/auth/types';
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
-import { useRouter } from 'next/navigation';
-import { TelegramIntegrationCardSkeleton } from './TelegramIntegrationCardSkeleton';
+import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
+import { AppError } from '@/lib/AppError';
+import { headers } from 'next/headers';
+import Link from 'next/link';
 
-export default function TelegramIntegrationCard({ user }: { user: GetUserResponse | null }) {
-  const isUserConnected = user?.isTelegramConnected ?? null;
-  const router = useRouter();
-  // const { isUserConnected, isLoading } = useIsUserConnected();
-  // const { userInfo, loading } = useAuth();
+export default async function TelegramIntegrationCard() {
+  const headerStore = await headers();
+  // console.log('🚀 ~ Dashboard ~ headerStore:', headerStore);
 
-  // if (loading) return <TelegramIntegrationCardSkeleton />;
+  // Check if user is connected to Telegram
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/me`, {
+    method: 'GET',
+    headers: {
+      cookie: headerStore.get('cookie') ?? '',
+    },
+    next: {
+      revalidate: 300,
+    },
+  });
 
-  //TODO: review how to handle the card state, if the user is not connected
-
-  if (isUserConnected === null) {
-    return <TelegramIntegrationCardSkeleton />;
+  if (!res.ok) {
+    const message = await getErrorMessageFromResponse(res);
+    throw new AppError({
+      message,
+      code: 'FETCH_USER_FAILED',
+      status: res.status,
+    });
   }
+
+  const user = await parseJsonSafe<GetUserResponse>(res);
+
+  if (!user) {
+    throw new AppError({
+      message: 'Server response is not valid JSON',
+      code: 'INVALID_JSON_RESPONSE',
+      status: 500,
+    });
+  }
+
+  const isUserConnected = user.isTelegramConnected;
 
   return (
     <Card className="flex flex-col gap-3">
@@ -44,15 +66,11 @@ export default function TelegramIntegrationCard({ user }: { user: GetUserRespons
 
       <CardAction className="flex-1 w-full flex items-end">
         {isUserConnected ? (
-          <Button
-            className="w-full"
-            variant="primary"
-            onClick={() => {
-              router.push('/chemist-warehouse/create-report');
-            }}
-          >
-            <span className="font-semibold">Generate Report</span>
-          </Button>
+          <Link href="/chemist-warehouse/create-report" className="w-full">
+            <Button className="w-full" variant="primary">
+              <span className="font-semibold">Generate Report</span>
+            </Button>
+          </Link>
         ) : (
           <TelegramTokenGenerateButton />
         )}
