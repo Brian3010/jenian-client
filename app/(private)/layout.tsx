@@ -29,6 +29,7 @@ async function checkBackendHealth() {
 }
 
 export default async function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  console.log('🚀 ~ PrivateLayout rendered:');
   const isBackendHealthy = await checkBackendHealth();
   if (!isBackendHealthy) {
     return <BackendUnavailableFallBack />;

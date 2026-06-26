@@ -6,6 +6,7 @@ import { requireSession } from '@/lib/auth/session';
 import { Suspense } from 'react';
 
 export default async function DashboardPage() {
+  console.log('🚀 ~ DashboardPage rendered:');
   await requireSession('/dashboard');
 
   return (
