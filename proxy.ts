@@ -96,7 +96,7 @@ export function proxy(req: NextRequest) {
 
     if (!sessionExists) {
       console.log('🚀 ~ Proxy - Protected API route, unauthorized access');
-      return NextResponse.json({ message: 'Unauthorizeds' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     return NextResponse.next();
