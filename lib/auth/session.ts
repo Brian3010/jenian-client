@@ -14,7 +14,7 @@
  * login / refresh / logout routes.
  */
 
-import { jwtVerify } from 'jose';
+import { errors, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
@@ -132,18 +132,42 @@ export async function getRefreshToken(): Promise<string | undefined> {
   return (await cookies()).get(AUTH_COOKIES.refresh)?.value;
 }
 
+export async function getDeviceId(): Promise<string | undefined> {
+  return (await cookies()).get(AUTH_COOKIES.deviceId)?.value;
+}
+
+/**
+ * verify session
+ */
+
+type SessionResult =
+  | {
+      status: 'authenticated';
+      user: UserPayload;
+    }
+  | {
+      status: 'missing_access_token';
+    }
+  | {
+      status: 'expired_access_token';
+    }
+  | {
+      status: 'invalid_access_token';
+      reason: string;
+    };
+
 export type UserPayload = {
   name: string;
   email: string;
 };
 
-// checking accessToken and parsing user info
-export async function getSession(): Promise<UserPayload | null> {
+// get session from access token cookie, if not valid, return null
+const getSessionCache = cache(async (): Promise<SessionResult> => {
   const jar = await cookies();
   const accessToken = jar.get(AUTH_COOKIES.access)?.value;
   const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-  if (!accessToken) return null;
+  if (!accessToken) return { status: 'missing_access_token' };
 
   try {
     const { payload } = (await jwtVerify(accessToken, secret, {
@@ -152,31 +176,37 @@ export async function getSession(): Promise<UserPayload | null> {
     })) as { payload: UserPayload };
 
     return {
-      name: payload.name,
-      email: payload.email,
+      status: 'authenticated',
+      user: {
+        name: payload.name,
+        email: payload.email,
+      },
     };
   } catch (error) {
     console.error('Failed to validate access token', error);
-    return null;
+
+    if (error instanceof errors.JWTExpired) {
+      return { status: 'expired_access_token' };
+    }
+    return {
+      status: 'invalid_access_token',
+      reason: error instanceof Error ? error.message : 'Unknown JWT validation error',
+    };
   }
-}
-
-export async function requireSession(returnTo: string) {
-  const user = await getSession();
-
-  if (!user) {
-    redirect(`/api/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
-  }
-
-  return user;
-}
-
-export const requireSessionCached = cache(async (returnTo = '/dashboard') => {
-  const user = await getSession();
-
-  if (!user) {
-    redirect(`/api/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
-  }
-
-  return user;
 });
+
+export async function requireSession(returnTo: string): Promise<UserPayload> {
+  const session = await getSessionCache();
+  console.log('🚀 ~ requireSession ~ session:', session);
+
+  if (session.status === 'authenticated') {
+    return session.user;
+  }
+
+  if (session.status === 'missing_access_token' || session.status === 'expired_access_token') {
+    redirect(`/api/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
+  }
+
+  // if invalid access token, clear cookies and redirect to sign-in with error message
+  redirect(`/api/auth/clear-session?returnTo=${encodeURIComponent('/sign-in?error=session-invalid')}`);
+}

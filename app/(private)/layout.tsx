@@ -7,7 +7,6 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AuthContextProvider } from '@/features/auth/context/AuthContext';
 import { PayDetailContextProvider } from '@/features/shift/context/PayDetailContext';
 import { requireSession } from '@/lib/auth/session';
-import { redirect } from 'next/navigation';
 
 // backend health check, no cookies needed
 async function checkBackendHealth() {
@@ -38,11 +37,6 @@ export default async function PrivateLayout({ children }: Readonly<{ children: R
   const user = await requireSession('/dashboard');
   console.log('🚀 ~ PrivateLayout ~ user:', user);
 
-  // null returned, do redirect to refresh route to get new token
-  if (!user) {
-    return redirect('/api/auth/refresh?returnTo=/dashboard');
-  }
-  //TODO: PayDetailContextProvider can combine with AuthContextProvider ??
   return (
     <AuthContextProvider initialUser={user}>
       <SidebarProvider defaultOpen={false}>

@@ -9,14 +9,10 @@ import Link from 'next/link';
 
 export default async function TelegramIntegrationCard() {
   // Check if user is connected to Telegram
-  const { res } = await aspnetFetch(
-    '/api/Auth/get-me',
-    {
-      method: 'GET',
-      cache: 'no-store',
-    },
-    { retryOn401: false },
-  );
+  const { res } = await aspnetFetch('/api/Auth/get-me', {
+    method: 'GET',
+    cache: 'no-store',
+  });
 
   if (!res.ok) {
     const message = await getErrorMessageFromResponse(res);
