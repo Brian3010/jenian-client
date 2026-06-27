@@ -10,7 +10,7 @@ export async function getPayCycle(): Promise<PayCycleResponse> {
   if (!res.ok) {
     const errorBody = await res.json().catch(() => null);
 
-    const message = errorBody?.message || errorBody?.title || getDefaultErrorMessage(res.status);
+    const message = errorBody?.message || getDefaultErrorMessage(res.status);
     throw new AppError({
       message,
       code: 'GET_PAY_CYCLE_FAILED',
