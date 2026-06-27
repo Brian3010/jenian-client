@@ -50,7 +50,6 @@ export default function SignIn() {
 
   const onSubmit = async (signInData: SignInValues) => {
     setError('');
-    console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       setIsLoading(true);
       await loginUser(signInData.userName, signInData.password);
