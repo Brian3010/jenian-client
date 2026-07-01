@@ -49,7 +49,7 @@ export async function logoutUser() {
   }
 }
 
-export async function GetUser(): Promise<GetUserResponse> {
+export async function getUser(): Promise<GetUserResponse> {
   const res = await fetch('/api/auth/me', {
     method: 'GET',
     credentials: 'include',
