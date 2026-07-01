@@ -53,10 +53,8 @@ export default function SignIn() {
     try {
       setIsLoading(true);
       await loginUser(signInData.userName, signInData.password);
-      // addUser(user);
       router.replace('/dashboard');
     } catch (err) {
-      console.error('🚀 ~ onSubmit ~ err:', err);
       if (err instanceof AppError && err.code === 'INVALID_CREDENTIALS') {
         setError('Invalid username or password');
       } else {
