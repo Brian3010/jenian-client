@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { logoutUser } from '@/features/auth/services/auth.service';
+import { logoutUser } from '@/features/auth/services/auth.client';
 
 export default function LogoutBtn() {
   const handleLogout = async () => {

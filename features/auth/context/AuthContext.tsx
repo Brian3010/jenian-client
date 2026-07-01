@@ -4,8 +4,8 @@ import { UserPayload } from '@/lib/auth/session';
 import { createContext, useContext, useState } from 'react';
 
 type AuthContextType = {
-  userInfo: UserPayload;
-  addUser: (userInfo: UserPayload) => void;
+  user: UserPayload;
+  setUser: (user: UserPayload) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -17,14 +17,9 @@ export function AuthContextProvider({
   children: React.ReactNode;
   initialUser: UserPayload;
 }) {
-  const [userInfo, setUserInfo] = useState<UserPayload>(initialUser);
-  console.log('🚀 ~ AuthContextProvider ~ userInfo:', userInfo);
+  const [user, setUser] = useState<UserPayload>(initialUser);
 
-  const addUser = (userInfo: UserPayload) => {
-    setUserInfo(userInfo);
-  };
-
-  return <AuthContext.Provider value={{ addUser, userInfo }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ setUser, user }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

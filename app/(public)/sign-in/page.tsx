@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import ContactMeAlertDialog from '@/features/auth/components/ContactMeAlertDialog';
-import { loginUser } from '@/features/auth/services/auth.service';
+import { loginUser } from '@/features/auth/services/auth.client';
 import { AppError } from '@/lib/AppError';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
