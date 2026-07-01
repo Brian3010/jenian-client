@@ -1,39 +1,13 @@
 import AppSidebar from '@/components/layout/AppSidebar';
 import NavBottomBar from '@/components/layout/NavBottomBar';
 import { NotificationsToaster } from '@/components/providers/NotificationToaster';
-import BackendUnavailableFallBack from '@/components/ui/BackendUnavailableFallBack';
 import Header from '@/components/ui/header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AuthContextProvider } from '@/features/auth/context/AuthContext';
 import { PayDetailContextProvider } from '@/features/shift/context/PayDetailContext';
 import { requireSession } from '@/lib/auth/session';
 
-// backend health check, no cookies needed
-async function checkBackendHealth() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/health`, {
-      next: {
-        revalidate: 300,
-      },
-    });
-
-    if (!res.ok) {
-      console.error('Backend health check failed with status:', res.status);
-      return false;
-    }
-    return true;
-  } catch (error) {
-    console.error('Failed to GET /api/health: ', error);
-    return false;
-  }
-}
-
 export default async function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const isBackendHealthy = await checkBackendHealth();
-  if (!isBackendHealthy) {
-    return <BackendUnavailableFallBack />;
-  }
-
   const user = await requireSession('/dashboard');
   console.log('🚀 ~ PrivateLayout ~ user:', user);
 
