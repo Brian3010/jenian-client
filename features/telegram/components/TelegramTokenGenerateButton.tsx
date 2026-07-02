@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { getTelegramToken } from '@/features/telegram/services/telegram.service';
+import { getTelegramToken } from '@/features/telegram/services/telegram.client';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { Check, Copy } from 'lucide-react';
 import Link from 'next/link';
