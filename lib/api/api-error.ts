@@ -25,8 +25,13 @@ export async function parseJsonSafe<T>(res: Response): Promise<T | null> {
   }
 }
 
-export async function getErrorMessageFromResponse(response: Response): Promise<string> {
-  const errorBody = await parseJsonSafe<{ message?: string }>(response);
+type ErrorApiResponse = {
+  success: false;
+  errors: string[];
+};
 
-  return errorBody?.message || getDefaultErrorMessage(response.status);
+export async function getErrorMessageFromResponse(response: Response): Promise<string[]> {
+  const errorMessage = await parseJsonSafe<ErrorApiResponse>(response);
+
+  return errorMessage?.errors || [getDefaultErrorMessage(response.status)];
 }
