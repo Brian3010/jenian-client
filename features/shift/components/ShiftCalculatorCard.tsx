@@ -1,16 +1,30 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import { TelegramIntegrationCardSkeleton } from '@/features/telegram/components/TelegramIntegrationCardSkeleton';
+import { AppError } from '@/lib/AppError';
 import { formatDateDayMonth } from '@/lib/utils';
 import Link from 'next/link';
-import { usePayDetail } from '../context/PayDetailContext';
+import { getCurrentPayCycleSettings } from '../services/shift.server';
+import { PayCycleSettings } from '../types';
 
-export default function ShiftCalculatorCard() {
-  const { payDetail, error, loading } = usePayDetail();
+async function getShiftCalculatorCardData() {
+  try {
+    const { payDetail } = await getCurrentPayCycleSettings();
+    return { success: true as const, payDetail };
+  } catch (error: unknown) {
+    if (error instanceof AppError) {
+      console.error('Failed to load shift calculator card data:', error.message);
+      return { success: false as const, error: 'Failed to load pay summary, please try again later' };
+    }
+    console.error('Unexpected error occurred when getting shift calculator card data:', error);
+    return { success: false as const, error: 'Unexpected error occurred when getting shift calculator card data' };
+  }
+}
 
-  if (error) {
+export default async function ShiftCalculatorCard() {
+  const result = await getShiftCalculatorCardData();
+
+  // some errors occured
+  if (!result.success) {
     return (
       <Card className="p-5 flex flex-col gap-3">
         <CardHeader className="p-0">
@@ -20,23 +34,39 @@ export default function ShiftCalculatorCard() {
           <div className="text-sm text-gray-500">Manage shifts and estimate your pay for the current cycle.</div>
         </CardHeader>
         <CardDescription className="flex flex-col gap-3 py-3 border-y">
-          <div className="text-sm text-red-500">{error}</div>
+          <div className="text-sm text-red-500">{result.error}</div>
         </CardDescription>
       </Card>
     );
   }
 
-  if (loading) return <TelegramIntegrationCardSkeleton />;
+  if (!hasCompletePayCycleSettings(result.payDetail)) {
+    return <PayCycleRequiredState />;
+  }
 
-  return payDetail && payDetail.hasPayCycleSettings ? (
-    <HasPayCycleState payCycleData={payDetail} />
-  ) : (
-    <PayCycleRequiredState />
+  return <HasPayCycleState payDetailData={result.payDetail} />;
+}
+
+// Type guard to check if payDetail has complete pay cycle settings
+function hasCompletePayCycleSettings(payDetail: PayCycleSettings): payDetail is PayCycleSettings & {
+  hasPayCycleSettings: true;
+  payCycleStartDate: string;
+  payCycleEndDate: string;
+  shiftCountInCycle: number;
+  estimatedGrossPay: number;
+} {
+  return (
+    payDetail.hasPayCycleSettings &&
+    payDetail.payCycleStartDate !== null &&
+    payDetail.payCycleEndDate !== null &&
+    payDetail.shiftCountInCycle !== null &&
+    payDetail.estimatedGrossPay !== null
   );
 }
 
 type HasPayCycleStateProps = {
-  payCycleData: {
+  payDetailData: PayCycleSettings & {
+    hasPayCycleSettings: true;
     payCycleStartDate: string;
     payCycleEndDate: string;
     shiftCountInCycle: number;
@@ -45,7 +75,7 @@ type HasPayCycleStateProps = {
 };
 
 function HasPayCycleState({
-  payCycleData: { payCycleStartDate, payCycleEndDate, shiftCountInCycle, estimatedGrossPay },
+  payDetailData: { payCycleStartDate, payCycleEndDate, shiftCountInCycle, estimatedGrossPay },
 }: HasPayCycleStateProps) {
   return (
     <Card className="p-5 flex flex-col gap-3">

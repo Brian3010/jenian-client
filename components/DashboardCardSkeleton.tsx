@@ -1,7 +1,7 @@
 import { Card, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function TelegramIntegrationCardSkeleton() {
+export function DashboardCardSkeleton() {
   return (
     <Card className="p-5 gap-0">
       <CardHeader className="grid-rows-none p-0">
