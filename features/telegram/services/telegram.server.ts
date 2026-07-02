@@ -13,7 +13,7 @@ export async function getTelegramIntegrationStatus(): Promise<{ isConnected: boo
   if (!res.ok) {
     const message = await getErrorMessageFromResponse(res);
     throw new AppError({
-      message,
+      message: message.join(', '),
       code: 'FETCH_USER_FAILED',
       status: res.status,
     });
