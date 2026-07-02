@@ -101,6 +101,11 @@ export type UserPayload = {
   email: string;
 };
 
+/**
+ * This is a cached function that verifies the access token in the cookie.
+ * It returns the session status and user info if authenticated.
+ * The cache is per-request, so multiple calls in the same request will not re-verify the token.
+ */
 const verifySessionCache = cache(async (): Promise<SessionResult> => {
   const jar = await cookies();
   const accessToken = jar.get(AUTH_COOKIES.access)?.value;
@@ -135,10 +140,18 @@ const verifySessionCache = cache(async (): Promise<SessionResult> => {
   }
 });
 
+/**
+ * This can be used in any server-side code to check if the user is authenticated.
+ * It does NOT redirect or throw; it just returns the session status.
+ */
 export async function verifySession(): Promise<SessionResult> {
   return verifySessionCache();
 }
 
+/**
+ * This is used in pages/layouts to ensure that the user is authenticated before rendering the page.
+ * If the user is not authenticated, they will be redirected to the sign-in page.
+ */
 export async function requireSession(returnTo: string): Promise<UserPayload> {
   const session = await verifySession();
 
