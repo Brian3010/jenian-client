@@ -20,24 +20,24 @@ export async function GET(request: NextRequest) {
     const res = await refreshAccessToken(request.headers.get('cookie') || '');
 
     if (!res.ok) {
-      const response = NextResponse.redirect(new URL('/sign-in', request.nextUrl.origin));
+      const response = NextResponse.redirect(new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL));
       await clearAuthCookies(response);
       return response;
     }
 
-    const url = new URL(returnTo, process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin);
-    const response = NextResponse.redirect(url);
+    const response = NextResponse.redirect(new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL));
 
     // Forward cookies from ASP.NET response, setting them in the Next.js response to the client.
     const setCookie = res.headers.getSetCookie?.() ?? [];
     for (const cookie of setCookie) {
       response.headers.append('Set-Cookie', cookie);
     }
+    console.log('🚀 ~ GET ~ response:', response);
 
     return response;
   } catch (error) {
     console.error('Error in refresh route:', error);
-    const errorUrl = new URL('/sign-in', process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin);
+    const errorUrl = new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL);
     errorUrl.searchParams.set('error', 'server_error');
     errorUrl.searchParams.set('returnTo', returnTo); // Retain original destination for later retry
 
