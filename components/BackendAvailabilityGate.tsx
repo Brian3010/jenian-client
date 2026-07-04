@@ -1,6 +1,6 @@
 'use client';
 
-import { checkBackend } from '@/lib/api/backend-health.client';
+import { checkBackend } from '@/lib/api/backend-health/backend-health.client';
 import { useEffect, useState } from 'react';
 import BackendUnavailableFallBack from './ui/BackendUnavailableFallBack';
 

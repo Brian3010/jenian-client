@@ -1,4 +1,4 @@
-import { checkAspNetBackendHealth } from '@/lib/api/backend-health.server';
+import { checkAspNetBackendHealth } from '@/lib/api/backend-health/backend-health.server';
 
 export async function GET() {
   const result = await checkAspNetBackendHealth();
