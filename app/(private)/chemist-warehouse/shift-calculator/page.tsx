@@ -1,4 +1,4 @@
-import ShiftCalculatorData from '@/features/shift/components/ShiftCalculatorData';
+import ShiftCalculatorData from '@/features/shift/components/ShiftCalculatorData-draft';
 import ShiftCalculatorHeader from '@/features/shift/components/ShiftCalculatorHeader';
 import { Suspense } from 'react';
 import Loading from './loading';

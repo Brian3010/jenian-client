@@ -36,6 +36,16 @@ export type PayCycleSettings = {
   estimatedGrossPay: number | null;
 };
 
+export type HasPayCycleSettings = {
+  hasPayCycleSettings: true;
+  anchorStartDate: string;
+  payCycle: PayCycleType;
+  payCycleStartDate: string;
+  payCycleEndDate: string;
+  shiftCountInCycle: number;
+  estimatedGrossPay: number;
+};
+
 export type UserShift = {
   id?: string;
   startAt: string;
@@ -63,3 +73,20 @@ export type ShiftSummaryResult = {
   shifts: UserShift[];
   dailySummaries: UserDailyPaySummary[];
 };
+
+export type ShiftCalculatorPageData =
+  | {
+      status: 'needs_setup';
+      payCycleSettings: PayCycleSettings;
+    }
+  | {
+      status: 'ready';
+      payCycleSettings: HasPayCycleSettings;
+      shiftSummary: ShiftSummaryResult;
+    }
+  | {
+      status: 'error';
+      message: string;
+      errors: string[];
+      statusCode?: number;
+    };

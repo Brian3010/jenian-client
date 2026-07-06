@@ -19,7 +19,7 @@ export function getDefaultErrorMessage(status: number): string {
 
 export async function parseJsonSafe<T>(res: Response): Promise<T | null> {
   try {
-    return await res.json();
+    return (await res.json()) as T;
   } catch {
     return null;
   }
