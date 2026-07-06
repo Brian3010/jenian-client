@@ -19,7 +19,7 @@ export async function loginUser(userName: string, password: string): Promise<voi
   if (!res.ok) {
     const errorBody = await getErrorMessageFromResponse(res);
     throw new AppError({
-      message: errorBody,
+      message: errorBody.join(', '),
       code: 'LOGIN_FAILED',
       status: res.status,
     });
