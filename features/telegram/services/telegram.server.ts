@@ -1,33 +1,24 @@
-import { GetUserResponse } from '@/features/auth/types';
-import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
-import { AppError } from '@/lib/AppError';
+import { ServerResult } from '@/lib/api/api-types';
+import { parseAspnetApiResponse } from '@/lib/api/server-api';
 import { aspnetFetch } from '@/lib/auth/aspnet';
 import 'server-only';
+import { TelegramIntegrationStatus } from '../types';
 
-export async function getTelegramIntegrationStatus(): Promise<{ isConnected: boolean }> {
-  const { res } = await aspnetFetch('/api/Auth/get-me', {
-    method: 'GET',
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    const message = await getErrorMessageFromResponse(res);
-    throw new AppError({
-      message: message.join(', '),
-      code: 'FETCH_USER_FAILED',
-      status: res.status,
+export async function getTelegramIntegrationStatus(): Promise<ServerResult<TelegramIntegrationStatus>> {
+  try {
+    const { res } = await aspnetFetch('/api/Auth/get-me', {
+      method: 'GET',
+      cache: 'no-store',
     });
-  }
 
-  const user = await parseJsonSafe<GetUserResponse>(res);
-
-  if (!user) {
-    throw new AppError({
-      message: 'Server response is not valid JSON',
-      code: 'INVALID_JSON_RESPONSE',
+    return await parseAspnetApiResponse<TelegramIntegrationStatus>(res, 'Failed to fetch Telegram integration status');
+  } catch (error) {
+    console.error('Failed to fetch Telegram integration status', error);
+    return {
+      ok: false,
+      message: 'Failed to fetch Telegram integration status',
+      errors: ['Unexpected server function error.'],
       status: 500,
-    });
+    };
   }
-
-  return { isConnected: user.isTelegramConnected };
 }

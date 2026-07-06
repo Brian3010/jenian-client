@@ -5,14 +5,14 @@ import { getTelegramIntegrationStatus } from '@/features/telegram/services/teleg
 import Link from 'next/link';
 
 export default async function TelegramIntegrationCard() {
-  let isConnected: boolean | null = null;
+  const statusResult = await getTelegramIntegrationStatus();
 
-  try {
-    const status = await getTelegramIntegrationStatus();
-    isConnected = status.isConnected;
-  } catch (error) {
-    console.error('Failed to load Telegram integration status:', error);
+  if (!statusResult.ok) {
+    console.error('Failed to load Telegram integration status:', statusResult.message);
+    return <TelegramIntegrationCardUnavailable />;
   }
+
+  const isConnected = statusResult.data.isTelegramConnected;
 
   if (isConnected === null) return <TelegramIntegrationCardUnavailable />;
 
