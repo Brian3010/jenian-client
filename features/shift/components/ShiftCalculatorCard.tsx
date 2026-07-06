@@ -1,30 +1,28 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import { AppError } from '@/lib/AppError';
+import { getUserCurrentPayCycleSettings } from '@/features/shift/services/shift.server';
 import { formatDateDayMonth } from '@/lib/utils';
 import Link from 'next/link';
-import { getCurrentPayCycleSettings } from '../services/shift.server';
 import { PayCycleSettings } from '../types';
 
-async function getShiftCalculatorCardData() {
-  try {
-    const { payDetail } = await getCurrentPayCycleSettings();
-    return { success: true as const, payDetail };
-  } catch (error: unknown) {
-    if (error instanceof AppError) {
-      console.error('Failed to load shift calculator card data:', error.message);
-      return { success: false as const, error: 'Failed to load pay summary, please try again later' };
-    }
-    console.error('Unexpected error occurred when getting shift calculator card data:', error);
-    return { success: false as const, error: 'Unexpected error occurred when getting shift calculator card data' };
-  }
-}
+// async function getShiftCalculatorCardData() {
+//   try {
+//     const userPayCycleSettings = await getUserCurrentPayCycleSettings();
+//     return { success: true as const, payDetail: userPayCycleSettings.data };
+//   } catch (error: unknown) {
+//     if (error instanceof AppError) {
+//       console.error('Failed to load shift calculator card data:', error.message);
+//       return { success: false as const, error: 'Failed to load pay summary, please try again later' };
+//     }
+//     console.error('Unexpected error occurred when getting shift calculator card data:', error);
+//     return { success: false as const, error: 'Unexpected error occurred when getting shift calculator card data' };
+//   }
+// }
 
 export default async function ShiftCalculatorCard() {
-  const result = await getShiftCalculatorCardData();
+  const userPayCycleSettingsResult = await getUserCurrentPayCycleSettings();
 
-  // some errors occured
-  if (!result.success) {
+  if (!userPayCycleSettingsResult.ok) {
     return (
       <Card className="p-5 flex flex-col gap-3">
         <CardHeader className="p-0">
@@ -34,17 +32,17 @@ export default async function ShiftCalculatorCard() {
           <div className="text-sm text-gray-500">Manage shifts and estimate your pay for the current cycle.</div>
         </CardHeader>
         <CardDescription className="flex flex-col gap-3 py-3 border-y">
-          <div className="text-sm text-red-500">{result.error}</div>
+          <div className="text-sm text-red-500">Failed to load pay summary, please try again later.</div>
         </CardDescription>
       </Card>
     );
   }
 
-  if (!hasCompletePayCycleSettings(result.payDetail)) {
+  if (!hasCompletePayCycleSettings(userPayCycleSettingsResult.data)) {
     return <PayCycleRequiredState />;
   }
 
-  return <HasPayCycleState payDetailData={result.payDetail} />;
+  return <HasPayCycleState payDetailData={userPayCycleSettingsResult.data} />;
 }
 
 // Type guard to check if payDetail has complete pay cycle settings
