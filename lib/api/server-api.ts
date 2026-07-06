@@ -7,7 +7,7 @@ export async function parseAspnetApiResponse<T>(res: Response, fallbackErrorMess
   if (!res.ok) {
     // try parsing body when there is ApiResponse type returned.
     const body = await parseJsonSafe<ApiResponse<unknown>>(res);
-    const errors = body?.errors.length ? body.errors : [getDefaultErrorMessage(res.status)];
+    const errors = body?.errors?.length ? body.errors : [getDefaultErrorMessage(res.status)];
 
     return {
       ok: false,
