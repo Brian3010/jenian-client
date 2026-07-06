@@ -55,7 +55,7 @@ export async function handleReport(formReport: FormReportT) {
   if (!res.ok) {
     const errorBody = await getErrorMessageFromResponse(res);
     throw new AppError({
-      message: errorBody,
+      message: errorBody.join(', '),
       code: 'REPORT_SUBMISSION_FAILED',
       status: res.status,
     });
