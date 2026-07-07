@@ -167,7 +167,7 @@ export default function ShiftModal({ shift, payStartDate, payEndDate, onCancel, 
                         <SelectValue placeholder="Select entry type" />
                       </SelectTrigger>
 
-                      <SelectContent className="z-70" position="popper">
+                      <SelectContent className="z-90" position="popper">
                         <SelectGroup>
                           <SelectItem value={String(ShiftEntryType.Worked)}>Worked</SelectItem>
                           <SelectItem value={String(ShiftEntryType.PaidNonWorked)}>Paid Non-Worked</SelectItem>
@@ -191,7 +191,7 @@ export default function ShiftModal({ shift, payStartDate, payEndDate, onCancel, 
                       <SelectTrigger className="w-full max-w-48">
                         <SelectValue placeholder="Select employment type" />
                       </SelectTrigger>
-                      <SelectContent className="z-70" position="popper">
+                      <SelectContent className="z-90" position="popper">
                         <SelectGroup>
                           <SelectItem value={String(EmploymentType.FullTime)}>Full-time</SelectItem>
                           <SelectItem value={String(EmploymentType.PartTime)}>Part-time</SelectItem>
