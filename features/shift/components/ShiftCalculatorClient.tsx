@@ -33,6 +33,8 @@ export default function ShiftCalculatorClient({
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
 
+  const hasUnsavedChanges = JSON.stringify(state.draftShifts) !== JSON.stringify(state.savedShifts);
+
   // recalculate summary breakdown whenever draftShifts changes
   const summaryBreakDown = useMemo<SummaryBreakdown & { hasUnsavedChanges: boolean }>(() => {
     const totalHours = state.draftShifts.reduce((total: number, s: ShiftFormValues) => {
@@ -43,9 +45,9 @@ export default function ShiftCalculatorClient({
       ...initialSummaryBreakdown,
       shiftCountInCycle: state.draftShifts.length,
       scheduledTotalHours: totalHours,
-      hasUnsavedChanges: state.changeCounter > 0,
+      hasUnsavedChanges: hasUnsavedChanges,
     };
-  }, [state.draftShifts, initialSummaryBreakdown, state.changeCounter]);
+  }, [state.draftShifts, initialSummaryBreakdown, hasUnsavedChanges]);
 
   const onModalCancel = () => {
     setShowAddModal(false);
@@ -160,6 +162,7 @@ export default function ShiftCalculatorClient({
         {/**Unsaved Changes */}
 
         <StickyBar
+          hasUnsavedChanges={hasUnsavedChanges}
           unSavedCount={state.changeCounter}
           isSaving={isSaving}
           isError={false}
@@ -343,18 +346,19 @@ function PaySummaryCard({ summary, className, isSaving }: PaySummaryCardProps) {
 
 function StickyBar({
   unSavedCount,
+  hasUnsavedChanges,
   isSaving,
   isError,
   onSave,
   onDiscard,
 }: {
   unSavedCount: number;
+  hasUnsavedChanges: boolean;
   isSaving: boolean;
   isError: boolean;
   onSave: () => void;
   onDiscard: () => void;
 }) {
-  const hasUnsavedChanges = unSavedCount > 0;
   if (!hasUnsavedChanges) return null;
   const msg = isSaving
     ? 'Saving shifts and updating pay estimate…'
