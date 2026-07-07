@@ -1,4 +1,4 @@
-export enum PayCycle {
+export enum PayCycleType {
   Weekly = 1,
   Fortnightly = 2,
   Monthly = 3,
@@ -16,10 +16,30 @@ export enum ShiftEntryType {
   Leave = 3,
 }
 
-export type PayCycleResponse = {
+// export type PayCycleResponse = {
+//   hasPayCycleSettings: boolean;
+//   anchorStartDate: string;
+//   payCycle: PayCycleType;
+//   payCycleStartDate: string;
+//   payCycleEndDate: string;
+//   shiftCountInCycle: number;
+//   estimatedGrossPay: number;
+// };
+
+export type PayCycleSettings = {
   hasPayCycleSettings: boolean;
+  anchorStartDate: string | null;
+  payCycle: PayCycleType | null;
+  payCycleStartDate: string | null;
+  payCycleEndDate: string | null;
+  shiftCountInCycle: number | null;
+  estimatedGrossPay: number | null;
+};
+
+export type HasPayCycleSettings = {
+  hasPayCycleSettings: true;
   anchorStartDate: string;
-  payCycle: PayCycle;
+  payCycle: PayCycleType;
   payCycleStartDate: string;
   payCycleEndDate: string;
   shiftCountInCycle: number;
@@ -38,7 +58,7 @@ export type UserShift = {
   // source: string;
 };
 
-export type DailySummary = {
+export type UserDailyPaySummary = {
   workDate: string;
   totalPayableMinutes: number;
   totalPaidBreakMinutes: number;
@@ -49,7 +69,24 @@ export type DailySummary = {
   grossPay: number;
 };
 
-export type UserShiftsResponse = {
+export type ShiftSummaryResult = {
   shifts: UserShift[];
-  dailySummaries: DailySummary[];
+  dailySummaries: UserDailyPaySummary[];
 };
+
+export type ShiftCalculatorPageData =
+  | {
+      status: 'needs_setup';
+      payCycleSettings: PayCycleSettings;
+    }
+  | {
+      status: 'ready';
+      payCycleSettings: HasPayCycleSettings;
+      shiftSummary: ShiftSummaryResult;
+    }
+  | {
+      status: 'error';
+      message: string;
+      errors: string[];
+      statusCode?: number;
+    };

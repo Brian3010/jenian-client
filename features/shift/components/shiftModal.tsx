@@ -75,13 +75,13 @@ export default function ShiftModal({ shift, payStartDate, payEndDate, onCancel, 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-[rgba(20,32,59,0.18)]" aria-hidden="true" onClick={onCancel} />
+      <div className="fixed inset-0 z-70 bg-[rgba(20,32,59,0.18)]" aria-hidden="true" onClick={onCancel} />
       {/* Panel — bottom sheet on mobile, centred dialog on ≥sm */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="shift-modal-title"
-        className="fixed z-60 inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:px-4 "
+        className="fixed z-80 inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:px-4 "
       >
         <div
           style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}

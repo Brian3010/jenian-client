@@ -5,13 +5,8 @@
  *   - Browser JavaScript cannot read them (safer against XSS).
  *   - Next Route Handlers (app/api/*) can read them on the server.
  *
- * This file is the SINGLE SOURCE OF TRUTH for:
- *   - cookie names
- *   - cookie options (httpOnly, secure, sameSite, etc.)
- *   - setting / updating / clearing tokens
- *
- * Keep cookie behavior consistent here so you don't repeat it across
- * login / refresh / logout routes.
+ * This file is the single source of truth for session cookie names,
+ * clearing auth cookies, and verifying the access-token session.
  */
 
 import { errors, jwtVerify } from 'jose';
@@ -44,50 +39,6 @@ function baseCookieOptions(opts?: CookieOptions) {
   } as const;
 }
 
-export async function setAuthCookies(params: {
-  accessToken: string;
-  // refreshToken: string;
-  accessMaxAgeSec?: number;
-  refreshMaxAgeSec?: number;
-  cookieOptions?: CookieOptions;
-}) {
-  const jar = await cookies(); // server-side cookie jar
-  const opt = baseCookieOptions(params.cookieOptions);
-  console.log(params.accessToken);
-
-  // Access token: short-lived
-  jar.set(AUTH_COOKIES.access, params.accessToken, {
-    ...opt,
-    maxAge: params.accessMaxAgeSec ?? 60 * 5, // default 5 minutes
-  });
-  console.log('🚀 ~ setAuthCookies ~ jar:', jar.get(AUTH_COOKIES.access));
-
-  // // Refresh token: longer-lived
-  // jar.set(AUTH_COOKIES.refresh, params.refreshToken, {
-  //   ...opt,
-  //   maxAge: params.refreshMaxAgeSec ?? 60 * 60 * 24 * 7, // default 7 days
-  // });
-}
-
-/**
- * Update ONLY the access token cookie.
- * Use this when your ASP.NET refresh-token endpoint returns a new access token
- * but does NOT rotate the refresh token.
- */
-export async function setAccessCookie(params: {
-  accessToken: string;
-  accessMaxAgeSec?: number;
-  cookieOptions?: CookieOptions;
-}) {
-  const jar = await cookies();
-  const opt = baseCookieOptions(params.cookieOptions);
-
-  jar.set(AUTH_COOKIES.access, params.accessToken, {
-    ...opt,
-    maxAge: params.accessMaxAgeSec ?? 60 * 30, // default 30 minutes
-  });
-}
-
 /**
  * Clear BOTH cookies.
  * Use this on:
@@ -97,17 +48,20 @@ export async function setAccessCookie(params: {
  * We set maxAge: 0 to delete them in the browser.
  */
 export async function clearAuthCookies(response?: NextResponse, cookieOptions?: CookieOptions) {
+  // If a NextResponse is provided, clear cookies in the response headers for the client.
   if (response) {
-    const cookieOptions = {
+    const deleteCookieOptions = {
       expires: new Date(0),
       path: '/',
     };
 
-    response.cookies.set(AUTH_COOKIES.access, '', cookieOptions);
-    response.cookies.set(AUTH_COOKIES.refresh, '', cookieOptions);
-    response.cookies.set(AUTH_COOKIES.deviceId, '', cookieOptions);
+    response.cookies.set(AUTH_COOKIES.access, '', deleteCookieOptions);
+    response.cookies.set(AUTH_COOKIES.refresh, '', deleteCookieOptions);
+    response.cookies.set(AUTH_COOKIES.deviceId, '', deleteCookieOptions);
+    response.cookies.set('userName', '', deleteCookieOptions);
   }
 
+  // Clear cookies in the server-side cookie jar (for subsequent server requests).
   const jar = await cookies();
   const opt = baseCookieOptions(cookieOptions);
 
@@ -116,6 +70,7 @@ export async function clearAuthCookies(response?: NextResponse, cookieOptions?: 
   jar.set(AUTH_COOKIES.deviceId, '', { ...opt, maxAge: 0 });
   jar.set('userName', '', { ...opt, maxAge: 0 });
 }
+
 /**
  * Read access token from cookie.
  * Server-only: can be used in aspnetFetch() when adding Authorization header.
@@ -124,26 +79,11 @@ export async function getAccessToken(): Promise<string | undefined> {
   return (await cookies()).get(AUTH_COOKIES.access)?.value;
 }
 
-/**
- * Read refresh token from cookie.
- * Server-only: can be used by refresh logic to obtain a new access token.
- */
-export async function getRefreshToken(): Promise<string | undefined> {
-  return (await cookies()).get(AUTH_COOKIES.refresh)?.value;
-}
-
-export async function getDeviceId(): Promise<string | undefined> {
-  return (await cookies()).get(AUTH_COOKIES.deviceId)?.value;
-}
-
-/**
- * verify session
- */
-
-type SessionResult =
+export type SessionResult =
   | {
       status: 'authenticated';
       user: UserPayload;
+      accessToken: string;
     }
   | {
       status: 'missing_access_token';
@@ -161,15 +101,19 @@ export type UserPayload = {
   email: string;
 };
 
-// get session from access token cookie, if not valid, return null
-const getSessionCache = cache(async (): Promise<SessionResult> => {
+/**
+ * This is a cached function that verifies the access token in the cookie.
+ * It returns the session status and user info if authenticated.
+ * The cache is per-request, so multiple calls in the same request will not re-verify the token.
+ */
+const verifySessionCache = cache(async (): Promise<SessionResult> => {
   const jar = await cookies();
   const accessToken = jar.get(AUTH_COOKIES.access)?.value;
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
   if (!accessToken) return { status: 'missing_access_token' };
 
   try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
     const { payload } = (await jwtVerify(accessToken, secret, {
       issuer: process.env.JWT_ISSUER,
       audience: process.env.JWT_AUDIENCE,
@@ -177,6 +121,7 @@ const getSessionCache = cache(async (): Promise<SessionResult> => {
 
     return {
       status: 'authenticated',
+      accessToken,
       user: {
         name: payload.name,
         email: payload.email,
@@ -195,9 +140,20 @@ const getSessionCache = cache(async (): Promise<SessionResult> => {
   }
 });
 
+/**
+ * This can be used in any server-side code to check if the user is authenticated.
+ * It does NOT redirect or throw; it just returns the session status.
+ */
+export async function verifySession(): Promise<SessionResult> {
+  return verifySessionCache();
+}
+
+/**
+ * This is used in pages/layouts to ensure that the user is authenticated before rendering the page.
+ * If the user is not authenticated, they will be redirected to the sign-in page.
+ */
 export async function requireSession(returnTo: string): Promise<UserPayload> {
-  const session = await getSessionCache();
-  console.log('🚀 ~ requireSession ~ session:', session);
+  const session = await verifySession();
 
   if (session.status === 'authenticated') {
     return session.user;

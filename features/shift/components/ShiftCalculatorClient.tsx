@@ -1,13 +1,14 @@
 'use client';
 
 // import { formatTime12h } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
 import { formatDateDayMonth, formatTime12h, formatWorkDate, getHoursBetweenTimes } from '@/lib/utils';
 import { CircleAlert } from 'lucide-react';
 import { useMemo, useReducer, useState } from 'react';
+import { createInitialState, reducer, ShiftWithStatus } from '../reducer/shiftCalculator.reducer';
 import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
-import { createInitialState, reducer, ShiftWithStatus } from './shiftCalculator.reducer';
 import ShiftModal from './shiftModal';
 
 type ShiftCalculatorClientProps = {
@@ -28,6 +29,7 @@ export default function ShiftCalculatorClient({
   // reducer
   const [state, dispatch] = useReducer(reducer, initialUserShifts, createInitialState);
   const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
 
@@ -67,17 +69,20 @@ export default function ShiftCalculatorClient({
   const handleDelete = (id: string | null) => {
     if (id === null) return;
     dispatch({ type: 'DELETE_SHIFT', shiftId: id });
-    setShowAddModal(false);
   };
-
-  //TODO: add way to track if there are unsaved changes
-  // handle save changes
-  const handleSaveChanges = () => {};
 
   // submit shift to backend
   const handleSubmit = async () => {
     console.log('submiting .... ', state.draftShifts);
-    await new Promise(r => setTimeout(r, 1600));
+
+    setIsSaving(true);
+    //TODO: call client function
+    //TODO: handle errors, show error message, and set isError to true
+    await new Promise(r => setTimeout(r, 5600));
+
+    // Load new saved shifts from backend
+    dispatch({ type: 'LOAD_SHIFTS', shifts: state.draftShifts });
+    setIsSaving(false);
   };
 
   return (
@@ -95,44 +100,19 @@ export default function ShiftCalculatorClient({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white">
-            <button
-              // onClick={() => setCycleOffset(o => o - 1)} disabled={isSaving}
-              aria-label="Previous cycle"
-              className="px-3 py-1.5 text-sm text-slate-500 border-r border-slate-200
-                    hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              ‹
-            </button>
-            <button
-              // onClick={() => setCycleOffset(0)} disabled={isSaving}
-              className="px-3 py-1.5
-                    hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              style={{ fontWeight: 500 }}
-            >
-              <span className="text-xs text-slate-500">Current</span>
-            </button>
-            <button
-              // onClick={() => setCycleOffset(o => o + 1)} disabled={isSaving}
-              aria-label="Next cycle"
-              className="px-3 py-1.5 text-sm text-slate-500 border-l border-slate-200
-                    hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              ›
-            </button>
-          </div> */}
           <button
             onClick={() => setShowAddModal(true)}
             className="px-3.5 py-1.5 text-sm bg-slate-700 text-white rounded-xl
                   hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 500 }}
+            disabled={isSaving}
           >
             + Add shift
           </button>
         </div>
       </div>
       {/* Card summary */}
-      <PaySummaryCard summary={summaryBreakDown} className="flex md:flex-row flex-col gap-2" />
+      <PaySummaryCard isSaving={isSaving} summary={summaryBreakDown} className="flex md:flex-row flex-col gap-2" />
 
       {/* shift details */}
       <div className="flex flex-col lg:flex-row gap-4">
@@ -141,7 +121,7 @@ export default function ShiftCalculatorClient({
             <ShiftCard
               key={shift.id}
               shift={shift}
-              isSaving={false}
+              isSaving={isSaving}
               isError={false}
               onEdit={() => setEditingShift(shift)}
               onDelete={() => handleDelete(shift.id || null)}
@@ -176,7 +156,18 @@ export default function ShiftCalculatorClient({
           // only show when there are unsaved changes (draftShifts !== savedShifts),
           // after submit, update savedShifts with draftShifts
         }
+
+        {/**Unsaved Changes */}
+
+        <StickyBar
+          unSavedCount={state.changeCounter}
+          isSaving={isSaving}
+          isError={false}
+          onSave={handleSubmit}
+          onDiscard={() => dispatch({ type: 'DISCARD_CHANGES' })}
+        />
       </div>
+      <div className="h-20" />
     </>
   );
 }
@@ -308,14 +299,19 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
 type PaySummaryCardProps = {
   summary: SummaryBreakdown & { hasUnsavedChanges: boolean };
   className: string;
+  isSaving: boolean;
 };
 
-function PaySummaryCard({ summary, className }: PaySummaryCardProps) {
+function PaySummaryCard({ summary, className, isSaving }: PaySummaryCardProps) {
   return (
     <div className={className}>
       <div className="p-4 bg-white rounded-xl border flex-1 basis-0">
         <p className=" text-gray-400 text-sm uppercase font-medium">Estimated Gross Pay</p>
-        <p className="text-xl font-semibold">${summary.estimatedGrossPay.toFixed(2)}</p>
+        {isSaving ? (
+          <Skeleton className="h-7 w-28" />
+        ) : (
+          <p className="text-xl font-semibold">${summary.estimatedGrossPay.toFixed(2)}</p>
+        )}
         {summary.hasUnsavedChanges ? (
           <span className="flex items-center gap-1 text-xs leading-5 text-amber-600">
             <CircleAlert size={14} />
@@ -346,41 +342,49 @@ function PaySummaryCard({ summary, className }: PaySummaryCardProps) {
 // ─── Sticky save bar ───────────────────────────────────────────────────────
 
 function StickyBar({
-  unsavedCount,
+  unSavedCount,
   isSaving,
   isError,
   onSave,
   onDiscard,
 }: {
-  unsavedCount: number;
+  unSavedCount: number;
   isSaving: boolean;
   isError: boolean;
   onSave: () => void;
   onDiscard: () => void;
 }) {
+  const hasUnsavedChanges = unSavedCount > 0;
+  if (!hasUnsavedChanges) return null;
   const msg = isSaving
     ? 'Saving shifts and updating pay estimate…'
     : isError
       ? 'Save failed. Review the highlighted row and try again.'
-      : `You have ${unsavedCount} unsaved change${unsavedCount !== 1 ? 's' : ''}. Save to update pay estimate.`;
+      : `You have ${hasUnsavedChanges ? 'unsaved changes' : 'no unsaved changes'}. Save to update pay estimate.`;
 
   return (
     <div
-      className="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200"
+      className="fixed bottom-0 inset-x-0 z-60 bg-white border-t border-slate-200"
       style={{ boxShadow: '0 -2px 10px rgba(15,23,42,0.06)' }}
       role="status"
       aria-live="polite"
     >
       <div
-        className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-0 min-h-28 sm:h-16 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
       >
-        <p className="text-sm text-slate-500 truncate">{msg}</p>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <p className="sr-only">{msg}</p>
+        <p aria-hidden="true" className="text-sm text-slate-500 truncate w-full sm:w-auto">
+          <span className="sm:hidden">
+            {isSaving ? 'Saving changes...' : isError ? 'Save failed' : `You have ${unSavedCount} unsaved changes`}
+          </span>
+          <span className="hidden sm:inline">{msg}</span>
+        </p>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto sm:shrink-0">
           <button
             onClick={onDiscard}
             disabled={isSaving}
-            className="px-3 py-1.5 text-sm text-slate-600 border border-slate-200 rounded-xl bg-white
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm text-slate-600 border border-slate-200 rounded-xl bg-white
               hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Discard
@@ -388,7 +392,7 @@ function StickyBar({
           <button
             onClick={onSave}
             disabled={isSaving}
-            className="px-4 py-1.5 text-sm bg-slate-700 text-white rounded-xl flex items-center gap-1.5
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-1.5 text-sm bg-slate-700 text-white rounded-xl flex items-center justify-center gap-1.5
               hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             style={{ fontWeight: 500 }}
           >

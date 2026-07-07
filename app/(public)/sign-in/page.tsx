@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import ContactMeAlertDialog from '@/features/auth/components/ContactMeAlertDialog';
-import { loginUser } from '@/features/auth/services/auth.service';
+import { loginUser } from '@/features/auth/services/auth.client';
 import { AppError } from '@/lib/AppError';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
@@ -50,14 +50,11 @@ export default function SignIn() {
 
   const onSubmit = async (signInData: SignInValues) => {
     setError('');
-    console.log('🚀 ~ onSubmit ~ signInData:', signInData);
     try {
       setIsLoading(true);
       await loginUser(signInData.userName, signInData.password);
-      // addUser(user);
       router.replace('/dashboard');
     } catch (err) {
-      console.error('🚀 ~ onSubmit ~ err:', err);
       if (err instanceof AppError && err.code === 'INVALID_CREDENTIALS') {
         setError('Invalid username or password');
       } else {

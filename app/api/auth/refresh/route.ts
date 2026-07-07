@@ -1,31 +1,38 @@
+import { refreshAccessToken } from '@/features/auth/services/auth.server';
 import { clearAuthCookies } from '@/lib/auth/session';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+function getSafeReturnTo(request: NextRequest) {
   const returnTo = request.nextUrl.searchParams.get('returnTo') || '/dashboard';
+
+  // Only allow same-site relative paths. Avoid open redirects like:
+  // /api/auth/refresh?returnTo=https://evil.example
+  if (!returnTo.startsWith('/') || returnTo.startsWith('//')) {
+    return '/dashboard';
+  }
+
+  return returnTo;
+}
+
+export async function GET(request: NextRequest) {
+  const returnTo = getSafeReturnTo(request);
   try {
-    const res = await fetch(`${process.env.BACKEND_URL}/api/Auth/refresh-token`, {
-      method: 'POST',
-      headers: {
-        cookie: request.headers.get('cookie') || '',
-      },
-    });
+    const res = await refreshAccessToken(request.headers.get('cookie') || '');
 
     if (!res.ok) {
-      // clear cookies and return to sign-in if refresh token is invalid
-      await clearAuthCookies();
       const response = NextResponse.redirect(new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL));
+      await clearAuthCookies(response);
       return response;
     }
 
-    const url = new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL);
-    const response = NextResponse.redirect(url);
+    const response = NextResponse.redirect(new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL));
 
     // Forward cookies from ASP.NET response, setting them in the Next.js response to the client.
     const setCookie = res.headers.getSetCookie?.() ?? [];
     for (const cookie of setCookie) {
       response.headers.append('Set-Cookie', cookie);
     }
+    console.log('🚀 ~ GET ~ response:', response);
 
     return response;
   } catch (error) {
