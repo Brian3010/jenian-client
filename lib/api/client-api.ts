@@ -9,6 +9,9 @@ import { ApiResponse } from './api-types';
  * @returns data of type T and throw errors to the caller
  */
 export async function parseClientApiResponse<T>(res: Response, fallbackErrorMessage: string): Promise<T> {
+  // 204 No Content is a valid response for some endpoints, so we return undefined as T
+  if (res.status === 204) return undefined as T;
+
   const body = await parseJsonSafe<ApiResponse<T>>(res);
   if (!body) {
     throw new AppError({
