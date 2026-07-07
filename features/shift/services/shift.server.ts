@@ -16,19 +16,9 @@ import {
  * @returns {ServerResult<PayCycleSettings | null>} The user's pay cycle settings
  */
 export async function getUserCurrentPayCycleSettings(): Promise<ServerResult<PayCycleSettings>> {
-  try {
-    const { res } = await aspnetFetch('/api/CWH/shift-calculator/current');
+  const { res } = await aspnetFetch('/api/CWH/shift-calculator/current');
 
-    return await parseAspnetApiResponse<PayCycleSettings>(res, 'Failed to fetch current pay cycle settings');
-  } catch (error) {
-    console.error('Failed to fetch current pay cycle settings', error);
-    return {
-      ok: false,
-      message: 'Failed to fetch current pay cycle settings',
-      errors: ['Unexpected server function error.'],
-      status: 500,
-    };
-  }
+  return await parseAspnetApiResponse<PayCycleSettings>(res, 'Failed to fetch current pay cycle settings');
 }
 
 /**
@@ -36,18 +26,8 @@ export async function getUserCurrentPayCycleSettings(): Promise<ServerResult<Pay
  * @returns {ServerResult<ShiftSummaryResult>} user's shift summary for the given pay cycle
  */
 async function getUserShiftSummaryByPayCycle(payCycle: PayCycleType): Promise<ServerResult<ShiftSummaryResult>> {
-  try {
-    const { res } = await aspnetFetch(`/api/CWH/shifts/by-cycle-date?userPayCyle=${payCycle}`);
-    return await parseAspnetApiResponse<ShiftSummaryResult>(res, 'Failed to fetch user shift summary by pay cycle');
-  } catch (error) {
-    console.error('Failed to fetch user shift summary by pay cycle', error);
-    return {
-      ok: false,
-      message: 'Failed to fetch user shift summary by pay cycle',
-      errors: ['Unexpected server function error.'],
-      status: 500,
-    };
-  }
+  const { res } = await aspnetFetch(`/api/CWH/shifts/by-cycle-date?userPayCyle=${payCycle}`);
+  return await parseAspnetApiResponse<ShiftSummaryResult>(res, 'Failed to fetch user shift summary by pay cycle');
 }
 
 export async function getShiftCalculatorPageData(): Promise<ShiftCalculatorPageData> {
@@ -63,9 +43,10 @@ export async function getShiftCalculatorPageData(): Promise<ShiftCalculatorPageD
     };
   }
 
+  // check if the user has complete pay cycle settings - return 'needs_setup' if not
   const payCycleSettingsData = payCycleSettingsResult.data;
 
-  if (!payCycleSettingsData.hasPayCycleSettings || !hasPayCycleSettings(payCycleSettingsData)) {
+  if (!hasPayCycleSettings(payCycleSettingsData)) {
     return {
       status: 'needs_setup',
       payCycleSettings: payCycleSettingsData,
@@ -101,6 +82,7 @@ export async function getShiftCalculatorPageData(): Promise<ShiftCalculatorPageD
   };
 }
 
+// Type guard to check if payCycleSettings has complete pay cycle settings
 function hasPayCycleSettings(payCycleSettings: PayCycleSettings): payCycleSettings is HasPayCycleSettings {
   return (
     payCycleSettings.hasPayCycleSettings &&
