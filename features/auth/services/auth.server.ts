@@ -1,3 +1,6 @@
+import { ServerResult } from '@/lib/api/api-types';
+import { parseAspnetApiResponse } from '@/lib/api/server-api';
+import { aspnetFetch } from '@/lib/auth/aspnet';
 import 'server-only';
 
 const BACKEND_URL = process.env.BACKEND_URL;
@@ -14,4 +17,12 @@ export async function refreshAccessToken(cookieHeader: string): Promise<Response
     },
     cache: 'no-store',
   });
+}
+
+export async function logout(): Promise<ServerResult<void>> {
+  const { res } = await aspnetFetch('/api/Auth/logout', {
+    method: 'DELETE',
+  });
+
+  return await parseAspnetApiResponse<void>(res, 'Failed to logout user');
 }

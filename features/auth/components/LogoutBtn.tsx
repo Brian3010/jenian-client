@@ -5,18 +5,13 @@ import { logoutUser } from '@/features/auth/services/auth.client';
 
 export default function LogoutBtn() {
   const handleLogout = async () => {
-    console.log('Logout clicked');
     try {
       await logoutUser();
-      localStorage.clear();
-      sessionStorage.removeItem('UserInfo');
-      console.log('Logout successful, redirecting to sign-in page');
-      window.location.href = '/sign-in';
     } catch (error) {
       console.error('Logout failed:', error);
-      console.error('Logout failed. Please try again.');
-      window.location.href = '/sign-in';
     }
+
+    window.location.replace('/sign-in');
   };
 
   return (

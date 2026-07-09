@@ -1,7 +1,8 @@
-import { GetUserResponse } from '@/features/auth/types';
-import { getDefaultErrorMessage, getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
+import { getErrorMessageFromResponse } from '@/lib/api/api-error';
+import { parseClientApiResponse } from '@/lib/api/client-api';
 import { AppError } from '@/lib/AppError';
 
+//TODO: review this
 export async function loginUser(userName: string, password: string): Promise<void> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
@@ -26,53 +27,14 @@ export async function loginUser(userName: string, password: string): Promise<voi
   }
 }
 
-//TODO:  review this
+// call logout api in route.ts, which will call server function to clear session and cookies
 export async function logoutUser() {
-  try {
-    const res = await fetch('/api/auth/logout', {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      console.error('Logout failed with status:', res.status);
-      throw new AppError({
-        message: 'Logout failed',
-        code: 'LOGOUT_FAILED',
-        status: res.status,
-      });
-    } else {
-      console.log('Logout successful');
-    }
-  } catch (error) {
-    console.error('An error occurred during logout:', error);
-    throw error;
-  }
-}
-
-export async function getUser(): Promise<GetUserResponse> {
-  const res = await fetch('/api/auth/me', {
-    method: 'GET',
+  const res = await fetch('/api/auth/logout', {
+    method: 'DELETE',
     credentials: 'include',
   });
 
-  if (!res.ok) {
-    const errorbody = await res.json().catch(() => null);
-    const message = errorbody?.message || errorbody?.title || getDefaultErrorMessage(res.status);
-    throw new AppError({
-      message,
-      code: 'GET_USER_FAILED',
-      status: res.status,
-    });
-  }
-  const data = await parseJsonSafe<GetUserResponse>(res);
-
-  if (!data) {
-    throw new AppError({
-      message: 'Server response is not valid JSON',
-      code: 'INVALID_JSON_RESPONSE',
-      status: 500,
-    });
-  }
-
-  return data;
+  await parseClientApiResponse<void>(res, 'Failed to logout user');
+  localStorage.clear();
+  sessionStorage.clear();
 }

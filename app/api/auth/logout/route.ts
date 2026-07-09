@@ -1,25 +1,23 @@
-import { aspnetFetch } from '@/lib/auth/aspnet';
+import { logout } from '@/features/auth/services/auth.server';
 import { clearAuthCookies } from '@/lib/auth/session';
+import { NextResponse } from 'next/server';
 
 export async function DELETE() {
-  const urlPath = '/api/Auth/logout';
-
-  console.log('Logout DELETE route entered');
+  const response = new NextResponse(null, { status: 204 });
 
   try {
-    const { res } = await aspnetFetch(urlPath, {
-      method: 'DELETE',
-    });
+    const serverResult = await logout();
 
-    if (res.ok) {
-      clearAuthCookies();
-      console.log('Logout successful');
-      return new Response(null, { status: 200 });
+    if (!serverResult.ok) {
+      console.error('Backend logout failed:', {
+        status: serverResult.status,
+        errors: serverResult.errors,
+      });
     }
-    console.error('Logout failed with status:', res.status);
-    return new Response(null, { status: res.status });
   } catch (error) {
-    console.error('An error occurred during logout:', error);
-    return new Response(null, { status: 500 });
+    console.error('Backend logout threw an error:', error);
   }
+
+  await clearAuthCookies(response);
+  return response;
 }
