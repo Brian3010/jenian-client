@@ -2,9 +2,12 @@ import { DashboardCardSkeleton } from '@/components/DashboardCardSkeleton';
 import ShiftCalculatorCard from '@/features/shift/components/ShiftCalculatorCard';
 import TelegramIntegrationCard from '@/features/telegram/components/TelegramIntegrationCard';
 import { default as DateWeatherDisplay, DateWeatherSkeleton } from '@/features/weather/components/DateWeatherDisplay';
+import { requireSession } from '@/lib/auth/session';
 import { Suspense } from 'react';
 
 export default async function DashboardPage() {
+  await requireSession('/dashboard');
+
   return (
     <div className="w-full p-3">
       <Suspense fallback={<DateWeatherSkeleton />}>

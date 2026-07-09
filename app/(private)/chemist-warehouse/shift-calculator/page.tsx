@@ -1,9 +1,11 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import ShiftCalculatorData from '@/features/shift/components/ShiftCalculatorData';
 import ShiftCalculatorHeader from '@/features/shift/components/ShiftCalculatorHeader';
+import { requireSession } from '@/lib/auth/session';
 import { Suspense } from 'react';
 
 export default async function ShiftCalculatorPage() {
+  await requireSession('/chemist-warehouse/shift-calculator');
   return (
     <>
       <ShiftCalculatorHeader />
