@@ -10,15 +10,17 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { getTelegramToken } from '@/features/telegram/services/telegram.client';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { Check, Copy } from 'lucide-react';
 import Link from 'next/link';
-import React, { useState } from 'react';
-import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function TelegramTokenGenerateButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const router = useRouter();
 
   const [token, setToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -37,7 +39,6 @@ export default function TelegramTokenGenerateButton() {
     setIsLoading(true);
     const { linkToken } = await getTelegramToken();
     setToken(linkToken);
-    sessionStorage.removeItem('UserInfo');
     setIsLoading(false);
   };
 
@@ -52,16 +53,23 @@ export default function TelegramTokenGenerateButton() {
         <AlertDialogHeader>
           <AlertDialogTitle>
             <InputGroup className="border-gray-950">
-              <InputGroupInput
-                placeholder={`/start ${token}`}
-                value={`/start ${token}`}
-                readOnly
-                className="placeholder:text-md h-8 px-2 placeholder:text-black"
-              />
+              {isLoading ? (
+                <div className="text-muted-foreground flex h-8 flex-1 items-center px-2 text-sm font-normal">
+                  Getting Telegram token...
+                </div>
+              ) : (
+                <InputGroupInput
+                  placeholder={`/start ${token}`}
+                  value={`/start ${token}`}
+                  readOnly
+                  className="placeholder:text-md h-8 px-2 placeholder:text-black"
+                />
+              )}
               <InputGroupButton
                 aria-label="Copy"
                 title="Copy"
                 size="icon-xs"
+                disabled={isLoading || !token}
                 onClick={() => {
                   copyToClipboard(`/start ${token}`);
                 }}
@@ -90,8 +98,7 @@ export default function TelegramTokenGenerateButton() {
         <AlertDialogFooter>
           <AlertDialogAction
             onClick={() => {
-              sessionStorage.removeItem('UserInfo');
-              window.location.reload();
+              router.refresh();
             }}
           >
             Continue

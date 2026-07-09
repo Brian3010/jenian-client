@@ -1,8 +1,11 @@
+import { parseClientApiResponse } from '@/lib/api/client-api';
+
 export async function getTelegramToken() {
   // call api/private/telegram/link-token
-  const res = await fetch('/api/private/telegram/Telegram/link-token');
-  if (!res.ok && res.status == 401) throw new Error('Unauthorized');
-  if (!res.ok) throw new Error('Internal server error');
-  const data: { linkToken: string } = await res.json();
-  return data;
+  const res = await fetch('/api/private/telegram/link-token', {
+    method: 'GET',
+    cache: 'no-store',
+  });
+
+  return await parseClientApiResponse<{ linkToken: string }>(res, 'Failed to fetch Telegram link token');
 }
