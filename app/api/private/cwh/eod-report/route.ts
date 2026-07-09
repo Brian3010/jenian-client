@@ -1,43 +1,29 @@
-import { aspnetFetch } from '@/lib/auth/aspnet';
+import { submitEodReport } from '@/features/cwh/services/cwh.server';
+import type { EodReportResponse } from '@/features/cwh/types';
+import type { ApiResponse } from '@/lib/api/api-types';
+import { appendSetCookieHeaders } from '@/lib/auth/cookie-headers';
 import { NextResponse } from 'next/server';
 
+// Read form data from the browser request.
+// Call the server-side feature function, which talks to ASP.NET.
+// Convert ServerResult<T> into browser-facing ApiResponse<T>.
 export async function POST(request: Request) {
-  // trycatch to handle unexpected errors in the route handler itself, separate from network errors when connecting to the ASP.NET backend.
-  try {
-    let aspRes: Response;
+  const reportValues = await request.formData();
+  const { serverResult, cookieHeaders } = await submitEodReport(reportValues);
+  console.log('🚀 ~ POST ~ serverResult:', serverResult);
 
-    const formData = await request.formData();
+  // Convert ServerResult to ApiResponse
+  const apiResponseBody: ApiResponse<EodReportResponse> = serverResult.ok
+    ? { success: true, data: serverResult.data, errors: [] }
+    : { success: false, data: null, errors: serverResult.errors };
 
-    // trycatch to handle network errors when connecting to the ASP.NET backend.
-    try {
-      const { res } = await aspnetFetch('/api/CWH/eod-report', {
-        method: 'POST',
-        body: formData,
-      });
+  // Create a NextResponse with the ApiResponse and appropriate status code
+  const response = NextResponse.json(apiResponseBody, {
+    status: serverResult.ok ? 200 : (serverResult.status ?? 500),
+  });
 
-      aspRes = res;
-    } catch (error) {
-      console.error('ASP.NET backend request failed:', error);
-      return NextResponse.json(
-        {
-          message: 'Unable to reach backend service',
-        },
-        { status: 502 },
-      );
-    }
+  // Append Set-Cookie headers to the response
+  appendSetCookieHeaders(response, cookieHeaders);
 
-    const aspBody = await aspRes.text();
-
-    // Forward the ASP.NET response back to the client, preserving status code and content type.
-    return new NextResponse(aspBody, {
-      status: aspRes.status,
-      statusText: aspRes.statusText,
-      headers: {
-        'content-type': aspRes.headers.get('content-type') ?? 'application/json',
-      },
-    });
-  } catch (error) {
-    console.error('route POST failed:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  }
+  return response;
 }

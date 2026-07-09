@@ -1,20 +1,20 @@
-import { ReportValuesOutput } from '@/features/cwh/types';
-import { getErrorMessageFromResponse, parseJsonSafe } from '@/lib/api/api-error';
-import { AppError } from '@/lib/AppError';
+import { EodReportResponse, ReportValuesOutput } from '@/features/cwh/types';
+import { parseClientApiResponse } from '@/lib/api/client-api';
 
 type FormReportT = ReportValuesOutput;
 
-/** handleReport is responsible for handling the report form submission, it will format the form data to match what BFF expects, then send a POST request to the BFF endpoint /api/private/cwh/CWH/eod-report
- * the form data will be formatted to match what BFF expects, for example: GeneralCheck.FreeTrolleys, GeneralCheck.NumOfClickCollect etc.
- * the form data will be sent as FormData, because it includes file uploads, and the BFF is expecting FormData
- * the function will return the response from the BFF, which includes the status and message, if the status is 401, it means the user is unauthorized, and should be redirected to the sign-in page
+/**
+ * Builds and submits the end-of-day report payload.
+ *
+ * Image uploads are compressed before being added to the request. Selected
+ * nested report sections are flattened into dot-notated FormData keys before
+ * the payload is posted to the CWH end-of-day report endpoint.
  */
 export async function handleReport(formReport: FormReportT) {
   const sections: Array<keyof FormReportT> = ['GeneralCheck', 'AislesFacing', 'StockUpdate', 'NightTasks', 'Cleaning'];
 
   const formData = new FormData();
 
-  // handle file uploads, the key is DeliveryScreenShots, the value is File[]
   const files = Array.from(formReport.DeliveryScreenShots ?? []);
   for (const file of files) {
     const compressedFile = await compressImage(file, {
@@ -31,12 +31,10 @@ export async function handleReport(formReport: FormReportT) {
     formData.append('DeliveryScreenShots', compressedFile);
   }
 
-  // handle AdditionalTasks, if it exists, the key is AdditionalTasks, the value is string
   if (formReport.AdditionalTasks) {
     formData.append('AdditionalTasks', formReport.AdditionalTasks);
   }
 
-  // loop through the sections, if the value is an object, flatten it and append to formData
   for (const key of sections) {
     const value = formReport[key];
     if (value && typeof value === 'object') {
@@ -46,47 +44,19 @@ export async function handleReport(formReport: FormReportT) {
 
   console.log('🚀 ~ handleReport ~ formData:', { ...formData });
 
-  // send the formData to the BFF endpoint
   const res = await fetch('/api/private/cwh/eod-report', {
     method: 'POST',
     body: formData,
   });
 
-  if (!res.ok) {
-    const errorBody = await getErrorMessageFromResponse(res);
-    throw new AppError({
-      message: errorBody.join(', '),
-      code: 'REPORT_SUBMISSION_FAILED',
-      status: res.status,
-    });
-  }
-
-  const data = await parseJsonSafe<{ reportId: string }>(res);
-
-  if (!data) {
-    throw new AppError({
-      message: 'Server response is not valid JSON',
-      code: 'INVALID_JSON_RESPONSE',
-      status: 500,
-    });
-  }
-  return data;
+  return parseClientApiResponse<EodReportResponse>(res, 'Failed to submit report');
 }
 
 /**
- * helper function to flatten the object and append to formData, for example: { GeneralCheck: { FreeTrolleys: 'string', NumOfClickCollect: 2 } }
- * will be flattened to GeneralCheck.FreeTrolleys: 'string', GeneralCheck.NumOfClickCollect: 2
- * the prefix is the parent key, for example: GeneralCheck, AislesFacing, StockUpdate etc.
- * if the value is an object, recursively call the function until the value is not an object, then append to formData
- * if the value is an array, append each item in the array with the same key, for example: DeliveryScreenShots: File[]
- * if the value is a file, append to formData directly
- * if the value is null or undefined, skip
- * if the value is a primitive type, append to formData directly
- * example input: { GeneralCheck: { FreeTrolleys: 'string', NumOfClickCollect: 2 }, AislesFacing: { FrontCounter: 'string' }, DeliveryScreenShots: File[] }
- * example output in formData: GeneralCheck.FreeTrolleys: 'string', GeneralCheck.NumOfClickCollect: 2, AislesFacing.FrontCounter: 'string', DeliveryScreenShots: File[]
- * after fd.append(`${prefix}.${k}`, String(v));` the loop will continue to the next iteration, so if the value is an object, it will be flattened and appended to formData
- * , then continue to the next key in the object
+ * Appends an object's values to FormData using dot notation for nested keys.
  *
+ * Null and undefined values are ignored. Nested non-array objects are flattened
+ * recursively. All final values are converted to strings before being appended.
  */
 function flattenAppend(fd: FormData, prefix: string, obj: Record<string, unknown>) {
   for (const [k, v] of Object.entries(obj)) {
@@ -101,6 +71,12 @@ function flattenAppend(fd: FormData, prefix: string, obj: Record<string, unknown
   }
 }
 
+/**
+ * Compresses an image file by resizing it to fit within the configured maximum
+ * dimensions and encoding it as the requested output type.
+ *
+ * Non-image files are returned unchanged.
+ */
 async function compressImage(
   file: File,
   options?: {
@@ -152,6 +128,10 @@ async function compressImage(
   }
 }
 
+/**
+ * Loads an image from a URL and resolves once the browser has decoded enough
+ * of the image to expose its dimensions.
+ */
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -161,6 +141,11 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+/**
+ * Converts a canvas into a Blob using the requested MIME type and quality.
+ *
+ * Rejects if the browser fails to produce a Blob.
+ */
 function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -177,6 +162,12 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
   });
 }
 
+/**
+ * Calculates dimensions that fit within the provided bounds while preserving
+ * the original aspect ratio.
+ *
+ * Images already within the bounds keep their original dimensions.
+ */
 function getScaledDimensions(originalWidth: number, originalHeight: number, maxWidth: number, maxHeight: number) {
   const width = originalWidth;
   const height = originalHeight;
@@ -195,6 +186,10 @@ function getScaledDimensions(originalWidth: number, originalHeight: number, maxW
   };
 }
 
+/**
+ * Replaces a filename's extension, or appends one when the filename has no
+ * extension.
+ */
 function replaceFileExtension(filename: string, newExt: string): string {
   const lastDot = filename.lastIndexOf('.');
   if (lastDot === -1) {

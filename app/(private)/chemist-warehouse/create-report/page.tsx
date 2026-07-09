@@ -10,7 +10,7 @@ import ReportFormHeader from '@/features/cwh/components/ReportFormHeader';
 import SectionInputs, { SectionInputsProps } from '@/features/cwh/components/SectionInputs';
 import { ailesFacing, cleaning, generalCheck, nightTasks, stockUpdate } from '@/features/cwh/constants';
 import { reportSchema } from '@/features/cwh/schemas';
-import { handleReport } from '@/features/cwh/services/cwh.service';
+import { handleReport } from '@/features/cwh/services/cwh.client';
 import { ReportValuesInput, ReportValuesOutput } from '@/features/cwh/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -100,7 +100,7 @@ export default function CreateEodReportForm() {
 
     try {
       setIsLoading(true);
-      const data = await handleReport(reportValues);
+      const data = await handleReport(reportValues); // client function called
       console.log('🚀 ~ onSubmit ~ data:', data);
       localStorage.removeItem(STORAGE_KEY);
       notifySuccess('Report submitted successfully!');
@@ -109,7 +109,7 @@ export default function CreateEodReportForm() {
     } catch (error) {
       console.error(error);
       notifyError('Failed to submit report. Please try again.');
-      alert(error instanceof Error ? error + '|' + error.message : 'An unknown error occurred');
+      // alert(error instanceof Error ? error + '|' + error.message : 'An unknown error occurred');
       setIsLoading(false);
       return router.push('/dashboard');
     } finally {
@@ -277,7 +277,7 @@ function DeliveryInputs({
             <div className="flex flex-col gap-4 items-center">
               <Textarea
                 placeholder="Example: Sigma - 12 @ 10:30am, Warehouse - 5 @ 11:00am, etc."
-                className="resize-none rounded-md border border-gray-300 p-2 w-full min-h-[120px]"
+                className="resize-none rounded-md border border-gray-300 p-2 w-full min-h-30"
                 {...register('StockUpdate.AdditionalNote')}
               />
             </div>
