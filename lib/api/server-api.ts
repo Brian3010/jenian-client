@@ -17,6 +17,14 @@ export async function parseAspnetApiResponse<T>(res: Response, fallbackErrorMess
     };
   }
 
+  // ASP.NET returned 2xx, but the body is empty (204 No Content) or not in the expected ApiResponse<T> shape.
+  if (res.status === 204) {
+    return {
+      ok: true,
+      data: undefined as unknown as T,
+    };
+  }
+
   // ASP.NET returned 2xx, but the body is invalid,
   // empty, not JSON, or not in the expected ApiResponse<T> shape.
   const body = await parseJsonSafe<ApiResponse<T>>(res);
