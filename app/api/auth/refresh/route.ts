@@ -1,46 +1,48 @@
 import { refreshAccessToken } from '@/features/auth/services/auth.server';
+import { getErrorMessageFromResponse } from '@/lib/api/api-error';
+import { ApiResponse } from '@/lib/api/api-types';
 import { clearAuthCookies } from '@/lib/auth/session';
 import { NextRequest, NextResponse } from 'next/server';
 
-function getSafeReturnTo(request: NextRequest) {
-  const returnTo = request.nextUrl.searchParams.get('returnTo') || '/dashboard';
-
-  // Only allow same-site relative paths. Avoid open redirects like:
-  // /api/auth/refresh?returnTo=https://evil.example
-  if (!returnTo.startsWith('/') || returnTo.startsWith('//')) {
-    return '/dashboard';
-  }
-
-  return returnTo;
-}
-
-export async function GET(request: NextRequest) {
-  const returnTo = getSafeReturnTo(request);
+export async function POST(request: NextRequest) {
   try {
     const res = await refreshAccessToken(request.headers.get('cookie') || '');
 
     if (!res.ok) {
-      const response = NextResponse.redirect(new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL));
+      const errorBody = await getErrorMessageFromResponse(res);
+      const response = NextResponse.json<ApiResponse<null>>(
+        { success: false, data: null, errors: errorBody ? errorBody : ['Failed to refresh access token'] },
+        {
+          status: res.status || 401,
+        },
+      );
       await clearAuthCookies(response);
       return response;
     }
 
-    const response = NextResponse.redirect(new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL));
+    const response = NextResponse.json<ApiResponse<null>>(
+      { success: true, data: null, errors: [] },
+      {
+        status: 200,
+      },
+    );
 
     // Forward cookies from ASP.NET response, setting them in the Next.js response to the client.
     const setCookie = res.headers.getSetCookie?.() ?? [];
     for (const cookie of setCookie) {
       response.headers.append('Set-Cookie', cookie);
     }
-    console.log('🚀 ~ GET ~ response:', response);
-
     return response;
   } catch (error) {
     console.error('Error in refresh route:', error);
-    const errorUrl = new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL);
-    errorUrl.searchParams.set('error', 'server_error');
-    errorUrl.searchParams.set('returnTo', returnTo); // Retain original destination for later retry
 
-    return NextResponse.redirect(errorUrl);
+    const response = NextResponse.json<ApiResponse<null>>(
+      { success: false, data: null, errors: ['Failed to refresh access token'] },
+      {
+        status: 500,
+      },
+    );
+    await clearAuthCookies(response);
+    return response;
   }
 }

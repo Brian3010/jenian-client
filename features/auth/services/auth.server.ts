@@ -9,6 +9,7 @@ if (!BACKEND_URL) {
   throw new Error('Missing BACKEND_URL environment variable');
 }
 
+// this function is used in the refresh route to call backend and get the new access token and set it in the cookie
 export async function refreshAccessToken(cookieHeader: string): Promise<Response> {
   return fetch(`${BACKEND_URL}/api/Auth/refresh-token`, {
     method: 'POST',
@@ -17,6 +18,10 @@ export async function refreshAccessToken(cookieHeader: string): Promise<Response
     },
     cache: 'no-store',
   });
+
+  // No need to convert to Server Result here,
+  // the cookieHeader is set by backend
+  // return response to route handler to set the cookie in the response to the client
 }
 
 export async function logout(): Promise<ServerResult<void>> {

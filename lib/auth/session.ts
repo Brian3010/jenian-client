@@ -160,7 +160,7 @@ export async function requireSession(returnTo: string): Promise<UserPayload> {
   }
 
   if (session.status === 'missing_access_token' || session.status === 'expired_access_token') {
-    redirect(`/api/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
+    redirect(`/refresh?returnTo=${encodeURIComponent(returnTo)}`);
   }
 
   // if invalid access token, clear cookies and redirect to sign-in with error message
