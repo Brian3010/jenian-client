@@ -20,9 +20,10 @@ const items: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
-    label: 'Shift Calculator',
+    label: 'Shift Calculator Incoming',
     href: '/chemist-warehouse/shift-calculator',
     icon: BadgeDollarSign,
+    disabled: true, // Disable the Shift Calculator link until the feature is fully implemented
   },
   {
     label: 'Settings',
