@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+  const timeout = setTimeout(() => controller.abort(), 20000); // 20 seconds timeout
 
   try {
     const res = await fetch(`${process.env.BACKEND_URL}/api/Home/health`, {
