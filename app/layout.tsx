@@ -1,5 +1,5 @@
 // import { SidebarBackdrop } from '@/components/sidebar-backdrop';
-import { BackendHealthCheck } from '@/components/BackendHealthCheck';
+import { BackendHealthCheckGate } from '@/components/BackendHealthCheckGate';
 import { NotificationProvider } from '@/components/providers/NotificationContext';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
@@ -35,10 +35,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-dvh bg-gray-50 flex justify-center">
         <main className="w-full">
-          <BackendHealthCheck />
-          <NotificationProvider>
-            <div>{children}</div>
-          </NotificationProvider>
+          <BackendHealthCheckGate>
+            <NotificationProvider>
+              <div>{children}</div>
+            </NotificationProvider>
+          </BackendHealthCheckGate>
         </main>
       </body>
     </html>
