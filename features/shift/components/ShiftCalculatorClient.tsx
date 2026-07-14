@@ -80,6 +80,11 @@ export default function ShiftCalculatorClient({
     setIsSaving(true);
     //TODO: call client function
     //TODO: handle errors, show error message, and set isError to true
+
+    // add trycatch
+    // call handleShiftSubmit(state.draftShifts, state.deletedShiftIds, cycleStartDate, cycleEndDate) from shift.client.ts
+    // catch error, check if error is instance of AppError, then use error.message to display the error message to the user
+    // if not instance of AppError, show generic error message "Something went wrong. Please try again later."
     await new Promise(r => setTimeout(r, 5600));
 
     // Load new saved shifts from backend

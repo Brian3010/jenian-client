@@ -9,6 +9,7 @@ import {
   PayCycleType,
   ShiftCalculatorPageData,
   ShiftSummaryResult,
+  UserShift,
 } from '../types';
 
 /**
@@ -92,4 +93,32 @@ function hasPayCycleSettings(payCycleSettings: PayCycleSettings): payCycleSettin
     payCycleSettings.shiftCountInCycle !== null &&
     payCycleSettings.estimatedGrossPay !== null
   );
+}
+
+// Submit shifts to the backend
+
+export async function submitShifts(
+  cycleStartDate: string, //yyyy-MM-dd format
+  cycleEndDate: string, //yyyy-MM-dd format
+  shifts: UserShift[], // startTime and endTime should be in UTC ISO string format, e.g. 2023-08-07T10:47:21.220Z
+  deletedShiftIds: string[],
+): Promise<{
+  serverResult: ServerResult<ShiftSummaryResult>;
+  cookieHeaders: string[];
+}> {
+  const { res, setCookieHeaders } = await aspnetFetch(
+    `/api/CWH/shifts/bulks?cycleStartDate=${cycleStartDate}&cycleEndDate=${cycleEndDate}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ shifts, deletedShiftIds }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+
+  return {
+    serverResult: await parseAspnetApiResponse<ShiftSummaryResult>(res, 'Failed to submit shifts'),
+    cookieHeaders: setCookieHeaders,
+  };
 }
