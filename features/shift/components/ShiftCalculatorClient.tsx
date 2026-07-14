@@ -75,7 +75,7 @@ export default function ShiftCalculatorClient({
 
   // submit shift to backend
   const handleSubmit = async () => {
-    console.log('submiting .... ', state.draftShifts);
+    console.log('submiting .... ', state.draftShifts, state.deletedShiftIds, cycleStartDate, cycleEndDate);
 
     setIsSaving(true);
     //TODO: call client function
