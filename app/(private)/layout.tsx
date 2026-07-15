@@ -8,7 +8,6 @@ import { requireSession } from '@/lib/auth/session';
 
 export default async function PrivateLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const user = await requireSession('/dashboard');
-  console.log('🚀 ~ PrivateLayout ~ user:', user);
 
   return (
     <AuthContextProvider initialUser={user}>
