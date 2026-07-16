@@ -21,7 +21,6 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'application/json', Cookie: cookieStore.toString() },
       body,
     });
-    console.log('🚀 ~ POST ~ aspRes:', aspRes);
     const aspBody = await aspRes.text();
 
     // Forward the ASP.NET response back to the client, preserving status code and content type
