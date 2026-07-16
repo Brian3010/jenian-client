@@ -1,27 +1,62 @@
 import { parseClientApiResponse } from '@/lib/api/client-api';
+import { convertLocalDateAndTimeToUtcIso, convertUtcIsoToLocalDateAndTime } from '@/lib/utils';
 import { ShiftFormValues } from '../schemas';
-import { ShiftSummaryResult } from '../types';
+import { ShiftSummaryResult, UserShift } from '../types';
 
-//TODO: will need to format cycleStartDate and cycleEndDate to yyyy-MM-dd format before sending to backend
-//TODO: review the shift startTime and endTime to ensure they are in the correct format and timezone before sending to backend
-
-//TODO: convert time format to UTC ISO string before sending to backend, and convert back to local time when receiving from backend
-export async function handleShiftSubmit(
+export async function handleShiftClient(
   cycleStartDate: string,
   cycleEndDate: string,
-  shifts: ShiftFormValues[],
+  shiftFormValues: ShiftFormValues[],
   deletedShiftIds: string[],
-): Promise<ShiftSummaryResult> {
-  const res = await fetch(`/api/private/shift/bulks?cycleStartDate=${cycleStartDate}&cycleEndDate=${cycleEndDate}`, {
-    method: 'POST',
+): Promise<ShiftSummaryResult<ShiftFormValues>> {
+  // Formatting shiftfromvalues to usershift before sending to route handler
+  const userShifts: UserShift[] = shiftFormValuesToUserShift(shiftFormValues);
+
+  const res = await fetch('/api/private/shift/bulks', {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ shifts, deletedShiftIds }),
+    body: JSON.stringify({ shifts: userShifts, deletedShiftIds, cycleStartDate, cycleEndDate }),
   });
+  console.log('🚀 ~ handleShiftClient ~ res:', res);
 
-  return await parseClientApiResponse<ShiftSummaryResult>(res, 'Failed to submit shifts');
+  const shiftSummary = await parseClientApiResponse<ShiftSummaryResult>(res, 'Failed to submit shifts');
+
+  return {
+    shifts: userShiftToShiftFormValues(shiftSummary.shifts),
+    dailySummaries: shiftSummary.dailySummaries,
+  };
 }
 
-// await handleShiftSubmit(....) - use trycatch block, catch error, and check if error is instance of AppError,
-//  then use error.message (can be validation errors from backend) to display the error message to the user.
+function shiftFormValuesToUserShift(shifts: ShiftFormValues[]): UserShift[] {
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return shifts.map(s => {
+    return {
+      id: s.id?.includes('draft-') ? undefined : s.id, // if the shift is new, don't send the id to backend
+      startAt: convertLocalDateAndTimeToUtcIso(s.workDate, s.startTime, userTimeZone),
+      endAt: convertLocalDateAndTimeToUtcIso(s.workDate, s.endTime, userTimeZone),
+      unpaidBreakMinutes: s.unpaidBreak,
+      paidBreakMinutes: s.paidBreak,
+      entryType: s.entryType,
+      employmentType: s.employmentType,
+      timeZoneId: userTimeZone,
+    };
+  });
+}
+
+function userShiftToShiftFormValues(shifts: UserShift[]): ShiftFormValues[] {
+  return shifts.map(s => {
+    return {
+      id: s.id,
+      workDate: convertUtcIsoToLocalDateAndTime(s.startAt, s.timeZoneId).date,
+      startTime: convertUtcIsoToLocalDateAndTime(s.startAt, s.timeZoneId).time,
+      endTime: convertUtcIsoToLocalDateAndTime(s.endAt, s.timeZoneId).time,
+      unpaidBreak: s.unpaidBreakMinutes,
+      paidBreak: s.paidBreakMinutes,
+      entryType: s.entryType,
+      employmentType: s.employmentType,
+    };
+  });
+}

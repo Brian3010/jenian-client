@@ -69,8 +69,13 @@ export type UserDailyPaySummary = {
   grossPay: number;
 };
 
-export type ShiftSummaryResult = {
-  shifts: UserShift[];
+// export type ShiftSummaryResult = {
+//   shifts: UserShift[];
+//   dailySummaries: UserDailyPaySummary[];
+// };
+
+export type ShiftSummaryResult<TShift = UserShift> = {
+  shifts: TShift[];
   dailySummaries: UserDailyPaySummary[];
 };
 

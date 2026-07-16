@@ -21,6 +21,12 @@ type Action =
   // | { type: 'SAVE_CHANGES' }
   | { type: 'DISCARD_CHANGES' };
 
+/**
+ * Manage the state of the shift calculator, including saved shifts, draft shifts, and deleted shift IDs.
+ * @param state The current state of the shift calculator
+ * @param action The action to be performed on the state
+ * @returns The new state after applying the action
+ */
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'LOAD_SHIFTS':
@@ -31,6 +37,9 @@ export function reducer(state: State, action: Action): State {
         changeCounter: 0,
       };
 
+    // NOTE: when adding a new shift, draft-{id} is used as a temporary id for the new shift,
+    // and will be replaced with the real id from backend when saved
+    // purpose is to make it easy to handle displaying new shifts using mapping with key={shift.id}
     case 'ADD_SHIFT':
       return {
         ...state,
@@ -52,7 +61,7 @@ export function reducer(state: State, action: Action): State {
       return {
         ...state,
         draftShifts: state.draftShifts.filter(s => s.id !== action.shiftId),
-        deletedShiftIds: [...state.deletedShiftIds, action.shiftId.includes('draft-') ? '' : action.shiftId],
+        deletedShiftIds: [...state.deletedShiftIds, ...(action.shiftId.includes('draft-') ? [] : [action.shiftId])],
         changeCounter: state.changeCounter + 1,
       };
 
@@ -69,6 +78,7 @@ export function reducer(state: State, action: Action): State {
   }
 }
 
+// create initial state from the shifts fetched from backend, and set the status of each shift to 'saved'
 export const createInitialState = (shifts: ShiftFormValues[]): State => {
   if (shifts.length === 0) {
     return {

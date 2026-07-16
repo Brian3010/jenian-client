@@ -81,6 +81,31 @@ export function convertUtcIsoToLocalDateAndTime(
   };
 }
 
+// convert local date and time with timezone info to utc iso string, e.g. { date: '2024-01-01', time: '14:30' } to 2024-01-01T03:30:00Z
+export function convertLocalDateAndTimeToUtcIso(date: string, time: string, timeZoneId: string): string {
+  if (!date) {
+    throw new Error('date is required');
+  }
+
+  if (!time) {
+    throw new Error('time is required');
+  }
+
+  if (!timeZoneId) {
+    throw new Error('timeZoneId is required');
+  }
+
+  const dateTime = DateTime.fromFormat(`${date} ${time}`, 'yyyy-MM-dd HH:mm', {
+    zone: timeZoneId,
+  }).setZone('utc');
+
+  if (!dateTime.isValid) {
+    throw new Error(dateTime.invalidExplanation ?? 'Invalid local date and time');
+  }
+
+  return dateTime.toISO({ suppressMilliseconds: false })!;
+}
+
 export function formatTime12h(time24h: string): string {
   const [hoursString, minutesString] = time24h.split(':');
 

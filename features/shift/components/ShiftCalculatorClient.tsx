@@ -4,11 +4,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
+import { AppError } from '@/lib/AppError';
 import { formatDateDayMonth, formatTime12h, formatWorkDate, getHoursBetweenTimes } from '@/lib/utils';
 import { CircleAlert } from 'lucide-react';
-import { useMemo, useReducer, useState } from 'react';
+import { useReducer, useState } from 'react';
 import { createInitialState, reducer, ShiftWithStatus } from '../reducer/shiftCalculator.reducer';
 import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
+import { handleShiftClient } from '../services/shift.client';
 import ShiftModal from './shiftModal';
 
 type ShiftCalculatorClientProps = {
@@ -28,26 +30,25 @@ export default function ShiftCalculatorClient({
 }: ShiftCalculatorClientProps) {
   // reducer
   const [state, dispatch] = useReducer(reducer, initialUserShifts, createInitialState);
-  const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
+  const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
+  const [estimatedGrossPay, setEstimatedGrossPay] = useState<number>(initialSummaryBreakdown.estimatedGrossPay);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const hasUnsavedChanges = JSON.stringify(state.draftShifts) !== JSON.stringify(state.savedShifts);
 
-  // recalculate summary breakdown whenever draftShifts changes
-  const summaryBreakDown = useMemo<SummaryBreakdown & { hasUnsavedChanges: boolean }>(() => {
-    const totalHours = state.draftShifts.reduce((total: number, s: ShiftFormValues) => {
-      return total + getHoursBetweenTimes(s.startTime, s.endTime);
-    }, 0);
-
-    return {
-      ...initialSummaryBreakdown,
-      shiftCountInCycle: state.draftShifts.length,
-      scheduledTotalHours: totalHours,
-      hasUnsavedChanges: hasUnsavedChanges,
-    };
-  }, [state.draftShifts, initialSummaryBreakdown, hasUnsavedChanges]);
+  const totalHours = state.draftShifts.reduce((total: number, s: ShiftFormValues) => {
+    return total + getHoursBetweenTimes(s.startTime, s.endTime);
+  }, 0);
+  const summaryBreakdown: SummaryBreakdown & { hasUnsavedChanges: boolean } = {
+    ...initialSummaryBreakdown,
+    shiftCountInCycle: state.draftShifts.length,
+    scheduledTotalHours: totalHours,
+    estimatedGrossPay: estimatedGrossPay,
+    hasUnsavedChanges: JSON.stringify(state.draftShifts) !== JSON.stringify(state.savedShifts),
+  };
 
   const onModalCancel = () => {
     setShowAddModal(false);
@@ -73,23 +74,34 @@ export default function ShiftCalculatorClient({
     dispatch({ type: 'DELETE_SHIFT', shiftId: id });
   };
 
+  const handleDiscard = () => {
+    dispatch({ type: 'DISCARD_CHANGES' });
+    setError(null);
+  };
+
   // submit shift to backend
   const handleSubmit = async () => {
-    console.log('submiting .... ', state.draftShifts, state.deletedShiftIds, cycleStartDate, cycleEndDate);
-
     setIsSaving(true);
-    //TODO: call client function
-    //TODO: handle errors, show error message, and set isError to true
 
-    // add trycatch
-    // call handleShiftSubmit(state.draftShifts, state.deletedShiftIds, cycleStartDate, cycleEndDate) from shift.client.ts
-    // catch error, check if error is instance of AppError, then use error.message to display the error message to the user
-    // if not instance of AppError, show generic error message "Something went wrong. Please try again later."
-    await new Promise(r => setTimeout(r, 5600));
+    // Call the client-side service function, which talks to the route handler.
+    try {
+      const result = await handleShiftClient(cycleStartDate, cycleEndDate, state.draftShifts, state.deletedShiftIds);
+      console.log('submit result: ', result);
 
-    // Load new saved shifts from backend
-    dispatch({ type: 'LOAD_SHIFTS', shifts: state.draftShifts });
-    setIsSaving(false);
+      dispatch({ type: 'LOAD_SHIFTS', shifts: result.shifts });
+      setEstimatedGrossPay(
+        result.dailySummaries.reduce((total: number, summary: { grossPay: number }) => total + summary.grossPay, 0),
+      );
+    } catch (error) {
+      //TODO: handle errors, show error message, and set isError to true
+      if (error instanceof AppError) {
+        console.error('Invalid Response from server: ', error.message);
+      }
+      console.error('Something went wrong when submitting the shifts. Please try again later.', error);
+      setError('Could not save shifts');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -118,8 +130,40 @@ export default function ShiftCalculatorClient({
           </button>
         </div>
       </div>
+      {/* Error message */}
+      {error && (
+        <div role="alert" className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
+          <div className="flex flex-col items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-red-800" style={{ fontWeight: 600 }}>
+                {error}
+              </p>
+              <p className="text-xs text-red-700 mt-0.5">
+                Something went wrong on our end. Your changes are still here
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={handleSubmit}
+                className="px-3 py-1.5 text-xs bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
+                style={{ fontWeight: 500 }}
+              >
+                Try again
+              </button>
+              <button
+                onClick={handleDiscard}
+                className="px-3 py-1.5 text-xs text-red-700 border border-red-200 bg-white rounded-lg hover:bg-red-50 transition-colors"
+                style={{ fontWeight: 500 }}
+              >
+                Discard changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Card summary */}
-      <PaySummaryCard isSaving={isSaving} summary={summaryBreakDown} className="flex md:flex-row flex-col gap-2" />
+      <PaySummaryCard summary={summaryBreakdown} isSaving={isSaving} className="flex md:flex-row flex-col gap-2" />
 
       {/* shift details */}
       <div className="flex flex-col lg:flex-row gap-4">
@@ -158,21 +202,15 @@ export default function ShiftCalculatorClient({
             onSave={editingShift ? handleEdit : handleAdd}
           />
         )}
-        {
-          //TODO: Add save changes button that triggers handleSubmit,
-          // only show when there are unsaved changes (draftShifts !== savedShifts),
-          // after submit, update savedShifts with draftShifts
-        }
 
-        {/**Unsaved Changes */}
-
+        {/**Unsaved Changes Bar */}
         <StickyBar
           hasUnsavedChanges={hasUnsavedChanges}
           unSavedCount={state.changeCounter}
           isSaving={isSaving}
           isError={false}
           onSave={handleSubmit}
-          onDiscard={() => dispatch({ type: 'DISCARD_CHANGES' })}
+          onDiscard={handleDiscard}
         />
       </div>
       <div className="h-20" />
@@ -306,6 +344,7 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
 
 type PaySummaryCardProps = {
   summary: SummaryBreakdown & { hasUnsavedChanges: boolean };
+
   className: string;
   isSaving: boolean;
 };
