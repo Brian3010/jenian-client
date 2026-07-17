@@ -30,6 +30,7 @@ export default async function ShiftCalculatorData() {
     <ShiftCalculatorClient
       initialSummaryBreakdown={calculateSummaryBreakdown(summary.payCycleSettings, summary.shiftSummary)}
       initialUserShifts={mapShiftToFormValues(summary.shiftSummary)}
+      initialDailySummaries={summary.shiftSummary.dailySummaries}
       cycleStartDate={summary.payCycleSettings.payCycleStartDate!}
       cycleEndDate={summary.payCycleSettings.payCycleEndDate!}
       timeZoneId={

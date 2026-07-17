@@ -11,10 +11,12 @@ import { useReducer, useState } from 'react';
 import { createInitialState, reducer, ShiftWithStatus } from '../reducer/shiftCalculator.reducer';
 import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
 import { handleShiftClient } from '../services/shift.client';
+import { UserDailyPaySummary } from '../types';
 import ShiftModal from './shiftModal';
 
 type ShiftCalculatorClientProps = {
   initialSummaryBreakdown: SummaryBreakdown;
+  initialDailySummaries: UserDailyPaySummary[];
   cycleStartDate: string;
   cycleEndDate: string;
   initialUserShifts: ShiftFormValues[];
@@ -26,6 +28,7 @@ export default function ShiftCalculatorClient({
   initialUserShifts,
   cycleStartDate,
   cycleEndDate,
+  initialDailySummaries,
   timeZoneId,
 }: ShiftCalculatorClientProps) {
   // reducer
@@ -36,6 +39,7 @@ export default function ShiftCalculatorClient({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [dailySummaries, setDailySummaries] = useState<UserDailyPaySummary[]>(initialDailySummaries);
 
   const hasUnsavedChanges = JSON.stringify(state.draftShifts) !== JSON.stringify(state.savedShifts);
 
@@ -92,13 +96,16 @@ export default function ShiftCalculatorClient({
       setEstimatedGrossPay(
         result.dailySummaries.reduce((total: number, summary: { grossPay: number }) => total + summary.grossPay, 0),
       );
+      setError(null);
+      setDailySummaries(result.dailySummaries);
     } catch (error) {
-      //TODO: handle errors, show error message, and set isError to true
       if (error instanceof AppError) {
         console.error('Invalid Response from server: ', error.message);
+        if (error.message) {
+          setError(error.message);
+        }
       }
       console.error('Something went wrong when submitting the shifts. Please try again later.', error);
-      setError('Could not save shifts');
     } finally {
       setIsSaving(false);
     }
@@ -139,7 +146,7 @@ export default function ShiftCalculatorClient({
                 {error}
               </p>
               <p className="text-xs text-red-700 mt-0.5">
-                Something went wrong on our end. Your changes are still here
+                Invalid shifts will not be saved. Please review your shifts and try again.
               </p>
             </div>
             <div className="flex gap-2 shrink-0">
@@ -190,7 +197,11 @@ export default function ShiftCalculatorClient({
         )}
 
         <div className="w-full lg:w-2xs shrink-0">
-          <span className="text-sm text-slate-500">Pay breakdown coming soon...</span>
+          {dailySummaries.length > 0 ? (
+            <PayBreakDown dailySummaries={dailySummaries} />
+          ) : (
+            <span className="text-sm text-slate-500">No breakdown yet. Save your first shifts to generate one.</span>
+          )}
         </div>
         {(showAddModal || editingShift) && (
           <ShiftModal
@@ -294,53 +305,58 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
   );
 }
 
-// TODO: calculate pay breakdown from shifts including new and updated shifts, show total hours, base hours...
-// TODO: cross pay will be calculated from backend
-// function PayBreakDown({ shifts }: { shifts: UserShift[] }) {
-//   //TODO: calculate base hours, evening penalty, overtime, paid breaks, unpaid breaks from shifts
-//   return (
-//     <div
-//       className="bg-white rounded-2xl border border-slate-200 p-5"
-//       style={{ boxShadow: '0 1px 3px rgba(15,23,42,0.04)' }}
-//     >
-//       <h3 className="text-slate-900 mb-4" style={{ fontSize: '0.9375rem', fontWeight: 600 }}>
-//         Pay breakdown
-//       </h3>
+function PayBreakDown({ dailySummaries }: { dailySummaries: UserDailyPaySummary[] }) {
+  const minutesToHours = (minutes: number) => `${(minutes / 60).toFixed(1)} hrs`;
 
-//       {/* {hasUnsaved && !isSaving && (
-//         <div className="mb-4 px-3 py-2.5 bg-amber-50 border border-amber-100 rounded-xl">
-//           <p className="text-xs text-amber-800">Breakdown is based on last saved shifts. Save changes to update.</p>
-//         </div>
-//       )} */}
+  const summary: [string, string][] = [
+    [
+      'Total Payable Hours',
+      minutesToHours(dailySummaries.reduce((total, summary) => total + summary.totalPayableMinutes, 0)),
+    ],
 
-//       {breakdown ? (
-//         <div className="space-y-2.5">
-//           {(
-//             [
-//               ['Base hours', `${breakdown.baseHours} hrs`],
-//               ['Evening penalty', `${breakdown.eveningPenalty} hrs`],
-//               ['Overtime', `${breakdown.overtime} hrs`],
-//               ['Paid breaks', `${breakdown.paidBreaks} hrs`],
-//               ['Unpaid breaks', `${breakdown.unpaidBreaks} hrs`],
-//             ] as [string, string][]
-//           ).map(([label, value]) => (
-//             <div key={label} className="flex items-center justify-between">
-//               <span className="text-sm text-slate-500">{label}</span>
-//               <span className="text-sm text-slate-900" style={{ fontWeight: 500 }}>
-//                 {value}
-//               </span>
-//             </div>
-//           ))}
-//           <div className="pt-3 border-t border-slate-100">
-//             <p className="text-xs text-slate-400">Last updated: {breakdown.lastUpdated}</p>
-//           </div>
-//         </div>
-//       ) : (
-//         <p className="text-sm text-slate-400">No breakdown yet. Save your first shifts to generate one.</p>
-//       )}
-//     </div>
-//   );
-// }
+    [
+      'Total Unpaid Breaks',
+      minutesToHours(dailySummaries.reduce((total, summary) => total + summary.totalUnpaidBreakMinutes, 0)),
+    ],
+    [
+      'Total Evening Penalty',
+      minutesToHours(dailySummaries.reduce((total, summary) => total + summary.totalEveningPenaltyMinutes, 0)),
+    ],
+    ['Pay Rate Used', dailySummaries[0] ? `$${dailySummaries[0].baseRateUsed.toFixed(2)}` : 'N/A'],
+    ['Estimated Gross Pay', `$${dailySummaries.reduce((total, summary) => total + summary.grossPay, 0).toFixed(2)}`],
+  ];
+
+  return (
+    <div
+      className="bg-white rounded-2xl border border-slate-200 p-5"
+      style={{ boxShadow: '0 1px 3px rgba(15,23,42,0.04)' }}
+    >
+      <h3 className="text-slate-900 mb-4" style={{ fontSize: '0.9375rem', fontWeight: 600 }}>
+        Pay breakdown
+      </h3>
+
+      {/* {hasUnsaved && !isSaving && (
+        <div className="mb-4 px-3 py-2.5 bg-amber-50 border border-amber-100 rounded-xl">
+          <p className="text-xs text-amber-800">Breakdown is based on last saved shifts. Save changes to update.</p>
+        </div>
+      )} */}
+
+      <div className="space-y-2.5">
+        {summary.map(([label, value]) => (
+          <div key={label} className="flex items-center justify-between">
+            <span className="text-sm text-slate-500">{label}</span>
+            <span className="text-sm text-slate-900" style={{ fontWeight: 500 }}>
+              {value}
+            </span>
+          </div>
+        ))}
+        {/* <div className="pt-3 border-t border-slate-100">
+          <p className="text-xs text-slate-400">Last updated: {dailySummaries[0] ? dailySummaries[0].lastUpdated : 'N/A'}</p>
+        </div> */}
+      </div>
+    </div>
+  );
+}
 
 type PaySummaryCardProps = {
   summary: SummaryBreakdown & { hasUnsavedChanges: boolean };

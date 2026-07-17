@@ -1,3 +1,4 @@
+import { formatDateDayMonth } from '@/lib/utils';
 import z from 'zod';
 import { EmploymentType, ShiftEntryType } from './types';
 
@@ -22,6 +23,13 @@ export const shiftFormSchema = z
     error: 'End time must be after start time',
     path: ['endTime'],
   });
+
+export function createShiftFormSchema(payStartDate: string, payEndDate: string) {
+  return shiftFormSchema.refine(values => values.workDate >= payStartDate && values.workDate <= payEndDate, {
+    error: `Work date is outside the pay period (${formatDateDayMonth(payStartDate)} - ${formatDateDayMonth(payEndDate)})`,
+    path: ['workDate'],
+  });
+}
 
 export const EntryTypeOptions: Record<ShiftEntryType, string> = {
   [ShiftEntryType.Worked]: 'Worked',
