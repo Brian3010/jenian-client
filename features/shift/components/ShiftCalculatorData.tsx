@@ -2,8 +2,8 @@ import { ShiftFormValues } from '@/features/shift/schemas';
 import { HasPayCycleSettings, ShiftSummaryResult } from '@/features/shift/types';
 import { AppError } from '@/lib/AppError';
 import { convertUtcIsoToLocalDateAndTime, getHoursBetween } from '@/lib/utils';
-import { redirect } from 'next/navigation';
 import { getShiftCalculatorPageData } from '../services/shift.server';
+import PayCycleSetupForm from './PayCycleSetupForm';
 import ShiftCalculatorClient from './ShiftCalculatorClient';
 
 export default async function ShiftCalculatorData() {
@@ -22,7 +22,10 @@ export default async function ShiftCalculatorData() {
 
   // redirect to pay cycle setup if the user needs to set up their pay cycle
   if (summary.status === 'needs_setup') {
-    redirect('/chemist-warehouse/shift-calculator/pay-cycle-setup');
+    // redender a setup component here, redirect for now
+    // redirect('/chemist-warehouse/shift-calculator/pay-cycle-setup');
+    // TODO: setting up the pay cycle setup form
+    return <PayCycleSetupForm />;
   }
 
   // summary.status === 'ready' at this point, so we can safely access summary.payCycleSettings and summary.shiftSummary

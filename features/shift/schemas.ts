@@ -1,6 +1,6 @@
 import { formatDateDayMonth } from '@/lib/utils';
 import z from 'zod';
-import { EmploymentType, ShiftEntryType } from './types';
+import { EmploymentType, PayCycleType, ShiftEntryType } from './types';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -42,5 +42,16 @@ export const EmploymentTypeOptions: Record<EmploymentType, string> = {
   [EmploymentType.PartTime]: 'Part-time',
   [EmploymentType.Casual]: 'Casual',
 };
+
+export const PayCycleSetupFormSchema = z.object({
+  anchorStartDate: z.string().refine(date => !isNaN(Date.parse(date)), {
+    message: 'Please select a valid date',
+  }),
+  payCycleType: z.enum(PayCycleType, {
+    message: 'Please select a pay cycle',
+  }),
+});
+
+export type PayCycleSetupFormValues = z.infer<typeof PayCycleSetupFormSchema>;
 
 export type ShiftFormValues = z.infer<typeof shiftFormSchema>;

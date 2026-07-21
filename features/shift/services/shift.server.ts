@@ -3,6 +3,7 @@ import { ServerResult } from '@/lib/api/api-types';
 import { parseAspnetApiResponse } from '@/lib/api/server-api';
 import { aspnetFetch } from '@/lib/auth/aspnet';
 import 'server-only';
+import { PayCycleSetupFormValues } from '../schemas';
 import {
   HasPayCycleSettings,
   PayCycleSettings,
@@ -118,6 +119,24 @@ export async function submitShifts(
 
   return {
     serverResult: await parseAspnetApiResponse<ShiftSummaryResult>(res, 'Failed to submit shifts'),
+    cookieHeaders: setCookieHeaders,
+  };
+}
+
+export async function submitPayCycleSetup(data: PayCycleSetupFormValues): Promise<{
+  serverResult: ServerResult<PayCycleSettings>;
+  cookieHeaders: string[];
+}> {
+  const { res, setCookieHeaders } = await aspnetFetch('/api/CWH/pay-cycle-settings/update', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return {
+    serverResult: await parseAspnetApiResponse<PayCycleSettings>(res, 'Failed to submit pay cycle setup'),
     cookieHeaders: setCookieHeaders,
   };
 }

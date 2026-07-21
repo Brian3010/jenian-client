@@ -139,8 +139,8 @@ function PayCycleRequiredState() {
       </CardHeader>
 
       <CardAction className="w-full">
-        <Button className="w-full" variant="primary">
-          <Link href={'/chemist-warehouse/shift-calculator/pay-cycle-setup'}>
+        <Button className="w-full" variant="primary" asChild>
+          <Link href={'/chemist-warehouse/shift-calculator'}>
             <span className="font-semibold">Set up pay cycle</span>
           </Link>
         </Button>

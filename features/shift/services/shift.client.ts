@@ -1,7 +1,7 @@
 import { parseClientApiResponse } from '@/lib/api/client-api';
 import { convertLocalDateAndTimeToUtcIso, convertUtcIsoToLocalDateAndTime } from '@/lib/utils';
-import { ShiftFormValues } from '../schemas';
-import { ShiftSummaryResult, UserShift } from '../types';
+import { PayCycleSetupFormValues, ShiftFormValues } from '../schemas';
+import { PayCycleSettings, ShiftSummaryResult, UserShift } from '../types';
 
 export async function handleShiftClient(
   cycleStartDate: string,
@@ -59,4 +59,18 @@ function userShiftToShiftFormValues(shifts: UserShift[]): ShiftFormValues[] {
       employmentType: s.employmentType,
     };
   });
+}
+
+export async function handleSubmitPayCycleSetup(data: PayCycleSetupFormValues): Promise<boolean> {
+  const res = await fetch('/api/private/shift/pay-cycle-setup', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  const payCycleSettings = await parseClientApiResponse<PayCycleSettings>(res, 'Failed to submit pay cycle setup');
+
+  return payCycleSettings.hasPayCycleSettings;
 }
