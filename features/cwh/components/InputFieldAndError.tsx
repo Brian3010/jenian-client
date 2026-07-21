@@ -1,9 +1,8 @@
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Textarea } from '@/components/ui/textarea';
-import { getByPath } from '@/lib/utils/form';
 import { ReportValuesInput, StockUpdateField } from '@/features/cwh/types';
-import React from 'react';
+import { getByPath } from '@/lib/utils/form';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
 
 export type InputFieldAndErrorProps = {
@@ -33,8 +32,9 @@ export default function InputFieldAndError({ fieldArray, register, errors }: Inp
     return (
       <Field key={item.registerName} className="flex-col items-center gap-1 text-base pb-4">
         <FieldLabel className="text-gray-700 w-44 sm:w-52">{item.itemName}</FieldLabel>
-        <InputGroup className="py-5 rounded-xl">
+        <InputGroup className="py-5 rounded-xl ">
           <InputGroupInput
+            className="placeholder:text-sm"
             {...register(item.registerName)}
             type={item.inputType}
             placeholder={item.helpText}

@@ -20,6 +20,22 @@ const deliveryScreenshotsSchema = z.preprocess(
     .refine(files => files.every(f => f.size <= MAX_SIZE), 'Max 10MB per file'),
 );
 
+const countOutOfTotalTextSchema = z
+  .string()
+  .regex(/^\d+\s*\/\s*\d+(?:\s+.+)?$/, 'Use format like 12/14 or 12/14 notes')
+  .refine(value => {
+    const match = value.match(/^(\d+)\s*\/\s*(\d+)/);
+
+    if (!match) {
+      return false;
+    }
+
+    const current = Number(match[1]);
+    const total = Number(match[2]);
+
+    return current <= total;
+  }, 'The first number cannot be greater than the second number');
+
 export const reportSchema = z.object({
   DeliveryScreenShots: deliveryScreenshotsSchema,
   StockUpdate: z
@@ -72,16 +88,16 @@ export const reportSchema = z.object({
 
   // preprocess empty string to '0' for these fields, because the input type is text, but we want to store it as number in the backend, and the backend will treat empty string as 0
   GeneralCheck: z.object({
-    FreeTrolleys: z.coerce.number().max(50, { message: 'Seems lots of trolleys here!' }),
-    FreeCages: z.coerce.number().max(50, { message: 'Seems lots of cages here!' }),
+    FreeTrolleys: countOutOfTotalTextSchema,
+    FreeCages: countOutOfTotalTextSchema,
     // freeCagesNote: z.string().max(1000).optional(),
     NumOfClickCollect: z.coerce.number().optional(),
     NumOfCataBundle: z.coerce.number().optional(),
     NumOfMagaBundle: z.coerce.number().optional(),
-    NumOfMyPals: z.coerce.number().max(50, { message: 'Seems lots of MyPals here!' }),
-    NumOfFragKeys: z.coerce.number().max(50, { message: 'Seems lots of keys here!' }),
-    NumOfLiftPasses: z.coerce.number().max(50, { message: 'Seems lots of lift keys here!' }),
-    NumOfAugmodos: z.coerce.number().max(50, { message: 'Seems lots of Augmodos here!' }),
+    NumOfMyPals: countOutOfTotalTextSchema,
+    NumOfFragKeys: countOutOfTotalTextSchema,
+    NumOfLiftPasses: countOutOfTotalTextSchema,
+    NumOfAugmodos: countOutOfTotalTextSchema,
   }),
   AdditionalTasks: z.string().max(5000).optional(),
 });
