@@ -36,7 +36,7 @@ function isPublicApi(pathname: string) {
 }
 
 function isPublicPage(pathname: string) {
-  return pathname === '/sign-in';
+  return pathname === '/auth/sign-in' || pathname === '/auth/register';
 }
 
 function hasSession(req: NextRequest) {
@@ -60,9 +60,9 @@ export function proxy(req: NextRequest) {
   const sessionExists = hasSession(req);
 
   /**
-   * Signed-in users should not stay on / or /sign-in.
+   * Signed-in users should not stay on public authentication pages.
    */
-  if (sessionExists && (pathname === '/' || pathname === '/sign-in')) {
+  if (sessionExists && (pathname === '/' || isPublicPage(pathname))) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     url.search = '';
@@ -107,7 +107,7 @@ export function proxy(req: NextRequest) {
    */
   if (!sessionExists) {
     const url = req.nextUrl.clone();
-    url.pathname = '/sign-in';
+    url.pathname = '/auth/sign-in';
     url.searchParams.set('next', pathname + search);
 
     return NextResponse.redirect(url);

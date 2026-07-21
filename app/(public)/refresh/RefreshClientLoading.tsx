@@ -32,7 +32,7 @@ export default function RefreshClientLoading({ returnTo }: RefreshClientLoadingP
       }
 
       if (isMounted) {
-        router.replace('/sign-in?error=session-expired');
+        router.replace('/auth/sign-in?error=session-expired');
       }
     }
 

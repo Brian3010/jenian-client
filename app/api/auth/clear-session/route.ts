@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // clear the session cookies and redirect to the sign-in page or a specified returnTo URL
 // this route is used for session failures
 export async function GET(req: NextRequest) {
-  const returnTo = req.nextUrl.searchParams.get('returnTo') || '/sign-in';
+  const returnTo = req.nextUrl.searchParams.get('returnTo') || '/auth/sign-in';
 
   const redirectUrl = new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL);
   const res = NextResponse.redirect(redirectUrl);

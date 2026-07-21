@@ -2,31 +2,15 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
-import ContactMeAlertDialog from '@/features/auth/components/ContactMeAlertDialog';
+import { signInSchema, type SignInValues } from '@/features/auth/schemas';
 import { loginUser } from '@/features/auth/services/auth.client';
 import { AppError } from '@/lib/AppError';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-const signInSchema = z.object({
-  userName: z.string('Please enter a valid userName'),
-  password: z
-    .string()
-    .trim()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be at most 128 characters')
-    .refine(v => !/\s/.test(v), 'Password must not contain spaces')
-    .refine(v => /[a-z]/.test(v), 'Password must include a lowercase letter')
-    .refine(v => /[A-Z]/.test(v), 'Password must include an uppercase letter')
-    .refine(v => /\d/.test(v), 'Password must include a number')
-    .refine(v => /[^\w\s]/.test(v), 'Password must include a symbol'),
-  // password: z.string(),s
-});
-type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
   // const { addUser } = useAuth();
@@ -66,8 +50,8 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex justify-center p-4">
-      <Card className="w-sm=full md:w-[400px]">
+    <>
+      <Card className="w-sm=full md:w-100">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
@@ -108,13 +92,15 @@ export default function SignIn() {
             </form>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col items-baseline text-sm gap-1">
+        <CardFooter className="text-sm">
           <p>
-            Please contact <ContactMeAlertDialog /> to create an account.
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/register" className="font-medium underline underline-offset-4">
+              Sign up
+            </Link>
           </p>
-          <p>Access is restricted to authorized users.</p>
         </CardFooter>
       </Card>
-    </div>
+    </>
   );
 }

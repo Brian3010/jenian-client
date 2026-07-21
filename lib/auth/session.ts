@@ -164,5 +164,5 @@ export async function requireSession(returnTo: string): Promise<UserPayload> {
   }
 
   // if invalid access token, clear cookies and redirect to sign-in with error message
-  redirect(`/api/auth/clear-session?returnTo=${encodeURIComponent('/sign-in?error=session-invalid')}`);
+  redirect(`/api/auth/clear-session?returnTo=${encodeURIComponent('/auth/sign-in?error=session-invalid')}`);
 }

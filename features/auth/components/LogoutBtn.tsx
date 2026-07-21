@@ -11,7 +11,7 @@ export default function LogoutBtn() {
       console.error('Logout failed:', error);
     }
 
-    window.location.replace('/sign-in');
+    window.location.replace('/auth/sign-in');
   };
 
   return (

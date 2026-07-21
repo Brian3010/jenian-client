@@ -1,6 +1,7 @@
 import { getErrorMessageFromResponse } from '@/lib/api/api-error';
 import { parseClientApiResponse } from '@/lib/api/client-api';
 import { AppError } from '@/lib/AppError';
+import type { RegisterValues } from '../schemas';
 
 //TODO: review this
 export async function loginUser(userName: string, password: string): Promise<void> {
@@ -37,4 +38,14 @@ export async function logoutUser() {
   await parseClientApiResponse<void>(res, 'Failed to logout user');
   localStorage.clear();
   sessionStorage.clear();
+}
+
+export async function registerUser(registerData: RegisterValues): Promise<{ message: string }> {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(registerData),
+  });
+
+  return parseClientApiResponse<{ message: string }>(res, 'Failed to register user');
 }
