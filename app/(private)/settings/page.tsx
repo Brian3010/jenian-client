@@ -1,11 +1,10 @@
-import LogoutBtn from '@/features/auth/components/LogoutBtn';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Header from '@/components/ui/header';
+import LogoutBtn from '@/features/auth/components/LogoutBtn';
 
 export default function SettingsPage() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className="w-full p-2">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card>

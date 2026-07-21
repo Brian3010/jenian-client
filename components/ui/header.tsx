@@ -18,7 +18,7 @@ import { Button } from './button';
 export default function Header() {
   const { user } = useAuth();
   const pathname = usePathname();
-  if (pathname !== '/dashboard') return null;
+  if (pathname !== '/dashboard' && pathname !== '/settings') return null;
 
   return (
     <div className="block sticky top-0 z-20 backdrop-blur px-5 py-1 border-b border-gray-200">
