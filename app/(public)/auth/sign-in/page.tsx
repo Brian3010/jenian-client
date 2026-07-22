@@ -92,7 +92,7 @@ export default function SignIn() {
             </form>
           </div>
         </CardContent>
-        <CardFooter className="text-sm">
+        <CardFooter className="text-sm pt-2">
           <p>
             Don&apos;t have an account?{' '}
             <Link href="/auth/register" className="font-medium underline underline-offset-4">

@@ -55,7 +55,7 @@ export default function RegisterPage() {
 
   if (isSuccessful) {
     return (
-      <Card className="w-sm:full md:w-100" role="status">
+      <Card className="w-sm:full md:w-100 max-w-full" role="status">
         <CardHeader>
           <CardTitle className="text-md font-semibold text-green-600">Registration successful</CardTitle>
           <CardDescription>Your account has been created successfully.</CardDescription>
@@ -73,7 +73,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="w-sm=full md:w-100">
+    <Card className="w-sm:full md:w-100 max-w-full">
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>Enter your details to create your account</CardDescription>
@@ -173,7 +173,7 @@ export default function RegisterPage() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="text-sm">
+      <CardFooter className="text-sm pt-2">
         <p>
           Already have an account?{' '}
           <Link href="/auth/sign-in" className="font-medium underline underline-offset-4">

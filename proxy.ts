@@ -36,7 +36,7 @@ function isPublicApi(pathname: string) {
 }
 
 function isPublicPage(pathname: string) {
-  return pathname === '/auth/sign-in' || pathname === '/auth/register';
+  return pathname === '/auth/sign-in' || pathname === '/auth/register' || pathname === '/';
 }
 
 function hasSession(req: NextRequest) {
