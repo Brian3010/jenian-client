@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
 import { getUserCurrentPayCycleSettings } from '@/features/shift/services/shift.server';
 import { formatDateDayMonth } from '@/lib/utils';
+import { CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import { PayCycleSettings } from '../types';
 
@@ -78,7 +79,8 @@ function HasPayCycleState({
   return (
     <Card className="p-5 flex flex-col gap-3">
       <CardHeader className="p-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CalendarDays size={16} className="text-gray-400" />
           <h1 className="text-base font-semibold text-gray-900">Shift Calculator</h1>
         </div>
         <div className="text-sm text-gray-500">Manage shifts and estimate your pay for the current cycle.</div>

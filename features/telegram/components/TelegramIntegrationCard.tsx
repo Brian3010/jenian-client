@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
 import TelegramTokenGenerateButton from '@/features/telegram/components/TelegramTokenGenerateButton';
 import { getTelegramIntegrationStatus } from '@/features/telegram/services/telegram.server';
+import { ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function TelegramIntegrationCard() {
@@ -24,7 +25,10 @@ function TelegramIntegrationCardContent({ isConnected }: { isConnected: boolean 
     <Card className="flex flex-col gap-3">
       <CardHeader className="grid-rows-none p-0">
         <div className="flex items-center justify-between">
-          <h1 className="text-base font-semibold text-gray-900">End-of-Day Report</h1>
+          <div className="flex items-center gap-2">
+            <ClipboardList size={16} className="text-gray-400" />
+            <h1 className="text-base font-semibold text-gray-900">End-of-Day Report</h1>
+          </div>
           <div
             className={`text-xs px-3 py-1 rounded-full font-medium ${
               isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
