@@ -24,6 +24,21 @@ export const shiftFormSchema = z
     path: ['endTime'],
   });
 
+export const duplicateShiftFormSchema = z.object({
+  duplicateShiftDate: z.string().refine(date => !isNaN(Date.parse(date)), {
+    message: 'Please select a valid date',
+  }),
+});
+
+export function createDuplicateShiftFormSchema(payStartDate: string, payEndDate: string) {
+  return duplicateShiftFormSchema.refine(
+    values => values.duplicateShiftDate >= payStartDate && values.duplicateShiftDate <= payEndDate,
+    {
+      error: `Duplicate shift date is outside the pay period (${formatDateDayMonth(payStartDate)} - ${formatDateDayMonth(payEndDate)})`,
+      path: ['duplicateShiftDate'],
+    },
+  );
+}
 export function createShiftFormSchema(payStartDate: string, payEndDate: string) {
   return shiftFormSchema.refine(values => values.workDate >= payStartDate && values.workDate <= payEndDate, {
     error: `Work date is outside the pay period (${formatDateDayMonth(payStartDate)} - ${formatDateDayMonth(payEndDate)})`,
@@ -55,3 +70,5 @@ export const PayCycleSetupFormSchema = z.object({
 export type PayCycleSetupFormValues = z.infer<typeof PayCycleSetupFormSchema>;
 
 export type ShiftFormValues = z.infer<typeof shiftFormSchema>;
+
+export type DuplicateShiftFormValues = z.infer<typeof duplicateShiftFormSchema>;

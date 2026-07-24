@@ -28,7 +28,7 @@ export default function ShiftModal({ shift, timeZoneId, payStartDate, payEndDate
       paidBreak: shift?.paidBreak ?? 10,
       unpaidBreak: shift?.unpaidBreak ?? 30,
       entryType: shift?.entryType ?? ShiftEntryType.Worked,
-      employmentType: shift?.employmentType ?? EmploymentType.FullTime,
+      employmentType: shift?.employmentType ?? EmploymentType.PartTime,
     },
   });
 

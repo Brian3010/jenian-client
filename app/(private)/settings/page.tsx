@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LogoutBtn from '@/features/auth/components/LogoutBtn';
+import { requireSession } from '@/lib/auth/session';
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requireSession('/settings');
   return (
     <>
       {/* <Header /> */}

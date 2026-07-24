@@ -6,12 +6,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
 import { AppError } from '@/lib/AppError';
 import { formatDateDayMonth, formatTime12h, formatWorkDate, getHoursBetweenTimes } from '@/lib/utils';
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert, Copy } from 'lucide-react';
 import { useReducer, useState } from 'react';
 import { createInitialState, reducer, ShiftWithStatus } from '../reducer/shiftCalculator.reducer';
 import { EmploymentTypeOptions, EntryTypeOptions, ShiftFormValues } from '../schemas';
 import { handleShiftClient } from '../services/shift.client';
 import { UserDailyPaySummary } from '../types';
+import DuplicateShiftModal from './DuplicateShiftModal';
 import ShiftModal from './shiftModal';
 
 type ShiftCalculatorClientProps = {
@@ -35,6 +36,7 @@ export default function ShiftCalculatorClient({
   const [state, dispatch] = useReducer(reducer, initialUserShifts, createInitialState);
 
   const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
+  const [duplicateShift, setDuplicateShift] = useState<ShiftFormValues | null>(null);
   const [estimatedGrossPay, setEstimatedGrossPay] = useState<number>(initialSummaryBreakdown.estimatedGrossPay);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -81,6 +83,18 @@ export default function ShiftCalculatorClient({
   const handleDiscard = () => {
     dispatch({ type: 'DISCARD_CHANGES' });
     setError(null);
+  };
+
+  // on duplicate button click, set the duplicateShift state to the shift to be duplicated
+  const handleDuplicateToNextDay = (originalShift: ShiftFormValues, newWorkDate: string) => {
+    // Implement the logic to duplicate the shift to the next day
+    const duplicatedShift: ShiftFormValues = {
+      ...originalShift,
+      workDate: newWorkDate,
+    };
+
+    setDuplicateShift(null);
+    dispatch({ type: 'ADD_SHIFT', shift: duplicatedShift });
   };
 
   // submit shift to backend
@@ -183,6 +197,7 @@ export default function ShiftCalculatorClient({
               isError={false}
               onEdit={() => setEditingShift(shift)}
               onDelete={() => handleDelete(shift.id || null)}
+              onDuplicate={() => setDuplicateShift(shift)}
             />
           ))
         ) : (
@@ -223,6 +238,17 @@ export default function ShiftCalculatorClient({
           onSave={handleSubmit}
           onDiscard={handleDiscard}
         />
+
+        {/**Duplicate Shift Modal */}
+        {duplicateShift && (
+          <DuplicateShiftModal
+            originalShift={duplicateShift}
+            onDuplicate={handleDuplicateToNextDay}
+            payStartDate={cycleStartDate}
+            payEndDate={cycleEndDate}
+            onCancel={() => setDuplicateShift(null)}
+          />
+        )}
       </div>
       <div className="h-20" />
     </>
@@ -235,9 +261,10 @@ type ShiftCardProps = {
   isError: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 };
 
-function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProps) {
+function ShiftCard({ shift, isSaving, isError, onEdit, onDelete, onDuplicate }: ShiftCardProps) {
   return (
     <div className={`rounded-2xl border px-4 py-4 bg-white`}>
       <div className="flex items-start justify-between mb-2">
@@ -259,6 +286,13 @@ function ShiftCard({ shift, isSaving, isError, onEdit, onDelete }: ShiftCardProp
           )}
         </div>
         <div className="flex gap-3 shrink-0 ml-2 text-sm">
+          <button
+            onClick={onDuplicate}
+            disabled={isSaving}
+            className="text-xs text-slate-400 hover:text-slate-700 disabled:opacity-40 transition-colors"
+          >
+            <Copy size={14} strokeWidth={1.75} />
+          </button>
           <button
             onClick={onEdit}
             disabled={isSaving}
