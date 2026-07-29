@@ -35,7 +35,7 @@ export default function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="rounded-xl p-3">
             <DropdownMenuGroup>
-              <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+              <DropdownMenuLabel>{user.name.slice(0, 10)}</DropdownMenuLabel>
               <DropdownMenuLabel className="text-gray-800 font-normal">
                 <Link href="/settings">Settings</Link>
               </DropdownMenuLabel>

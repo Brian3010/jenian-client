@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 type LoadingDemoSetupProps = {
@@ -17,7 +19,6 @@ export default function LoadingDemoSetup({ returnTo }: LoadingDemoSetupProps) {
           method: 'POST',
           signal: controller.signal,
         });
-        console.log('🚀 ~ setupDemoAccount ~ response:', response);
 
         if (response.ok) {
           router.replace(returnTo);
@@ -42,7 +43,14 @@ export default function LoadingDemoSetup({ returnTo }: LoadingDemoSetupProps) {
     <div className="w-full flex flex-col items-center justify-center min-h-screen">
       <div className="mx-auto flex items-center text-2xl"></div>
       {demoSetupStatus === 'loading' && <div>Preparing demo account...</div>}
-      {demoSetupStatus === 'error' && <div>Demo setup failed.</div>}
+      {demoSetupStatus === 'error' && (
+        <div className="flex flex-col items-center gap-4">
+          <div>Demo setup failed.</div>
+          <Button asChild>
+            <Link href="/auth/sign-in">Back to sign in</Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

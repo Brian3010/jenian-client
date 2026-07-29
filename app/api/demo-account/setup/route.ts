@@ -13,7 +13,6 @@ export async function POST() {
       method: 'POST',
       signal: controller.signal,
     });
-    console.log('🚀 ~ POSTasdasdasd ~ res:', res);
 
     if (res.ok) {
       const response = NextResponse.json(null, { status: 200 });

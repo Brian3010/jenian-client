@@ -8,15 +8,15 @@ import { Button } from './ui/button';
 const loadingMessages = [
   {
     title: 'Starting Jenian...',
-    description: 'To keep running costs low 😁, Jenian pauses when not in use. We are waking it up now.',
+    description: 'To keep running costs low, Jenian rests when not in use. We are getting it ready now.',
   },
   {
     title: 'Almost ready...',
-    description: 'Jenian’s server is starting and should be ready shortly.',
+    description: 'Jenian is preparing your workspace.',
   },
   {
     title: 'Finishing up...',
-    description: 'We are doing one final check before opening the app.',
+    description: 'Everything should be ready shortly.',
   },
 ];
 
