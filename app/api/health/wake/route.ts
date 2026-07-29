@@ -1,3 +1,4 @@
+import { delay } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_READY_COOKIE = 'backendReady';
@@ -10,10 +11,6 @@ const REQUEST_TIMEOUT_MS = 8_000;
 const RETRY_DELAY_MS = 2_000;
 
 export const dynamic = 'force-dynamic';
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function checkBackend(backendUrl: string) {
   const controller = new AbortController();
@@ -50,10 +47,12 @@ export async function POST(request: NextRequest) {
   }
 
   const startedAt = Date.now();
+  // startedAt = 12:01:20
 
   // Poll until the backend responds or the wake-up window expires.
+  // note: each individual backend call can take up to 8s, and we wait 2s between calls, so the total time spent in each iteration is 10s.
   while (Date.now() - startedAt < WAKE_TIMEOUT_MS) {
-    const healthy = await checkBackend(backendUrl);
+    const healthy = await checkBackend(backendUrl); // takes up to 8s
 
     if (healthy) {
       const response = NextResponse.json({ ok: true });
@@ -69,7 +68,8 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
-    await delay(RETRY_DELAY_MS);
+    await delay(RETRY_DELAY_MS); // takes another 2s
+    // A failed iteration takes up to 10s: up to 8s for the check plus a 2s delay.
   }
 
   return NextResponse.json({ ok: false }, { status: 503 });

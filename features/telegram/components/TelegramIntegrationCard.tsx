@@ -13,6 +13,7 @@ export default async function TelegramIntegrationCard() {
     return <TelegramIntegrationCardUnavailable />;
   }
 
+  // If the user is a demo user, consider them connected for the purpose of this card
   const isConnected = statusResult.data.isTelegramConnected;
 
   if (isConnected === null) return <TelegramIntegrationCardUnavailable />;

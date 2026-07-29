@@ -1,3 +1,4 @@
+import { getSafeReturnTo } from '@/lib/utils';
 import RefreshClientLoading from './RefreshClientLoading';
 
 type RefreshPageProps = {
@@ -6,18 +7,8 @@ type RefreshPageProps = {
   }>;
 };
 
-function getSafeReturnTo(value?: string | string[]) {
-  const returnTo = Array.isArray(value) ? value[0] : value;
-
-  if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//') || returnTo.startsWith('/refresh')) {
-    return '/dashboard';
-  }
-
-  return returnTo;
-}
-
 export default async function RefreshPage({ searchParams }: RefreshPageProps) {
   const { returnTo } = await searchParams;
 
-  return <RefreshClientLoading returnTo={getSafeReturnTo(returnTo)} />;
+  return <RefreshClientLoading returnTo={getSafeReturnTo('/dashboard', returnTo)} />;
 }

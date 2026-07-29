@@ -31,12 +31,16 @@ function isPublicApi(pathname: string) {
     pathname === '/api/public' ||
     pathname.startsWith('/api/public/') ||
     pathname === '/api/health' ||
-    pathname.startsWith('/api/health/')
+    pathname.startsWith('/api/health/') ||
+    pathname === '/api/demo-account' ||
+    pathname.startsWith('/api/demo-account/')
   );
 }
 
 function isPublicPage(pathname: string) {
-  return pathname === '/auth/sign-in' || pathname === '/auth/register' || pathname === '/';
+  return (
+    pathname === '/auth/sign-in' || pathname === '/auth/register' || pathname === '/' || pathname === '/demo-account'
+  );
 }
 
 function hasSession(req: NextRequest) {

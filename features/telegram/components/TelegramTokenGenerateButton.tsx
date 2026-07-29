@@ -93,6 +93,9 @@ export default function TelegramTokenGenerateButton() {
             </span>
             <span>3. Send the copied text to the bot</span>
             <span>4. You&apos;re all set!</span>
+            <span>
+              If you&apos;re in demo mode, the setup will be completed automatically after clicking &quot;Continue&quot;
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -51,56 +51,63 @@ export default function SignIn() {
 
   return (
     <>
-      <Card className="w-sm=full md:w-100">
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 flex-col">
-              <div>
-                <InputGroup>
-                  <InputGroupInput className="" placeholder="Enter your username" {...register('userName')} />
-                </InputGroup>
-                <p>{errors.userName?.message}</p>
-              </div>
-              <div>
-                <InputGroup className="pr-3 ">
-                  <InputGroupInput
-                    placeholder="Enter your password"
-                    type={showPassword ? 'text' : 'password'}
-                    {...register('password')}
-                  />
-                  <InputGroupButton
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                    size="icon-xs"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <Eye /> : <EyeOff />}
-                  </InputGroupButton>
-                </InputGroup>
-                <p className="p-2 text-red-600">{errors.password?.message}</p>
-              </div>
-              {error && <p className="text-red-600 italic">{error}</p>}
-              <div>
-                <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? <LoaderCircle className="animate-spin" /> : 'Sign in'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </CardContent>
-        <CardFooter className="text-sm pt-2">
-          <p>
-            Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="font-medium underline underline-offset-4">
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+      <div className="w-sm:full md:w-100 max-w-full">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Login to your account</CardTitle>
+            <CardDescription>Enter your credentials to access your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 flex-col">
+                <div>
+                  <InputGroup>
+                    <InputGroupInput className="" placeholder="Enter your username" {...register('userName')} />
+                  </InputGroup>
+                  <p>{errors.userName?.message}</p>
+                </div>
+                <div>
+                  <InputGroup className="pr-3 ">
+                    <InputGroupInput
+                      placeholder="Enter your password"
+                      type={showPassword ? 'text' : 'password'}
+                      {...register('password')}
+                    />
+                    <InputGroupButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      size="icon-xs"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <Eye /> : <EyeOff />}
+                    </InputGroupButton>
+                  </InputGroup>
+                  <p className="p-2 text-red-600">{errors.password?.message}</p>
+                </div>
+                {error && <p className="text-red-600 italic">{error}</p>}
+                <div>
+                  <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <LoaderCircle className="animate-spin" /> : 'Sign in'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </CardContent>
+          <CardFooter className="text-sm pt-2">
+            <p>
+              Don&apos;t have an account?{' '}
+              <Link href="/auth/register" className="font-medium underline underline-offset-4">
+                Sign up
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
+        <div className="float-right pt-2 text-sm text-gray-600">
+          <Link href="/demo-account?returnTo=/dashboard" className="font-medium underline underline-offset-4">
+            Try demo account
+          </Link>
+        </div>
+      </div>
     </>
   );
 }

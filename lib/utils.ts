@@ -3,6 +3,17 @@ export { cn } from './utils/cn';
 export { getByPath } from './utils/form';
 import { DateTime } from 'luxon';
 
+// used to validate the returnTo query param
+export function getSafeReturnTo(fallbackReturnTo: string, value?: string | string[]) {
+  const returnTo = Array.isArray(value) ? value[0] : value;
+
+  if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//') || returnTo.startsWith('/refresh')) {
+    return fallbackReturnTo;
+  }
+
+  return returnTo;
+}
+
 export function formatDateDayMonth(date: string): string {
   const dateTime = DateTime.fromISO(date, {
     zone: 'UTC',
@@ -127,4 +138,8 @@ export function formatTime12h(time24h: string): string {
   const hours12 = hours % 12 || 12;
 
   return `${hours12}:${minutesString.padStart(2, '0')} ${period}`;
+}
+
+export function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

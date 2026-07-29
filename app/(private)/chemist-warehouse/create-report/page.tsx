@@ -393,6 +393,10 @@ function SubmitStepActions({ isLoading, onBack }: { isLoading: boolean; onBack: 
           You will receive the report summary via Telegram (@JenianBot). Make sure your Telegram account is linked in
           the dashboard.
         </p>
+        <p className="text-sm text-gray-600 pt-2">
+          Demo accounts do not send reports to Telegram. To test the live Telegram integration, please contact me. You
+          will be redirected to the dashboard after submission.
+        </p>
       </div>
     </div>
   );

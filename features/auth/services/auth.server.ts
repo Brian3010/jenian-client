@@ -1,6 +1,7 @@
 import { ServerResult } from '@/lib/api/api-types';
 import { parseAspnetApiResponse } from '@/lib/api/server-api';
 import { aspnetFetch } from '@/lib/auth/aspnet';
+import { verifySession } from '@/lib/auth/session';
 import 'server-only';
 import type { RegisterValues } from '../schemas';
 
@@ -26,6 +27,16 @@ export async function refreshAccessToken(cookieHeader: string): Promise<Response
 }
 
 export async function logout(): Promise<ServerResult<void>> {
+  const session = await verifySession();
+  console.log('🚀 ~ logout ~ session:', session);
+  if (session.status === 'authenticated' && session.user.IsDemoUser) {
+    console.log('🚀 ~ logout ~ session.user.IsDemoUser:', session.user.IsDemoUser);
+    const { res } = await aspnetFetch('/api/Auth/demo-logout', {
+      method: 'DELETE',
+    });
+    return await parseAspnetApiResponse<void>(res, 'Failed to logout demo user');
+  }
+
   const { res } = await aspnetFetch('/api/Auth/logout', {
     method: 'DELETE',
   });
