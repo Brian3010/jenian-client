@@ -82,7 +82,7 @@ export async function getAccessToken(): Promise<string | undefined> {
 export type SessionResult =
   | {
       status: 'authenticated';
-      user: Omit<UserPayload, 'IsDemoUser'> & { IsDemoUser: boolean };
+      user: UserPayload;
       accessToken: string;
     }
   | {
@@ -126,7 +126,7 @@ const verifySessionCache = cache(async (): Promise<SessionResult> => {
       user: {
         name: payload.name,
         email: payload.email,
-        IsDemoUser: payload.IsDemoUser?.toString() === 'True',
+        IsDemoUser: payload.IsDemoUser,
       },
     };
   } catch (error) {
@@ -154,9 +154,7 @@ export async function verifySession(): Promise<SessionResult> {
  * This is used in pages/layouts to ensure that the user is authenticated before rendering the page.
  * If the user is not authenticated, they will be redirected to the sign-in page.
  */
-export async function requireSession(
-  returnTo: string,
-): Promise<Omit<UserPayload, 'IsDemoUser'> & { IsDemoUser: boolean }> {
+export async function requireSession(returnTo: string): Promise<UserPayload> {
   const session = await verifySession();
 
   if (session.status === 'authenticated') {
