@@ -1,11 +1,11 @@
 'use client';
 
-import { UserPayload } from '@/lib/auth/session';
+import type { UserPayloadWithBooleanDemo } from '@/lib/auth/session';
 import { createContext, useContext, useState } from 'react';
 
 type AuthContextType = {
-  user: UserPayload;
-  setUser: (user: UserPayload) => void;
+  user: UserPayloadWithBooleanDemo;
+  setUser: (user: UserPayloadWithBooleanDemo) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -15,9 +15,9 @@ export function AuthContextProvider({
   initialUser,
 }: {
   children: React.ReactNode;
-  initialUser: UserPayload;
+  initialUser: UserPayloadWithBooleanDemo;
 }) {
-  const [user, setUser] = useState<UserPayload>(initialUser);
+  const [user, setUser] = useState<UserPayloadWithBooleanDemo>(initialUser);
 
   return <AuthContext.Provider value={{ setUser, user }}>{children}</AuthContext.Provider>;
 }
