@@ -6,6 +6,43 @@ The Next.js frontend for **Jenian**, a workplace productivity application coveri
 - **Backend repository:** `<PLACEHOLDER: link to the ASP.NET Core backend repository>`
 - This repository contains **only the frontend**. The ASP.NET Core API, database, payroll rules, and infrastructure live in the backend repository above.
 
+> **Why this project exists:** `<PLACEHOLDER: one sentence on the motivation for building Jenian>`
+
+## Table of Contents
+
+- [Skills Demonstrated](#skills-demonstrated)
+- [Overview](#overview)
+- [Live Demo](#live-demo)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Frontend Architecture](#frontend-architecture)
+- [Backend-for-Frontend Pattern](#backend-for-frontend-pattern)
+- [Authentication and Session Flow](#authentication-and-session-flow)
+- [Main User Workflows](#main-user-workflows)
+- [Forms and Validation](#forms-and-validation)
+- [Loading, Error and Backend Startup Handling](#loading-error-and-backend-startup-handling)
+- [Responsive Design and UI](#responsive-design-and-ui)
+- [Routes](#routes)
+- [Running Locally](#running-locally)
+- [Environment Variables](#environment-variables)
+- [Deployment](#deployment)
+- [Testing and Quality Checks](#testing-and-quality-checks)
+- [Known Limitations](#known-limitations)
+- [Related Repository](#related-repository)
+- [Author](#author)
+
+## Skills Demonstrated
+
+This project maps to skills commonly scanned for in full-stack/frontend roles:
+
+- **Authentication & Security** — JWT verification with `jose` (`lib/auth/session.ts`), httpOnly session cookies, Edge middleware route gating (`proxy.ts`), invite-gated registration requiring a backend-issued secret token, and centralized cookie forwarding so the backend host is never exposed to the browser.
+- **Full-Stack Integration (BFF pattern)** — Route Handlers (`app/api/**`) act as a backend-for-frontend layer that forwards requests to the ASP.NET Core API, attach bearer tokens server-side (`lib/auth/aspnet.ts`), and normalize responses (`lib/api/api-types.ts`) before they reach client code.
+- **State Management** — a reducer (`shiftCalculator.reducer.ts`) tracks draft vs. saved shift state client-side; per-request session verification is cached with React's `cache()`; form state is shared across the shift modal and its fields via `FormProvider`/`useFormContext`.
+- **Form Validation** — `react-hook-form` + Zod schemas (`features/*/schemas.ts`) validate sign-in, registration, pay-cycle setup, shift entry, and the multi-step night report, including file-upload validation via Zod `refine`/`preprocess`.
+- **Error Handling & Resilience** — route-level error boundaries (`error.tsx`, `global-error.tsx`) share a common fallback component, `aspnetFetch` transparently refreshes and retries once on an expired access token, and `BackendHealthWakeGate` detects and waits out a cold-started backend with a manual retry option.
+- **Responsive Design** — mobile-first Tailwind CSS layout with a collapsible sidebar on desktop and a bottom navigation bar on mobile, built on accessible Radix UI primitives.
+
 ## Overview
 
 Jenian was built to help retail/warehouse shift workers track their pay cycles, log shifts, estimate gross pay, and submit structured night-shift reports that are forwarded to a Telegram bot. It is also a full-stack portfolio project demonstrating a Next.js App Router frontend backed by an ASP.NET Core API.
@@ -57,38 +94,45 @@ Based on `package.json`:
 
 The app uses the Next.js App Router with route groups to separate public and authenticated areas, and organizes business logic by feature (domain) rather than by page.
 
-```
-app/
-  (public)/          # Sign-in, register, demo account, refresh — unauthenticated
-  (private)/         # Dashboard, shift calculator, night report, settings — session required
-  api/                # Route Handlers acting as the backend-for-frontend layer
-    auth/              # login, register, refresh, logout, clear-session
-    private/           # shift bulks, pay-cycle setup, eod-report, telegram link-token
-    demo-account/      # demo login setup
-    health/            # backend wake/health check
-  layout.tsx, error.tsx, global-error.tsx, loading.tsx
+```mermaid
+flowchart TD
+    subgraph app["app/"]
+        appPublic["(public)/<br/>Sign-in, register, demo account, refresh — unauthenticated"]
+        appPrivate["(private)/<br/>Dashboard, shift calculator, night report, settings — session required"]
+        subgraph appApi["api/ — Route Handlers (BFF layer)"]
+            apiAuth["auth/<br/>login, register, refresh, logout, clear-session"]
+            apiPrivate["private/<br/>shift bulks, pay-cycle setup, eod-report, telegram link-token"]
+            apiDemo["demo-account/<br/>demo login setup"]
+            apiHealth["health/<br/>backend wake/health check"]
+        end
+        appRoot["layout.tsx, error.tsx, global-error.tsx, loading.tsx"]
+    end
 
-components/
-  ui/                 # shadcn/ui-style primitives (button, card, dialog, sidebar, ...)
-  layout/             # AppSidebar, NavBottomBar, Header-related layout components
-  errors/             # RouteErrorFallback used by error boundaries
-  providers/          # Notification context/toaster
-  BackendHealthWakeGate.tsx, BackendHealthCheckGate.tsx
+    subgraph components["components/"]
+        compUi["ui/<br/>shadcn/ui-style primitives (button, card, dialog, sidebar, ...)"]
+        compLayout["layout/<br/>AppSidebar, NavBottomBar, Header-related layout components"]
+        compErrors["errors/<br/>RouteErrorFallback used by error boundaries"]
+        compProviders["providers/<br/>Notification context/toaster"]
+        compGates["BackendHealthWakeGate.tsx, BackendHealthCheckGate.tsx"]
+    end
 
-features/
-  auth/               # schemas, client/server services, context, components
-  shift/               # pay-cycle + shift calculator: reducer, schemas, services, components
-  cwh/                 # end-of-day report: schemas, constants, services, components
-  telegram/            # Telegram linking: services, components
-  weather/             # date/weather display
+    subgraph features["features/"]
+        featAuth["auth/<br/>schemas, client/server services, context, components"]
+        featShift["shift/<br/>pay-cycle + shift calculator: reducer, schemas, services, components"]
+        featCwh["cwh/<br/>end-of-day report: schemas, constants, services, components"]
+        featTelegram["telegram/<br/>Telegram linking: services, components"]
+        featWeather["weather/<br/>date/weather display"]
+    end
 
-hooks/                # useMobile, useCopyToClipboard
-lib/
-  api/                 # client-api / server-api response parsing, error types
-  auth/                 # session.ts (JWT verification), aspnet.ts (backend fetch), cookie-headers.ts
-  utils/, AppError.ts
+    hooks["hooks/<br/>useMobile, useCopyToClipboard"]
 
-proxy.ts               # Edge middleware: route protection and public/private path rules
+    subgraph libgroup["lib/"]
+        libApi["api/<br/>client-api / server-api response parsing, error types"]
+        libAuth["auth/<br/>session.ts (JWT verification), aspnet.ts (backend fetch), cookie-headers.ts"]
+        libUtils["utils/, AppError.ts"]
+    end
+
+    proxyNode["proxy.ts<br/>Edge middleware: route protection and public/private path rules"]
 ```
 
 Route pages under `(private)` and `(public)` are Server Components by default (e.g. `dashboard/page.tsx`, `shift-calculator/page.tsx` call `requireSession` and fetch initial data on the server). Interactive pieces — forms, the shift calculator, the report wizard — are Client Components (`'use client'`) inside `features/*/components`. Server-only code (session verification, backend fetch helpers) is marked with the `server-only` package.
@@ -97,12 +141,17 @@ Route pages under `(private)` and `(public)` are Server Components by default (e
 
 The frontend never calls the ASP.NET Core API directly from the browser. Instead:
 
-```
-Browser / Client Component
-  → Next.js Route Handler (app/api/**)
-  → ASP.NET Core API (BACKEND_URL)
-  → Next.js Route Handler response
-  → UI update
+```mermaid
+sequenceDiagram
+    participant Browser as Browser / Client Component
+    participant Route as Next.js Route Handler (app/api/**)
+    participant Backend as ASP.NET Core API (BACKEND_URL)
+
+    Browser->>Route: Request to same-origin /api/...
+    Route->>Backend: Forward request (cookies / Authorization)
+    Backend-->>Route: Response (+ Set-Cookie)
+    Route-->>Browser: Normalized response (+ Set-Cookie)
+    Browser->>Browser: UI update
 ```
 
 Route Handlers under `app/api/` (e.g. `auth/login`, `auth/refresh`, `private/shift/bulks`, `private/cwh/eod-report`) forward requests to the backend, read/attach cookies, and return a normalized response. Server-side calls to the backend (`lib/auth/aspnet.ts`) also attach the access token as an `Authorization: Bearer` header and transparently refresh it on a 401 before retrying once. This pattern is used because, based on the implementation:
