@@ -19,7 +19,6 @@ export async function handleShiftClient(
     },
     body: JSON.stringify({ shifts: userShifts, deletedShiftIds, cycleStartDate, cycleEndDate }),
   });
-  console.log('🚀 ~ handleShiftClient ~ res:', res);
 
   const shiftSummary = await parseClientApiResponse<ShiftSummaryResult>(res, 'Failed to submit shifts');
 

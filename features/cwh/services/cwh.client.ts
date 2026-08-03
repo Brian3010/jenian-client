@@ -42,8 +42,6 @@ export async function handleReport(formReport: FormReportT) {
     }
   }
 
-  console.log('🚀 ~ handleReport ~ formData:', { ...formData });
-
   const res = await fetch('/api/private/cwh/eod-report', {
     method: 'POST',
     body: formData,

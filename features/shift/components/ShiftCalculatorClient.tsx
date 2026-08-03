@@ -104,7 +104,6 @@ export default function ShiftCalculatorClient({
     // Call the client-side service function, which talks to the route handler.
     try {
       const result = await handleShiftClient(cycleStartDate, cycleEndDate, state.draftShifts, state.deletedShiftIds);
-      console.log('submit result: ', result);
 
       dispatch({ type: 'LOAD_SHIFTS', shifts: result.shifts });
       setEstimatedGrossPay(
