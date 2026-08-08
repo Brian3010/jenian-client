@@ -126,7 +126,7 @@ export default function ShiftCalculatorClient({
 
   return (
     <>
-      <div className="flex gap-3 md:flex-row flex-col">
+      <div className="flex gap-3 flex-col">
         <div>
           <h1 className="text-slate-900 text-2xl font-semibold">Shift Calculator</h1>
           <p className="text-sm text-slate-500 py-1.5">
@@ -186,7 +186,9 @@ export default function ShiftCalculatorClient({
       <PaySummaryCard summary={summaryBreakdown} isSaving={isSaving} className="flex md:flex-row flex-col gap-2" />
 
       {/* shift details */}
-      <div className="flex flex-col lg:flex-row gap-4">
+      {/* <div className="flex flex-col lg:flex-row gap-4"> */}
+      {/* <div className="flex flex-col lg:flex-row gap-4 flex-wrap"> */}
+      <div className="flex flex-col md:grid lg:grid-cols-2 gap-4">
         {state.draftShifts.length > 0 ? (
           state.draftShifts.map(shift => (
             <ShiftCard
@@ -200,7 +202,7 @@ export default function ShiftCalculatorClient({
             />
           ))
         ) : (
-          <div className="flex-1 min-w-0">
+          <div className="col-span-full">
             <div className="bg-white rounded-2xl border border-slate-200 py-20 text-center">
               <p className="text-slate-800 mb-1">No shifts added yet</p>
               <p className="text-sm text-slate-400 mb-5 px-6">
@@ -208,24 +210,6 @@ export default function ShiftCalculatorClient({
               </p>
             </div>
           </div>
-        )}
-
-        <div className="w-full lg:w-2xs shrink-0">
-          {dailySummaries.length > 0 ? (
-            <PayBreakDown dailySummaries={dailySummaries} />
-          ) : (
-            <span className="text-sm text-slate-500">No breakdown yet. Save your first shifts to generate one.</span>
-          )}
-        </div>
-        {(showAddModal || editingShift) && (
-          <ShiftModal
-            payStartDate={cycleStartDate}
-            payEndDate={cycleEndDate}
-            shift={editingShift || undefined}
-            timeZoneId={timeZoneId}
-            onCancel={onModalCancel}
-            onSave={editingShift ? handleEdit : handleAdd}
-          />
         )}
 
         {/**Unsaved Changes Bar */}
@@ -249,6 +233,23 @@ export default function ShiftCalculatorClient({
           />
         )}
       </div>
+      <div className="w-full ">
+        {dailySummaries.length > 0 ? (
+          <PayBreakDown dailySummaries={dailySummaries} />
+        ) : (
+          <span className="text-sm text-slate-500">No breakdown yet. Save your first shifts to generate one.</span>
+        )}
+      </div>
+      {(showAddModal || editingShift) && (
+        <ShiftModal
+          payStartDate={cycleStartDate}
+          payEndDate={cycleEndDate}
+          shift={editingShift || undefined}
+          timeZoneId={timeZoneId}
+          onCancel={onModalCancel}
+          onSave={editingShift ? handleEdit : handleAdd}
+        />
+      )}
       <div className="h-20" />
     </>
   );

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   const backendUrl = process.env.BACKEND_URL;
-  // set abort controller to cancel request in 10_000
+  // Abort the backend demo-login request if it exceeds 10 seconds.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
 
