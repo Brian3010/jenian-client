@@ -32,7 +32,7 @@ export default function RegisterPage() {
       email: '',
       password: '',
       confirmPassword: '',
-      secretToken: '',
+      inviteToken: '',
     },
     mode: 'onSubmit',
   });
@@ -147,7 +147,7 @@ export default function RegisterPage() {
                 type={showSecretToken ? 'text' : 'password'}
                 placeholder="Enter your secret token"
                 autoComplete="off"
-                {...register('secretToken')}
+                {...register('inviteToken')}
               />
               <InputGroupButton
                 type="button"
@@ -159,7 +159,7 @@ export default function RegisterPage() {
                 {showSecretToken ? <Eye /> : <EyeOff />}
               </InputGroupButton>
             </InputGroup>
-            <p className="p-2 text-red-600">{errors.secretToken?.message}</p>
+            <p className="p-2 text-red-600">{errors.inviteToken?.message}</p>
           </div>
 
           {error && (

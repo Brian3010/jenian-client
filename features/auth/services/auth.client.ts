@@ -3,7 +3,6 @@ import { parseClientApiResponse } from '@/lib/api/client-api';
 import { AppError } from '@/lib/AppError';
 import type { RegisterValues } from '../schemas';
 
-//TODO: review this
 export async function loginUser(userName: string, password: string): Promise<void> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',

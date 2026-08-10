@@ -3,7 +3,7 @@ import { parseAspnetApiResponse } from '@/lib/api/server-api';
 import { aspnetFetch } from '@/lib/auth/aspnet';
 import { verifySession } from '@/lib/auth/session';
 import 'server-only';
-import type { RegisterValues } from '../schemas';
+import { RegisterRequest } from '../types';
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -44,7 +44,7 @@ export async function logout(): Promise<ServerResult<void>> {
   return await parseAspnetApiResponse<void>(res, 'Failed to logout user');
 }
 
-export async function registerUserServer(registerData: RegisterValues): Promise<ServerResult<{ message: string }>> {
+export async function registerUserServer(registerData: RegisterRequest): Promise<ServerResult<{ message: string }>> {
   const res = await fetch(`${BACKEND_URL}/api/Auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

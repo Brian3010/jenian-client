@@ -27,7 +27,7 @@ export async function handleShiftClient(
     dailySummaries: shiftSummary.dailySummaries,
   };
 }
-
+// prepare the shift data to be sent to the backend by converting ShiftFormValues to UserShift
 function shiftFormValuesToUserShift(shifts: ShiftFormValues[]): UserShift[] {
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -45,6 +45,7 @@ function shiftFormValuesToUserShift(shifts: ShiftFormValues[]): UserShift[] {
   });
 }
 
+// prepare the shift data to be sent to the frontend by converting UserShift to ShiftFormValues
 function userShiftToShiftFormValues(shifts: UserShift[]): ShiftFormValues[] {
   return shifts.map(s => {
     return {

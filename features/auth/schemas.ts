@@ -21,7 +21,7 @@ export const registerSchema = credentialsSchema
   .extend({
     email: z.string().trim().email('Please enter a valid email address'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
-    secretToken: z.string().trim().min(1, 'Please enter the secret token'),
+    inviteToken: z.string().trim().min(1, 'Please enter the secret token'),
   })
   .refine(values => values.password === values.confirmPassword, {
     message: 'Passwords do not match',
