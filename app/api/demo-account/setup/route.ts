@@ -1,16 +1,17 @@
 import { appendSetCookieHeaders } from '@/lib/auth/cookie-headers';
-import { fetchBackendWithWakeRetry } from '@/lib/backend-health';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
   const backendUrl = process.env.BACKEND_URL;
-  if (!backendUrl) {
-    return NextResponse.json({ message: 'Missing backend configuration' }, { status: 500 });
-  }
+  // Abort the backend demo-login request if it exceeds 10 seconds.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
 
+  // try to fecth /api/Auth/demo-login
   try {
-    const res = await fetchBackendWithWakeRetry(backendUrl, '/api/Auth/demo-login', {
+    const res = await fetch(`${backendUrl}/api/Auth/demo-login`, {
       method: 'POST',
+      signal: controller.signal,
     });
 
     if (res.ok) {
@@ -23,5 +24,11 @@ export async function POST() {
   } catch (error) {
     console.error('Error setting up demo account:', error);
     return NextResponse.json({ message: 'Failed to setup demo account' }, { status: 500 });
+  } finally {
+    clearTimeout(timeout);
   }
+
+  // if response is ok, wait 20_000 ms then return 200
+  // if response is not ok or error occured, return 500
+  // noted if abort controller is triggered, it jumps to catch block and return 500
 }

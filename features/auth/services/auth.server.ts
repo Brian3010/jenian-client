@@ -2,21 +2,18 @@ import { ServerResult } from '@/lib/api/api-types';
 import { parseAspnetApiResponse } from '@/lib/api/server-api';
 import { aspnetFetch } from '@/lib/auth/aspnet';
 import { verifySession } from '@/lib/auth/session';
-import { fetchBackendWithWakeRetry } from '@/lib/backend-health';
 import 'server-only';
 import { RegisterRequest } from '../types';
 
-const backendUrl = process.env.BACKEND_URL;
+const BACKEND_URL = process.env.BACKEND_URL;
 
-if (!backendUrl) {
+if (!BACKEND_URL) {
   throw new Error('Missing BACKEND_URL environment variable');
 }
 
-const BACKEND_URL = backendUrl;
-
 // this function is used in the refresh route to call backend and get the new access token and set it in the cookie
 export async function refreshAccessToken(cookieHeader: string): Promise<Response> {
-  return fetchBackendWithWakeRetry(BACKEND_URL, '/api/Auth/refresh-token', {
+  return fetch(`${BACKEND_URL}/api/Auth/refresh-token`, {
     method: 'POST',
     headers: {
       Cookie: cookieHeader,
@@ -48,7 +45,7 @@ export async function logout(): Promise<ServerResult<void>> {
 }
 
 export async function registerUserServer(registerData: RegisterRequest): Promise<ServerResult<{ message: string }>> {
-  const res = await fetchBackendWithWakeRetry(BACKEND_URL, '/api/Auth/register', {
+  const res = await fetch(`${BACKEND_URL}/api/Auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(registerData),
