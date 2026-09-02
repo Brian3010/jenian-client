@@ -1,8 +1,10 @@
+import { fetchBackendWithWakeRetry } from '@/lib/backend-health';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL;
-if (!BACKEND_URL) throw new Error('Missing BACKEND_URL environment variable');
+const backendUrl = process.env.BACKEND_URL;
+if (!backendUrl) throw new Error('Missing BACKEND_URL environment variable');
+const BACKEND_URL = backendUrl;
 
 export async function POST(request: Request) {
   try {
@@ -16,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.text();
-    const aspRes = await fetch(`${BACKEND_URL}/api/Auth/login`, {
+    const aspRes = await fetchBackendWithWakeRetry(BACKEND_URL, '/api/Auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: cookieStore.toString() },
       body,
