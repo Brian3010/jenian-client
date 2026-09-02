@@ -1,7 +1,6 @@
+import { BACKEND_READY_COOKIE } from '@/lib/backend-health';
 import { cookies } from 'next/headers';
 import { BackendHealthWakeGate } from './BackendHealthWakeGate';
-
-const BACKEND_READY_COOKIE = 'backendReady';
 
 type BackendHealthCheckGateProps = {
   children: React.ReactNode;
