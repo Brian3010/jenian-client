@@ -1,5 +1,4 @@
 // proxy.ts
-import { BACKEND_READY_COOKIE } from '@/lib/backend-health';
 import { NextRequest, NextResponse } from 'next/server';
 
 const REFRESH_COOKIE = 'refreshToken';
@@ -44,14 +43,6 @@ function isPublicPage(pathname: string) {
   );
 }
 
-function isSignedInRedirectPage(pathname: string) {
-  return pathname === '/auth/sign-in' || pathname === '/auth/register' || pathname === '/demo-account';
-}
-
-function isBackendIndependentPage(pathname: string) {
-  return pathname === '/' || pathname === '/network-error' || pathname === '/wake';
-}
-
 function hasSession(req: NextRequest) {
   const refreshToken = req.cookies.get(REFRESH_COOKIE)?.value;
   const deviceId = req.cookies.get(DEVICE_ID_COOKIE)?.value;
@@ -70,16 +61,12 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (isBackendIndependentPage(pathname)) {
-    return NextResponse.next();
-  }
-
   const sessionExists = hasSession(req);
 
   /**
    * Signed-in users should not stay on public authentication pages.
    */
-  if (sessionExists && isSignedInRedirectPage(pathname)) {
+  if (sessionExists && (pathname === '/' || isPublicPage(pathname))) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     url.search = '';
@@ -126,17 +113,6 @@ export function proxy(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = '/auth/sign-in';
     url.searchParams.set('next', pathname + search);
-
-    return NextResponse.redirect(url);
-  }
-
-  const backendReady = req.cookies.get(BACKEND_READY_COOKIE)?.value === '1';
-
-  if (!backendReady) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/wake';
-    url.search = '';
-    url.searchParams.set('returnTo', pathname + search);
 
     return NextResponse.redirect(url);
   }
