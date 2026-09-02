@@ -9,6 +9,7 @@
  */
 
 import { refreshAccessToken } from '@/features/auth/services/auth.server';
+import { fetchBackendWithWakeRetry } from '@/lib/backend-health';
 import { cookies } from 'next/headers';
 import 'server-only';
 import { getCookieValueFromSetCookie, getSetCookieHeaders } from './cookie-headers';
@@ -81,10 +82,9 @@ async function fetchWithAccessToken(
   headers.set('Authorization', `Bearer ${accessToken}`);
   if (cookieHeader) headers.set('Cookie', cookieHeader);
 
-  return fetch(`${baseUrl}${path}`, {
+  return fetchBackendWithWakeRetry(baseUrl, path, {
     ...init,
     headers,
-    cache: 'no-store',
   });
 }
 
