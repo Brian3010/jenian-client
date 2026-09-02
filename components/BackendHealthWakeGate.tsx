@@ -1,35 +1,32 @@
 'use client';
 
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, LoaderCircle, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 
 const loadingMessages = [
   {
-    title: 'Getting Jenian ready',
-    description: 'We’re preparing your workspace. This can take a moment.',
+    title: 'Starting Jenian...',
+    description: 'To keep running costs low, Jenian rests when not in use. We are getting it ready now.',
   },
   {
-    title: 'Putting everything in place',
-    description: 'Your shifts, reports, and tools are being set up.',
+    title: 'Almost ready...',
+    description: 'Jenian is preparing your workspace.',
   },
   {
-    title: 'Nearly there',
-    description: 'Thanks for hanging tight—Jenian should be ready shortly.',
+    title: 'Finishing up...',
+    description: 'Everything should be ready shortly.',
   },
 ];
 
 type BackendHealthWakeGateProps = {
-  children?: React.ReactNode;
-  readyPath?: string;
+  children: React.ReactNode;
 };
 
-export function BackendHealthWakeGate({ children, readyPath }: BackendHealthWakeGateProps) {
+export function BackendHealthWakeGate({ children }: BackendHealthWakeGateProps) {
   const [status, setStatus] = useState<'checking' | 'ready' | 'unavailable'>('checking');
   const [loadingStep, setLoadingStep] = useState(0);
-  const router = useRouter();
 
   const checkBackend = useCallback(async () => {
     try {
@@ -38,21 +35,11 @@ export function BackendHealthWakeGate({ children, readyPath }: BackendHealthWake
         cache: 'no-store',
       });
 
-      if (!res.ok) {
-        setStatus('unavailable');
-        return;
-      }
-
-      if (readyPath) {
-        router.replace(readyPath);
-        return;
-      }
-
-      setStatus('ready');
+      setStatus(res.ok ? 'ready' : 'unavailable');
     } catch {
       setStatus('unavailable');
     }
-  }, [readyPath, router]);
+  }, []);
 
   function retryWakeBackend() {
     setStatus('checking');
@@ -128,36 +115,24 @@ export function BackendHealthWakeGate({ children, readyPath }: BackendHealthWake
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-5">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white px-6 py-7 shadow-sm">
+      <div
+        role="status"
+        aria-live="polite"
+        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white px-6 py-7 shadow-sm"
+      >
         <div className="flex items-start gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 motion-safe:animate-pulse">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
             <Image src="/icon.png" alt="" width={36} height={36} priority className="rounded-lg" />
           </div>
 
           <div className="min-w-0 flex-1">
-            <div
-              key={loadingStep}
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-              className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
-            >
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-sm font-semibold text-slate-900">{loadingMessage.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-semibold text-slate-900">{loadingMessage.title}</h1>
 
-                <span className="flex shrink-0 items-center gap-1" aria-hidden="true">
-                  <span className="size-1.5 rounded-full bg-slate-400 motion-safe:animate-bounce motion-safe:[animation-delay:-0.3s]" />
-                  <span className="size-1.5 rounded-full bg-slate-400 motion-safe:animate-bounce motion-safe:[animation-delay:-0.15s]" />
-                  <span className="size-1.5 rounded-full bg-slate-400 motion-safe:animate-bounce" />
-                </span>
-              </div>
-
-              <p className="mt-1.5 text-sm leading-6 text-slate-600">{loadingMessage.description}</p>
+              <LoaderCircle aria-hidden="true" className="size-4 shrink-0 animate-spin text-slate-500" />
             </div>
 
-            <p className="mt-3 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
-              No need to refresh—we’ll continue automatically.
-            </p>
+            <p className="mt-1.5 text-sm leading-6 text-slate-600">{loadingMessage.description}</p>
           </div>
         </div>
       </div>
