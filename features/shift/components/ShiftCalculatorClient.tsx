@@ -3,7 +3,6 @@
 // import { formatTime12h } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { SummaryBreakdown } from '@/features/shift/components/ShiftCalculatorData';
 import { AppError } from '@/lib/AppError';
 import { formatDateDayMonth, formatTime12h, formatWorkDate, getHoursBetweenTimes } from '@/lib/utils';
 import { CircleAlert, Copy } from 'lucide-react';
@@ -16,7 +15,6 @@ import DuplicateShiftModal from './DuplicateShiftModal';
 import ShiftModal from './shiftModal';
 
 type ShiftCalculatorClientProps = {
-  initialSummaryBreakdown: SummaryBreakdown;
   initialDailySummaries: UserDailyPaySummary[];
   cycleStartDate: string;
   cycleEndDate: string;
@@ -25,7 +23,6 @@ type ShiftCalculatorClientProps = {
 };
 
 export default function ShiftCalculatorClient({
-  initialSummaryBreakdown,
   initialUserShifts,
   cycleStartDate,
   cycleEndDate,
@@ -37,7 +34,6 @@ export default function ShiftCalculatorClient({
 
   const [editingShift, setEditingShift] = useState<ShiftFormValues | null>(null);
   const [duplicateShift, setDuplicateShift] = useState<ShiftFormValues | null>(null);
-  const [estimatedGrossPay, setEstimatedGrossPay] = useState<number>(initialSummaryBreakdown.estimatedGrossPay);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +44,11 @@ export default function ShiftCalculatorClient({
   const totalHours = state.draftShifts.reduce((total: number, s: ShiftFormValues) => {
     return total + getHoursBetweenTimes(s.startTime, s.endTime);
   }, 0);
-  const summaryBreakdown: SummaryBreakdown & { hasUnsavedChanges: boolean } = {
-    ...initialSummaryBreakdown,
+  const summaryBreakdown: PaySummary = {
     shiftCountInCycle: state.draftShifts.length,
     scheduledTotalHours: totalHours,
-    estimatedGrossPay: estimatedGrossPay,
-    hasUnsavedChanges: JSON.stringify(state.draftShifts) !== JSON.stringify(state.savedShifts),
+    estimatedGrossPay: dailySummaries.reduce((total, summary) => total + summary.grossPay, 0),
+    hasUnsavedChanges,
   };
 
   const onModalCancel = () => {
@@ -106,9 +101,6 @@ export default function ShiftCalculatorClient({
       const result = await handleShiftClient(cycleStartDate, cycleEndDate, state.draftShifts, state.deletedShiftIds);
 
       dispatch({ type: 'LOAD_SHIFTS', shifts: result.shifts });
-      setEstimatedGrossPay(
-        result.dailySummaries.reduce((total: number, summary: { grossPay: number }) => total + summary.grossPay, 0),
-      );
       setError(null);
       setDailySummaries(result.dailySummaries);
     } catch (error) {
@@ -393,10 +385,17 @@ function PayBreakDown({ dailySummaries }: { dailySummaries: UserDailyPaySummary[
 }
 
 type PaySummaryCardProps = {
-  summary: SummaryBreakdown & { hasUnsavedChanges: boolean };
+  summary: PaySummary;
 
   className: string;
   isSaving: boolean;
+};
+
+type PaySummary = {
+  estimatedGrossPay: number;
+  shiftCountInCycle: number;
+  scheduledTotalHours: number;
+  hasUnsavedChanges: boolean;
 };
 
 function PaySummaryCard({ summary, className, isSaving }: PaySummaryCardProps) {

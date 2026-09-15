@@ -4,6 +4,8 @@ export enum PayCycleType {
   Monthly = 3,
 }
 
+export type PayCycleName = 'Weekly' | 'Fortnightly' | 'Monthly';
+
 export enum EmploymentType {
   FullTime = 1,
   PartTime = 2,
@@ -16,16 +18,6 @@ export enum ShiftEntryType {
   Leave = 3,
 }
 
-// export type PayCycleResponse = {
-//   hasPayCycleSettings: boolean;
-//   anchorStartDate: string;
-//   payCycle: PayCycleType;
-//   payCycleStartDate: string;
-//   payCycleEndDate: string;
-//   shiftCountInCycle: number;
-//   estimatedGrossPay: number;
-// };
-
 export type PayCycleSettings = {
   hasPayCycleSettings: boolean;
   anchorStartDate: string | null;
@@ -34,16 +26,6 @@ export type PayCycleSettings = {
   payCycleEndDate: string | null;
   shiftCountInCycle: number | null;
   estimatedGrossPay: number | null;
-};
-
-export type HasPayCycleSettings = {
-  hasPayCycleSettings: true;
-  anchorStartDate: string;
-  payCycle: PayCycleType;
-  payCycleStartDate: string;
-  payCycleEndDate: string;
-  shiftCountInCycle: number;
-  estimatedGrossPay: number;
 };
 
 export type UserShift = {
@@ -69,29 +51,43 @@ export type UserDailyPaySummary = {
   grossPay: number;
 };
 
-// export type ShiftSummaryResult = {
-//   shifts: UserShift[];
-//   dailySummaries: UserDailyPaySummary[];
-// };
-
 export type ShiftSummaryResult<TShift = UserShift> = {
   shifts: TShift[];
   dailySummaries: UserDailyPaySummary[];
 };
 
-export type ShiftCalculatorPageData =
+export type CurrentPayCycleData =
   | {
-      status: 'needs_setup';
-      payCycleSettings: PayCycleSettings;
+      hasPayCycleSettings: false;
+      payCycle: null;
+      startDate: null;
+      endDate: null;
+      shifts: UserShift[];
+      dailySummaries: UserDailyPaySummary[];
     }
   | {
-      status: 'ready';
-      payCycleSettings: HasPayCycleSettings;
-      shiftSummary: ShiftSummaryResult;
+      hasPayCycleSettings: true;
+      payCycle: PayCycleName;
+      startDate: string;
+      endDate: string;
+      shifts: UserShift[];
+      dailySummaries: UserDailyPaySummary[];
+    };
+
+export type CurrentPayCycleSummary =
+  | {
+      hasPayCycleSettings: false;
+      payCycle: null;
+      startDate: null;
+      endDate: null;
+      shiftCount: number;
+      estimatedGrossPay: number;
     }
   | {
-      status: 'error';
-      message: string;
-      errors: string[];
-      statusCode?: number;
+      hasPayCycleSettings: true;
+      payCycle: PayCycleName;
+      startDate: string;
+      endDate: string;
+      shiftCount: number;
+      estimatedGrossPay: number;
     };

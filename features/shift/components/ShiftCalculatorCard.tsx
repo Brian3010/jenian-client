@@ -1,29 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardHeader } from '@/components/ui/card';
-import { getUserCurrentPayCycleSettings } from '@/features/shift/services/shift.server';
+import { getCurrentPayCycleSummary } from '@/features/shift/services/shift.server';
+import { CurrentPayCycleSummary } from '@/features/shift/types';
 import { formatDateDayMonth } from '@/lib/utils';
 import { CalendarDays } from 'lucide-react';
 import Link from 'next/link';
-import { PayCycleSettings } from '../types';
-
-// async function getShiftCalculatorCardData() {
-//   try {
-//     const userPayCycleSettings = await getUserCurrentPayCycleSettings();
-//     return { success: true as const, payDetail: userPayCycleSettings.data };
-//   } catch (error: unknown) {
-//     if (error instanceof AppError) {
-//       console.error('Failed to load shift calculator card data:', error.message);
-//       return { success: false as const, error: 'Failed to load pay summary, please try again later' };
-//     }
-//     console.error('Unexpected error occurred when getting shift calculator card data:', error);
-//     return { success: false as const, error: 'Unexpected error occurred when getting shift calculator card data' };
-//   }
-// }
 
 export default async function ShiftCalculatorCard() {
-  const userPayCycleSettingsResult = await getUserCurrentPayCycleSettings();
+  const currentPayCycleSummaryResult = await getCurrentPayCycleSummary();
 
-  if (!userPayCycleSettingsResult.ok) {
+  if (!currentPayCycleSummaryResult.ok) {
     return (
       <Card className="p-5 flex flex-col gap-3">
         <CardHeader className="p-0">
@@ -39,42 +25,19 @@ export default async function ShiftCalculatorCard() {
     );
   }
 
-  if (!hasCompletePayCycleSettings(userPayCycleSettingsResult.data)) {
+  if (!currentPayCycleSummaryResult.data.hasPayCycleSettings) {
     return <PayCycleRequiredState />;
   }
 
-  return <HasPayCycleState payDetailData={userPayCycleSettingsResult.data} />;
-}
-
-// Type guard to check if payDetail has complete pay cycle settings
-function hasCompletePayCycleSettings(payDetail: PayCycleSettings): payDetail is PayCycleSettings & {
-  hasPayCycleSettings: true;
-  payCycleStartDate: string;
-  payCycleEndDate: string;
-  shiftCountInCycle: number;
-  estimatedGrossPay: number;
-} {
-  return (
-    payDetail.hasPayCycleSettings &&
-    payDetail.payCycleStartDate !== null &&
-    payDetail.payCycleEndDate !== null &&
-    payDetail.shiftCountInCycle !== null &&
-    payDetail.estimatedGrossPay !== null
-  );
+  return <HasPayCycleState payDetailData={currentPayCycleSummaryResult.data} />;
 }
 
 type HasPayCycleStateProps = {
-  payDetailData: PayCycleSettings & {
-    hasPayCycleSettings: true;
-    payCycleStartDate: string;
-    payCycleEndDate: string;
-    shiftCountInCycle: number;
-    estimatedGrossPay: number;
-  };
+  payDetailData: Extract<CurrentPayCycleSummary, { hasPayCycleSettings: true }>;
 };
 
 function HasPayCycleState({
-  payDetailData: { payCycleStartDate, payCycleEndDate, shiftCountInCycle, estimatedGrossPay },
+  payDetailData: { startDate, endDate, shiftCount, estimatedGrossPay },
 }: HasPayCycleStateProps) {
   return (
     <Card className="p-5 flex flex-col gap-3">
@@ -90,11 +53,11 @@ function HasPayCycleState({
           rows={[
             {
               label: 'Current Cycle',
-              value: `${formatDateDayMonth(payCycleStartDate)} - ${formatDateDayMonth(payCycleEndDate)}`,
+              value: `${formatDateDayMonth(startDate)} - ${formatDateDayMonth(endDate)}`,
             },
             {
               label: 'Shifts Worked',
-              value: shiftCountInCycle.toString(),
+              value: shiftCount.toString(),
             },
             {
               label: 'Estimated Pay',
