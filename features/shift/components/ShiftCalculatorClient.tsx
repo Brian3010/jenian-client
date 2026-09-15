@@ -339,7 +339,10 @@ function PayBreakDown({ dailySummaries }: { dailySummaries: UserDailyPaySummary[
       'Total Payable Hours',
       minutesToHours(dailySummaries.reduce((total, summary) => total + summary.totalPayableMinutes, 0)),
     ],
-
+    [
+      'Total Paid Breaks',
+      minutesToHours(dailySummaries.reduce((total, summary) => total + summary.totalPaidBreakMinutes, 0)),
+    ],
     [
       'Total Unpaid Breaks',
       minutesToHours(dailySummaries.reduce((total, summary) => total + summary.totalUnpaidBreakMinutes, 0)),
