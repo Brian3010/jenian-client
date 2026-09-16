@@ -1,13 +1,11 @@
 'use client';
 
-import { BackendWakeLoading } from '@/components/BackendWakeLoading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { registerSchema, type RegisterValues } from '@/features/auth/schemas';
 import { registerUser } from '@/features/auth/services/auth.client';
 import { AppError } from '@/lib/AppError';
-import { BackendWakeError, wakeBackend } from '@/lib/backend-health.client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -17,7 +15,7 @@ import { useForm } from 'react-hook-form';
 export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'waking' | 'registering'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'registering'>('idle');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showSecretToken, setShowSecretToken] = useState(false);
@@ -42,28 +40,18 @@ export default function RegisterPage() {
   const onSubmit = async (registerData: RegisterValues) => {
     setError('');
     setIsSuccessful(false);
-    setSubmitStatus('waking');
+    setSubmitStatus('registering');
 
     try {
-      await wakeBackend();
-      setSubmitStatus('registering');
       await registerUser(registerData);
       setIsSuccessful(true);
       reset();
     } catch (err) {
-      if (err instanceof BackendWakeError) {
-        setError('Jenian could not connect. Please try again shortly.');
-      } else {
-        setError(err instanceof AppError ? err.message : 'An unexpected error occurred. Please try again later.');
-      }
+      setError(err instanceof AppError ? err.message : 'An unexpected error occurred. Please try again later.');
     } finally {
       setSubmitStatus('idle');
     }
   };
-
-  if (submitStatus === 'waking') {
-    return <BackendWakeLoading />;
-  }
 
   const isLoading = submitStatus !== 'idle';
 

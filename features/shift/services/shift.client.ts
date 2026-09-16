@@ -1,5 +1,6 @@
 import { parseClientApiResponse } from '@/lib/api/client-api';
-import { convertLocalDateAndTimeToUtcIso, convertUtcIsoToLocalDateAndTime } from '@/lib/utils';
+import { convertLocalDateAndTimeToUtcIso } from '@/lib/utils';
+import { userShiftsToFormValues } from '../mappers';
 import { PayCycleSetupFormValues, ShiftFormValues } from '../schemas';
 import { PayCycleSettings, ShiftSummaryResult, UserShift } from '../types';
 
@@ -23,7 +24,7 @@ export async function handleShiftClient(
   const shiftSummary = await parseClientApiResponse<ShiftSummaryResult>(res, 'Failed to submit shifts');
 
   return {
-    shifts: userShiftToShiftFormValues(shiftSummary.shifts),
+    shifts: userShiftsToFormValues(shiftSummary.shifts),
     dailySummaries: shiftSummary.dailySummaries,
   };
 }
@@ -41,22 +42,6 @@ function shiftFormValuesToUserShift(shifts: ShiftFormValues[]): UserShift[] {
       entryType: s.entryType,
       employmentType: s.employmentType,
       timeZoneId: userTimeZone,
-    };
-  });
-}
-
-// prepare the shift data to be sent to the frontend by converting UserShift to ShiftFormValues
-function userShiftToShiftFormValues(shifts: UserShift[]): ShiftFormValues[] {
-  return shifts.map(s => {
-    return {
-      id: s.id,
-      workDate: convertUtcIsoToLocalDateAndTime(s.startAt, s.timeZoneId).date,
-      startTime: convertUtcIsoToLocalDateAndTime(s.startAt, s.timeZoneId).time,
-      endTime: convertUtcIsoToLocalDateAndTime(s.endAt, s.timeZoneId).time,
-      unpaidBreak: s.unpaidBreakMinutes,
-      paidBreak: s.paidBreakMinutes,
-      entryType: s.entryType,
-      employmentType: s.employmentType,
     };
   });
 }
