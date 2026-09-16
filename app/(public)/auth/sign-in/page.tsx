@@ -1,12 +1,10 @@
 'use client';
-import { BackendWakeLoading } from '@/components/BackendWakeLoading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { signInSchema, type SignInValues } from '@/features/auth/schemas';
 import { loginUser } from '@/features/auth/services/auth.client';
 import { AppError } from '@/lib/AppError';
-import { BackendWakeError, wakeBackend } from '@/lib/backend-health.client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -18,7 +16,7 @@ export default function SignIn() {
   // const { addUser } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string>('');
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'waking' | 'signing-in'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'signing-in'>('idle');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const {
@@ -36,17 +34,13 @@ export default function SignIn() {
 
   const onSubmit = async (signInData: SignInValues) => {
     setError('');
-    setSubmitStatus('waking');
+    setSubmitStatus('signing-in');
 
     try {
-      await wakeBackend();
-      setSubmitStatus('signing-in');
       await loginUser(signInData.userName, signInData.password);
       router.replace('/dashboard');
     } catch (err) {
-      if (err instanceof BackendWakeError) {
-        setError('Jenian could not connect. Please try again shortly.');
-      } else if (err instanceof AppError && err.code === 'INVALID_CREDENTIALS') {
+      if (err instanceof AppError && err.code === 'INVALID_CREDENTIALS') {
         setError('Invalid username or password');
       } else {
         setError('An unexpected error occurred. Please try again later.');
@@ -54,10 +48,6 @@ export default function SignIn() {
       setSubmitStatus('idle');
     }
   };
-
-  if (submitStatus === 'waking') {
-    return <BackendWakeLoading />;
-  }
 
   const isLoading = submitStatus !== 'idle';
 
